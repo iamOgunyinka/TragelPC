@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AdminSetupDialog</class>
+ <widget class="QDialog" name="AdminSetupDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>429</width>
+    <height>262</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>83</y>
+     <width>91</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>SU username</string>
+   </property>
+   <property name="buddy">
+    <cstring>su_username_line</cstring>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>53</y>
+     <width>101</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>End point URL</string>
+   </property>
+   <property name="buddy">
+    <cstring>endpoint_url_line</cstring>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>113</y>
+     <width>91</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>SU password</string>
+   </property>
+   <property name="buddy">
+    <cstring>su_password_line</cstring>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="endpoint_url_line">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>50</y>
+     <width>181</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="su_username_line">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>80</y>
+     <width>181</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="su_password_line">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>110</y>
+     <width>181</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="echoMode">
+    <enum>QLineEdit::Password</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>23</y>
+     <width>111</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Server base URL</string>
+   </property>
+   <property name="buddy">
+    <cstring>base_url_line</cstring>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="base_url_line">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>20</y>
+     <width>181</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="connect_button">
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>150</y>
+     <width>89</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&amp;Connect</string>
+   </property>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>base_url_line</tabstop>
+  <tabstop>endpoint_url_line</tabstop>
+  <tabstop>su_username_line</tabstop>
+  <tabstop>su_password_line</tabstop>
+  <tabstop>connect_button</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>base_url_line</sender>
+   <signal>returnPressed()</signal>
+   <receiver>connect_button</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>27</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>307</x>
+     <y>161</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>endpoint_url_line</sender>
+   <signal>returnPressed()</signal>
+   <receiver>connect_button</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>289</x>
+     <y>62</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>292</x>
+     <y>162</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>su_username_line</sender>
+   <signal>returnPressed()</signal>
+   <receiver>connect_button</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>213</x>
+     <y>90</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>232</x>
+     <y>163</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>su_password_line</sender>
+   <signal>returnPressed()</signal>
+   <receiver>connect_button</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>172</x>
+     <y>124</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>251</x>
+     <y>172</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>connect_button</sender>
+   <signal>clicked()</signal>
+   <receiver>AdminSetupDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>281</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>168</x>
+     <y>233</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

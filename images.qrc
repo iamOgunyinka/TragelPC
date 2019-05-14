@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/all_images">
+        <file>images/tragel.png</file>
+        <file>images/logo.png</file>
+    </qresource>
+</RCC>
