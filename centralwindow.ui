@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CentralWindow</class>
+ <widget class="QMainWindow" name="CentralWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>CentralWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>400</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuMenu">
+    <property name="title">
+     <string>Session</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionShow_all_logged_in_users"/>
+    <addaction name="separator"/>
+    <addaction name="actionLogin"/>
+    <addaction name="actionLogout"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuOrders">
+    <property name="title">
+     <string>Orders</string>
+    </property>
+    <addaction name="actionShow_today_s_orders"/>
+    <addaction name="actionShow_all_orders"/>
+    <addaction name="actionSearch_an_order"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <widget class="QMenu" name="menuMaintenance">
+     <property name="title">
+      <string>Maintenance</string>
+     </property>
+     <widget class="QMenu" name="menuProducts">
+      <property name="title">
+       <string>Products</string>
+      </property>
+      <addaction name="actionAdd_products"/>
+      <addaction name="actionUpdate_product"/>
+      <addaction name="actionRemove_product"/>
+      <addaction name="actionList_all_products"/>
+     </widget>
+     <widget class="QMenu" name="menuUsers">
+      <property name="title">
+       <string>Users</string>
+      </property>
+      <addaction name="actionAdd_user"/>
+      <addaction name="actionAdd_administrator"/>
+      <addaction name="actionUpdate_Change"/>
+      <addaction name="actionRemove"/>
+      <addaction name="separator"/>
+      <addaction name="actionDefine_roles"/>
+     </widget>
+     <addaction name="menuProducts"/>
+     <addaction name="menuUsers"/>
+    </widget>
+    <widget class="QMenu" name="menuSubscription">
+     <property name="title">
+      <string>Subscription</string>
+     </property>
+     <addaction name="actionSubscribe"/>
+     <addaction name="separator"/>
+     <addaction name="actionShow_expiry_date"/>
+     <addaction name="actionList_our_subscriptions"/>
+    </widget>
+    <addaction name="menuMaintenance"/>
+    <addaction name="menuSubscription"/>
+    <addaction name="actionSettings"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionHelp_me"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuMenu"/>
+   <addaction name="menuOrders"/>
+   <addaction name="menuTools"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionLogin"/>
+   <addaction name="actionLogout"/>
+   <addaction name="separator"/>
+   <addaction name="actionAdd_products"/>
+   <addaction name="actionUpdate_product"/>
+   <addaction name="separator"/>
+   <addaction name="actionAdd_user"/>
+   <addaction name="actionAdd_administrator"/>
+   <addaction name="actionRemove"/>
+   <addaction name="separator"/>
+   <addaction name="actionSettings"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionLogin">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/login.png</normaloff>:/all_images/images/login.png</iconset>
+   </property>
+   <property name="text">
+    <string>Login</string>
+   </property>
+  </action>
+  <action name="actionLogout">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/logout.png</normaloff>:/all_images/images/logout.png</iconset>
+   </property>
+   <property name="text">
+    <string>Logout</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionItems">
+   <property name="text">
+    <string>Items</string>
+   </property>
+  </action>
+  <action name="actionAdd_products">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/add_order-512.png</normaloff>:/all_images/images/add_order-512.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add products</string>
+   </property>
+  </action>
+  <action name="actionUpdate_product">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/update-icon.png</normaloff>:/all_images/images/update-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Update product</string>
+   </property>
+  </action>
+  <action name="actionList_all_products">
+   <property name="text">
+    <string>List all products</string>
+   </property>
+  </action>
+  <action name="actionRemove_product">
+   <property name="text">
+    <string>Remove product</string>
+   </property>
+  </action>
+  <action name="actionAdd_user">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/27-512.png</normaloff>:/all_images/images/27-512.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add user</string>
+   </property>
+  </action>
+  <action name="actionAdd_administrator">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/Admin-icon.png</normaloff>:/all_images/images/Admin-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add administrator</string>
+   </property>
+  </action>
+  <action name="actionUpdate_Change">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/refresh_user_man-512.png</normaloff>:/all_images/images/refresh_user_man-512.png</iconset>
+   </property>
+   <property name="text">
+    <string>Update/Change</string>
+   </property>
+  </action>
+  <action name="actionRemove">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/user_delete.png</normaloff>:/all_images/images/user_delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </action>
+  <action name="actionDefine_roles">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/Admin.png</normaloff>:/all_images/images/Admin.png</iconset>
+   </property>
+   <property name="text">
+    <string>Define roles</string>
+   </property>
+  </action>
+  <action name="actionShow_today_s_orders">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/business_marketing-13-512.png</normaloff>:/all_images/images/business_marketing-13-512.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show today's orders</string>
+   </property>
+  </action>
+  <action name="actionShow_all_orders">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show all orders</string>
+   </property>
+  </action>
+  <action name="actionSearch_an_order">
+   <property name="text">
+    <string>Search an order</string>
+   </property>
+  </action>
+  <action name="actionShow_all_logged_in_users">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/waitresses.jpg</normaloff>:/all_images/images/waitresses.jpg</iconset>
+   </property>
+   <property name="text">
+    <string>Show all logged in users</string>
+   </property>
+  </action>
+  <action name="actionList_our_subscriptions">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/subscribe_subscription_button_online-512.png</normaloff>:/all_images/images/subscribe_subscription_button_online-512.png</iconset>
+   </property>
+   <property name="text">
+    <string>List our subscriptions</string>
+   </property>
+  </action>
+  <action name="actionShow_expiry_date">
+   <property name="text">
+    <string>Show expiry date</string>
+   </property>
+  </action>
+  <action name="actionSubscribe">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/pay-icon-blue.png</normaloff>:/all_images/images/pay-icon-blue.png</iconset>
+   </property>
+   <property name="text">
+    <string>Subscribe</string>
+   </property>
+  </action>
+  <action name="actionHelp_me">
+   <property name="text">
+    <string>Help me</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/maintenance.png</normaloff>:/all_images/images/maintenance.png</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
+ <connections/>
+</ui>

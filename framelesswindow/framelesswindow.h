@@ -54,7 +54,8 @@ class FramelessWindow : public QWidget {
   virtual void mousePressEvent(QMouseEvent *event);
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual bool eventFilter(QObject *obj, QEvent *event);
-
+signals:
+  void is_closing();
  private:
   Ui::FramelessWindow *ui;
   QRect m_StartGeometry;

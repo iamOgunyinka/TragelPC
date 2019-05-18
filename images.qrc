@@ -2,5 +2,34 @@
     <qresource prefix="/all_images">
         <file>images/tragel.png</file>
         <file>images/logo.png</file>
+        <file>images/27-512.png</file>
+        <file>images/261073.png</file>
+        <file>images/410392.png</file>
+        <file>images/add_order-512.png</file>
+        <file>images/Admin.png</file>
+        <file>images/Admin-icon.png</file>
+        <file>images/business_marketing-13-512.png</file>
+        <file>images/delete_users_group-512.png</file>
+        <file>images/expired_domain_names.png</file>
+        <file>images/expiry_date.png</file>
+        <file>images/icon_window_close.png</file>
+        <file>images/icon_window_maximize.png</file>
+        <file>images/icon_window_minimize.png</file>
+        <file>images/icon_window_restore.png</file>
+        <file>images/login.png</file>
+        <file>images/logout.png</file>
+        <file>images/maintenance.png</file>
+        <file>images/Oxygen480-places-mail-folder-inbox.svg.png</file>
+        <file>images/pay-icon-blue.png</file>
+        <file>images/refresh_user_man-512.png</file>
+        <file>images/restaurant-waiter-icon-64769.png</file>
+        <file>images/sign-sync-icon.png</file>
+        <file>images/subscribe_subscription_button_online-512.png</file>
+        <file>images/sync.png</file>
+        <file>images/update-icon.png</file>
+        <file>images/user_delete.png</file>
+        <file>images/waitresses.jpg</file>
+        <file>images/Woman_service_delivery_customer_employee_waitress_restaurant_kitchen_menu-512.png</file>
+        <file>images/x-12-512.png</file>
     </qresource>
 </RCC>

@@ -5,12 +5,12 @@ AdminSetupDialog::AdminSetupDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AdminSetupDialog)
 {
-    ui->setupUi(this);
+    ui->setupUi( this );
 }
 
-QString AdminSetupDialog::GetServerBaseURL() const
+QString AdminSetupDialog::GetCompanysID() const
 {
-    return ui->base_url_line->text();
+    return ui->company_id_line->text();
 }
 
 QString AdminSetupDialog::GetServerEnpointsURL() const

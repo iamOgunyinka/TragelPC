@@ -16,7 +16,7 @@ public:
     ~AdminSetupDialog();
     QString GetSUUsername() const;
     QString GetSUPassword() const;
-    QString GetServerBaseURL() const;
+    QString GetCompanysID() const;
     QString GetServerEnpointsURL() const;
 private:
     Ui::AdminSetupDialog *ui;

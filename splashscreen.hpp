@@ -5,11 +5,6 @@
 #include <QObject>
 #include <QSplashScreen>
 #include <QString>
-#include <QMap>
-
-namespace utilities {
-class Endpoint;
-}
 
 class SplashScreen : public QObject
 {
@@ -21,17 +16,11 @@ public:
 signals:
     void done();
 public slots:
+    void close( QWidget * );
+
 private:
-    void PingServerNetwork();
-    void LoadSettingsFile();
-    void GetEndpointsFromServer( QString const & url, QString const & username,
-                                 QString const & password );
-    void WriteEndpointsToPersistenceStorage( utilities::Endpoint const & );
-private:
-    QSplashScreen *splash_screen;
     QApplication& main_app;
-    QMap<QString, void(SplashScreen::*)()> tasks {};
-    bool has_error;
+    QSplashScreen *splash_screen;
 };
 
 #endif // SPLASHSCREEN_HPP

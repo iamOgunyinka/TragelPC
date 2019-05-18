@@ -2,13 +2,15 @@
 #include <QUrl>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QMessageBox>
+#include <QDebug>
 
 namespace utilities {
 
-QNetworkRequest GetRequestInterface( QString const &address )
+QNetworkRequest GetRequestInterface( QUrl const &address )
 {
-    QNetworkRequest request{ QUrl{ address } };
-    return request;
+    qDebug() << address;
+    return QNetworkRequest{ address };
 }
 
 QNetworkRequest PostRequestInterface( QString const &address )
@@ -18,9 +20,11 @@ QNetworkRequest PostRequestInterface( QString const &address )
     return request;
 }
 
-QJsonObject GetJsonNetworkData( QNetworkReply* network_reply )
+QJsonObject GetJsonNetworkData( QNetworkReply* network_reply, bool show_error_message )
 {
     if( network_reply->error() != QNetworkReply::NoError ){
+        if( show_error_message )
+            QMessageBox::critical( nullptr, "Server's response", network_reply->errorString() );
         return QJsonObject{};
     }
     QByteArray const network_response = network_reply->readAll();

@@ -18,7 +18,7 @@
     <rect>
      <x>20</x>
      <y>83</y>
-     <width>91</width>
+     <width>131</width>
      <height>17</height>
     </rect>
    </property>
@@ -34,7 +34,7 @@
     <rect>
      <x>20</x>
      <y>53</y>
-     <width>101</width>
+     <width>121</width>
      <height>21</height>
     </rect>
    </property>
@@ -50,7 +50,7 @@
     <rect>
      <x>20</x>
      <y>113</y>
-     <width>91</width>
+     <width>121</width>
      <height>17</height>
     </rect>
    </property>
@@ -64,7 +64,7 @@
   <widget class="QLineEdit" name="endpoint_url_line">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>170</x>
      <y>50</y>
      <width>181</width>
      <height>25</height>
@@ -74,7 +74,7 @@
   <widget class="QLineEdit" name="su_username_line">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>170</x>
      <y>80</y>
      <width>181</width>
      <height>25</height>
@@ -84,7 +84,7 @@
   <widget class="QLineEdit" name="su_password_line">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>170</x>
      <y>110</y>
      <width>181</width>
      <height>25</height>
@@ -99,21 +99,21 @@
     <rect>
      <x>20</x>
      <y>23</y>
-     <width>111</width>
+     <width>131</width>
      <height>21</height>
     </rect>
    </property>
    <property name="text">
-    <string>Server base URL</string>
+    <string>Company's ID</string>
    </property>
    <property name="buddy">
-    <cstring>base_url_line</cstring>
+    <cstring>company_id_line</cstring>
    </property>
   </widget>
-  <widget class="QLineEdit" name="base_url_line">
+  <widget class="QLineEdit" name="company_id_line">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>170</x>
      <y>20</y>
      <width>181</width>
      <height>25</height>
@@ -123,7 +123,7 @@
   <widget class="QPushButton" name="connect_button">
    <property name="geometry">
     <rect>
-     <x>230</x>
+     <x>260</x>
      <y>150</y>
      <width>89</width>
      <height>25</height>
@@ -135,7 +135,7 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>base_url_line</tabstop>
+  <tabstop>company_id_line</tabstop>
   <tabstop>endpoint_url_line</tabstop>
   <tabstop>su_username_line</tabstop>
   <tabstop>su_password_line</tabstop>
@@ -144,7 +144,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>base_url_line</sender>
+   <sender>company_id_line</sender>
    <signal>returnPressed()</signal>
    <receiver>connect_button</receiver>
    <slot>click()</slot>

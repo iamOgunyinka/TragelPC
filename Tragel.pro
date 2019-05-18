@@ -25,27 +25,30 @@ INCLUDEPATH += "framelesswindow/"
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
     framelesswindow/framelesswindow.cpp \
     framelesswindow/windowdragger.cpp \
     DarkStyle.cpp \
     splashscreen.cpp \
     resources.cpp \
-    adminsetupdialog.cpp
+    adminsetupdialog.cpp \
+    createstaffdialog.cpp \
+    centralwindow.cpp
 
 HEADERS += \
-        mainwindow.hpp \
     DarkStyle.h \
     framelesswindow/framelesswindow.h \
     framelesswindow/windowdragger.h \
     splashscreen.hpp \
     resources.hpp \
-    adminsetupdialog.hpp
+    adminsetupdialog.hpp \
+    createstaffdialog.hpp \
+    centralwindow.hpp
 
 FORMS += \
-        mainwindow.ui \
     framelesswindow/framelesswindow.ui \
-    adminsetupdialog.ui
+    adminsetupdialog.ui \
+    createstaffdialog.ui \
+    centralwindow.ui
 
 RESOURCES += \
     darkstyle.qrc \

@@ -5,6 +5,7 @@
 #include <QNetworkRequest>
 #include <QJsonObject>
 #include <QNetworkReply>
+#include <QSettings>
 
 namespace utilities {
     class NetworkManager
@@ -15,6 +16,22 @@ namespace utilities {
         {
             static QNetworkAccessManager network_manager;
             return network_manager;
+        }
+    };
+
+    class ApplicationSettings
+    {
+        ApplicationSettings() = default;
+    public:
+        ApplicationSettings( ApplicationSettings const & ) = delete;
+        ApplicationSettings( ApplicationSettings && ) = delete;
+        ApplicationSettings& operator=( ApplicationSettings const & ) = delete;
+        ApplicationSettings& operator=( ApplicationSettings && ) = delete;
+
+        static QSettings& GetAppSettings()
+        {
+            static QSettings app_settings{ QSettings::UserScope, "Froist Inc.", "Tragel" };
+            return app_settings;
         }
     };
 
@@ -98,9 +115,9 @@ namespace utilities {
         }
     };
 
-    QNetworkRequest GetRequestInterface( QString const & address );
+    QNetworkRequest GetRequestInterface( QUrl const &address );
     QNetworkRequest PostRequestInterface( QString const & address );
-    QJsonObject     GetJsonNetworkData( QNetworkReply *data );
+    QJsonObject     GetJsonNetworkData(QNetworkReply *data, bool show_error_message = false );
 }
 
 #endif // RESOURCES_HPP
