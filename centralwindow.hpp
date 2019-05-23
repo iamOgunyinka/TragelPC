@@ -25,12 +25,15 @@ public:
 protected:
     void closeEvent( QCloseEvent *event ) override;
 private:
+    void CentralizeDisplayWidget( QWidget * const widget );
+    void LogUserIn( QString const & username, QString const & password );
     void PingServerNetwork();
     void LoadSettingsFile();
+    void OnLoginButtonClicked();
     void GetEndpointsFromServer( QString const & url, QString const & username,
                                  QString const & password, QString const & company_id );
     void WriteEndpointsToPersistenceStorage( utilities::Endpoint const & );
-    void SetCentralWindowBars( bool const enabled );
+    void SetEnableCentralWindowBars( bool const enabled );
 private:
     Ui::CentralWindow *ui;
     QMdiArea *workspace;

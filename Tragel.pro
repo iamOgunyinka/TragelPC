@@ -32,7 +32,8 @@ SOURCES += \
     resources.cpp \
     adminsetupdialog.cpp \
     createstaffdialog.cpp \
-    centralwindow.cpp
+    centralwindow.cpp \
+    userlogindialog.cpp
 
 HEADERS += \
     DarkStyle.h \
@@ -42,13 +43,15 @@ HEADERS += \
     resources.hpp \
     adminsetupdialog.hpp \
     createstaffdialog.hpp \
-    centralwindow.hpp
+    centralwindow.hpp \
+    userlogindialog.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
     adminsetupdialog.ui \
     createstaffdialog.ui \
-    centralwindow.ui
+    centralwindow.ui \
+    userlogindialog.ui
 
 RESOURCES += \
     darkstyle.qrc \
