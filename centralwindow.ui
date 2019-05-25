@@ -40,8 +40,8 @@
      <string>Orders</string>
     </property>
     <addaction name="actionShow_today_s_orders"/>
-    <addaction name="actionShow_all_orders"/>
     <addaction name="actionSearch_an_order"/>
+    <addaction name="actionShow_all_orders"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -241,7 +241,7 @@
   </action>
   <action name="actionSearch_an_order">
    <property name="text">
-    <string>Search an order</string>
+    <string>Filter orders</string>
    </property>
   </action>
   <action name="actionShow_all_logged_in_users">

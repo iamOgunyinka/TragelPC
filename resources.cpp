@@ -9,8 +9,7 @@ namespace utilities {
 QNetworkRequest GetRequestInterface( QUrl const &address )
 {
     QNetworkRequest request { address };
-    request.setHeader( QNetworkRequest::UserAgentHeader,
-                       "Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0" );
+    request.setHeader( QNetworkRequest::UserAgentHeader, USER_AGENT );
     return request;
 }
 
@@ -18,8 +17,7 @@ QNetworkRequest PostRequestInterface( QUrl const &address )
 {
     QNetworkRequest request{ address };
     request.setHeader( QNetworkRequest::ContentTypeHeader, "application/json" );
-    request.setHeader( QNetworkRequest::UserAgentHeader,
-                       "Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0" );
+    request.setHeader( QNetworkRequest::UserAgentHeader, USER_AGENT );
     return request;
 }
 

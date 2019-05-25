@@ -30,6 +30,8 @@ private:
     void PingServerNetwork();
     void LoadSettingsFile();
     void OnLoginButtonClicked();
+    void OnLogoutButtonClicked();
+    void OnOrderActionTriggered();
     void GetEndpointsFromServer( QString const & url, QString const & username,
                                  QString const & password, QString const & company_id );
     void WriteEndpointsToPersistenceStorage( utilities::Endpoint const & );

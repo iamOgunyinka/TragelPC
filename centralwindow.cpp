@@ -1,9 +1,11 @@
 #include "centralwindow.hpp"
 #include "ui_centralwindow.h"
-#include "resources.hpp"
-#include "createstaffdialog.hpp"
 #include "adminsetupdialog.hpp"
+#include "createstaffdialog.hpp"
+#include "orderwindow.hpp"
+#include "resources.hpp"
 #include "userlogindialog.hpp"
+#include "framelesswindow.h"
 
 #include <QByteArray>
 #include <QMdiSubWindow>
@@ -16,7 +18,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-
 CentralWindow::CentralWindow( QWidget *parent ) :
     QMainWindow( parent ), ui( new Ui::CentralWindow ), workspace{ new QMdiArea }
 {
@@ -27,6 +28,14 @@ CentralWindow::CentralWindow( QWidget *parent ) :
     QObject::connect( ui->actionExit, &QAction::triggered, this, &CentralWindow::close );
     QObject::connect( ui->actionLogin, &QAction::triggered, this,
                       &CentralWindow::OnLoginButtonClicked );
+    QObject::connect( ui->actionLogout, &QAction::triggered, this,
+                      &CentralWindow::OnLogoutButtonClicked );
+    QObject::connect( ui->actionSearch_an_order, &QAction::triggered, this,
+                      &CentralWindow::OnOrderActionTriggered );
+    QObject::connect( ui->actionShow_all_orders, &QAction::triggered, this,
+                      &CentralWindow::OnOrderActionTriggered );
+    QObject::connect( ui->actionShow_today_s_orders, &QAction::triggered, this,
+                      &CentralWindow::OnOrderActionTriggered );
 }
 
 CentralWindow::~CentralWindow()
@@ -44,6 +53,15 @@ void CentralWindow::closeEvent( QCloseEvent* event )
     } else {
         event->ignore();
     }
+}
+
+void CentralWindow::OnOrderActionTriggered()
+{
+    QAction *const object_sender = qobject_cast<QAction*>( sender() );
+    OrderWindow* order_window{ new OrderWindow };
+    QMdiSubWindow *sub_window = workspace->addSubWindow( order_window );
+    sub_window->setWindowTitle( "Orders" );
+    sub_window->showMaximized();
 }
 
 void CentralWindow::LogUserIn( QString const & username, QString const & password )
@@ -75,6 +93,7 @@ void CentralWindow::LogUserIn( QString const & username, QString const & passwor
         ui->actionLogin->setEnabled( !logged_in );
         ui->actionLogout->setEnabled( logged_in );
         if( logged_in ){
+            QMessageBox::information( this, "Login", "You're successfully logged in" );
             auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
             utilities::NetworkManager::SetNetworkCookie( session_cookie, reply );
         }
@@ -97,6 +116,28 @@ void CentralWindow::OnLoginButtonClicked()
     });
     QObject::connect( user_dialog, &UserLoginDialog::accepted, subwindow, &QMdiSubWindow::close );
     CentralizeDisplayWidget( subwindow );
+}
+
+void CentralWindow::OnLogoutButtonClicked()
+{
+    if( QMessageBox::question( this, "Logout", "Are you sure you want to logout?" ) ==
+            QMessageBox::No )
+    {
+        return;
+    }
+    ui->actionLogout->setDisabled( true );
+    ui->actionLogin->setEnabled( true );
+    auto const & endpoints = utilities::Endpoint::GetEndpoints();
+    QNetworkAccessManager& network_manager{ utilities::NetworkManager::GetNetwork() };
+    auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
+    network_manager.setCookieJar( &session_cookie );
+    // QNetworkAccessManager takes owner of its cookie jar, so let's snatch it from it
+    session_cookie.setParent( nullptr );
+    QNetworkRequest const request{ utilities::GetRequestInterface( endpoints.LogoutFrom() ) };
+    network_manager.get( request );
+    // let's clear the cookies
+    session_cookie.setCookiesFromUrl( QList<QNetworkCookie>{}, endpoints.LoginTo() );
+    QMessageBox::information( this, "Logout", "You've been logged out successfully" );
 }
 
 void CentralWindow::SetEnableCentralWindowBars( bool const enabled )

@@ -1,0 +1,23 @@
+#ifndef ORDERWINDOW_HPP
+#define ORDERWINDOW_HPP
+
+#include <QMainWindow>
+
+namespace Ui {
+class OrderWindow;
+}
+
+class OrderWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    explicit OrderWindow(QWidget *parent = 0);
+    ~OrderWindow();
+private:
+    void OnFindButtonClicked();
+private:
+    Ui::OrderWindow *ui;
+};
+
+#endif // ORDERWINDOW_HPP
