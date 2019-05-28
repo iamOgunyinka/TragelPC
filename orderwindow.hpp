@@ -2,6 +2,9 @@
 #define ORDERWINDOW_HPP
 
 #include <QMainWindow>
+#include <QDate>
+#include <QUrl>
+#include <QJsonObject>
 
 namespace Ui {
 class OrderWindow;
@@ -15,7 +18,10 @@ public:
     explicit OrderWindow(QWidget *parent = 0);
     ~OrderWindow();
 private:
-    void OnFindButtonClicked();
+    void    OnFindButtonClicked();
+    void    SendNetworkRequest( QUrl const & address );
+    void    DisplayOrderData( QJsonObject const & data );
+    QString DateToString( QDate const & date );
 private:
     Ui::OrderWindow *ui;
 };

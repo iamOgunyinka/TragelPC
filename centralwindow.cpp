@@ -1,12 +1,3 @@
-#include "centralwindow.hpp"
-#include "ui_centralwindow.h"
-#include "adminsetupdialog.hpp"
-#include "createstaffdialog.hpp"
-#include "orderwindow.hpp"
-#include "resources.hpp"
-#include "userlogindialog.hpp"
-#include "framelesswindow.h"
-
 #include <QByteArray>
 #include <QMdiSubWindow>
 #include <QSettings>
@@ -17,6 +8,17 @@
 #include <QProgressDialog>
 #include <QJsonDocument>
 #include <QJsonObject>
+
+#include "centralwindow.hpp"
+#include "ui_centralwindow.h"
+#include "adminsetupdialog.hpp"
+#include "createstaffdialog.hpp"
+#include "orderwindow.hpp"
+#include "resources.hpp"
+#include "userlogindialog.hpp"
+#include "framelesswindow.h"
+#include "addproductdialog.hpp"
+
 
 CentralWindow::CentralWindow( QWidget *parent ) :
     QMainWindow( parent ), ui( new Ui::CentralWindow ), workspace{ new QMdiArea }
@@ -36,6 +38,8 @@ CentralWindow::CentralWindow( QWidget *parent ) :
                       &CentralWindow::OnOrderActionTriggered );
     QObject::connect( ui->actionShow_today_s_orders, &QAction::triggered, this,
                       &CentralWindow::OnOrderActionTriggered );
+    QObject::connect( ui->actionAdd_products, &QAction::triggered, this,
+                      &CentralWindow::OnAddProductTriggered );
 }
 
 CentralWindow::~CentralWindow()
@@ -55,13 +59,33 @@ void CentralWindow::closeEvent( QCloseEvent* event )
     }
 }
 
+void CentralWindow::OnAddProductTriggered()
+{
+    ui->actionAdd_products->setDisabled( true );
+    AddProductDialog *product_dialog{ new AddProductDialog };
+    auto sub_window = workspace->addSubWindow( product_dialog );
+    sub_window->setAttribute( Qt::WA_DeleteOnClose );
+    sub_window->setWindowTitle( "Add new product(s)" );
+    QObject::connect( sub_window, &QMdiSubWindow::destroyed, [=]{
+        ui->actionAdd_products->setEnabled( true );
+    });
+    sub_window->showMaximized();
+}
+
 void CentralWindow::OnOrderActionTriggered()
 {
     QAction *const object_sender = qobject_cast<QAction*>( sender() );
+    object_sender->setDisabled( true );
+    ui->menuOrders->setEnabled( false );
     OrderWindow* order_window{ new OrderWindow };
     QMdiSubWindow *sub_window = workspace->addSubWindow( order_window );
+    sub_window->setAttribute( Qt::WA_DeleteOnClose );
     sub_window->setWindowTitle( "Orders" );
     sub_window->showMaximized();
+    QObject::connect( order_window, &OrderWindow::destroyed, [=]{
+        if( ui->menuOrders ) ui->menuOrders->setEnabled( true );
+        object_sender->setEnabled( true );
+    });
 }
 
 void CentralWindow::LogUserIn( QString const & username, QString const & password )
@@ -90,9 +114,10 @@ void CentralWindow::LogUserIn( QString const & username, QString const & passwor
         // get the response from the server and show the error message if any
         QJsonObject const response = utilities::GetJsonNetworkData( reply, true );
         bool const logged_in = !response.isEmpty();
-        ui->actionLogin->setEnabled( !logged_in );
-        ui->actionLogout->setEnabled( logged_in );
         if( logged_in ){
+            SetEnableActionButtons( true );
+            ui->actionLogin->setEnabled( !logged_in );
+            ui->actionLogout->setEnabled( logged_in );
             QMessageBox::information( this, "Login", "You're successfully logged in" );
             auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
             utilities::NetworkManager::SetNetworkCookie( session_cookie, reply );
@@ -107,7 +132,6 @@ void CentralWindow::OnLoginButtonClicked()
     user_dialog->SetCompanyID( utilities::Endpoint::GetEndpoints().CompanyID() );
     QMdiSubWindow* subwindow = workspace->addSubWindow( user_dialog );
     subwindow->setAttribute( Qt::WA_DeleteOnClose );
-    subwindow->setWindowTitle( "Login" );
     QObject::connect( user_dialog, &UserLoginDialog::accepted, [=]{
         auto const company_id = utilities::Endpoint::GetEndpoints().CompanyID();
         QString const username = user_dialog->GetUsername().trimmed() + "@" + company_id;
@@ -115,7 +139,8 @@ void CentralWindow::OnLoginButtonClicked()
         LogUserIn( username, password );
     });
     QObject::connect( user_dialog, &UserLoginDialog::accepted, subwindow, &QMdiSubWindow::close );
-    CentralizeDisplayWidget( subwindow );
+    subwindow->setWindowTitle( "Login" );
+    CentralizeDisplayWidget( subwindow, QSize{ 400, 260 });
 }
 
 void CentralWindow::OnLogoutButtonClicked()
@@ -125,7 +150,7 @@ void CentralWindow::OnLogoutButtonClicked()
     {
         return;
     }
-    ui->actionLogout->setDisabled( true );
+    SetEnableActionButtons( false );
     ui->actionLogin->setEnabled( true );
     auto const & endpoints = utilities::Endpoint::GetEndpoints();
     QNetworkAccessManager& network_manager{ utilities::NetworkManager::GetNetwork() };
@@ -137,6 +162,10 @@ void CentralWindow::OnLogoutButtonClicked()
     network_manager.get( request );
     // let's clear the cookies
     session_cookie.setCookiesFromUrl( QList<QNetworkCookie>{}, endpoints.LoginTo() );
+
+    foreach( QMdiSubWindow* const sub_window, workspace->subWindowList() ){
+        sub_window->close();
+    }
     QMessageBox::information( this, "Logout", "You've been logged out successfully" );
 }
 
@@ -144,6 +173,30 @@ void CentralWindow::SetEnableCentralWindowBars( bool const enabled )
 {
     ui->mainToolBar->setEnabled( enabled );
     ui->menuBar->setEnabled( enabled );
+}
+
+void CentralWindow::SetEnableActionButtons( bool const enable )
+{
+    ui->actionAdd_administrator->setEnabled( enable );
+    ui->actionAdd_products->setEnabled( enable );
+    ui->actionAdd_user->setEnabled( enable );
+    ui->actionDefine_roles->setEnabled( enable );
+    ui->actionItems->setEnabled( enable );
+    ui->actionList_all_products->setEnabled( enable );
+    ui->actionList_our_subscriptions->setEnabled( enable );
+    ui->actionLogin->setEnabled( enable );
+    ui->actionLogout->setEnabled( enable );
+    ui->actionRemove->setEnabled( enable );
+    ui->actionRemove_product->setEnabled( enable );
+    ui->actionSearch_an_order->setEnabled( enable );
+    ui->actionSettings->setEnabled( enable );
+    ui->actionShow_all_logged_in_users->setEnabled( enable );
+    ui->actionShow_all_orders->setEnabled( enable );
+    ui->actionShow_expiry_date->setEnabled( enable );
+    ui->actionShow_today_s_orders->setEnabled( enable );
+    ui->actionSubscribe->setEnabled( enable );
+    ui->actionUpdate_Change->setEnabled( enable );
+    ui->actionUpdate_product->setEnabled( enable );
 }
 
 void CentralWindow::StartApplication()
@@ -180,6 +233,8 @@ void CentralWindow::LoadSettingsFile()
         utilities::Endpoint::ParseEndpointsFromJson( endpoints, settings );
         PingServerNetwork();
         SetEnableCentralWindowBars( true );
+        SetEnableActionButtons( false );
+        ui->actionLogin->setEnabled( true );
         return;
     }
     QString const message { "There are some setup that needs to be made before the "
@@ -198,7 +253,8 @@ void CentralWindow::LoadSettingsFile()
     });
     QObject::connect( admin_setup, &AdminSetupDialog::finished,
                       sub_window, &QMdiSubWindow::close );
-    CentralizeDisplayWidget( sub_window );
+    sub_window->setWindowTitle( "SU Setup" );
+    CentralizeDisplayWidget( sub_window, QSize{ 400, 260 });
 }
 
 void CentralWindow::GetEndpointsFromServer( QString const &url, QString const &username,
@@ -235,6 +291,7 @@ void CentralWindow::GetEndpointsFromServer( QString const &url, QString const &u
         WriteEndpointsToPersistenceStorage( endpoints );
         PingServerNetwork();
         SetEnableCentralWindowBars( true );
+        ui->actionSettings->setEnabled( true );
         ui->actionLogout->setDisabled( true );
     });
 }
@@ -246,12 +303,10 @@ void CentralWindow::WriteEndpointsToPersistenceStorage( utilities::Endpoint cons
     app_settings.setValue( "url_map", url_map );
 }
 
-void CentralWindow::CentralizeDisplayWidget( QWidget * const widget )
+void CentralWindow::CentralizeDisplayWidget( QWidget * const widget, QSize const &size )
 {
-    QSize const min_max_size{ 400, 260 };
-    widget->setMaximumSize( min_max_size );
-    widget->setMinimumSize( min_max_size );
-    widget->setWindowTitle( "SU Setup" );
+    widget->setMaximumSize( size );
+    widget->setMinimumSize( size );
     widget->setWindowIcon( QApplication::style()->standardIcon( QStyle::SP_DesktopIcon ) );
     widget->show();
     widget->setGeometry( QStyle::alignedRect( Qt::LeftToRight, Qt::AlignCenter,

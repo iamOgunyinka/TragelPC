@@ -25,17 +25,19 @@ public:
 protected:
     void closeEvent( QCloseEvent *event ) override;
 private:
-    void CentralizeDisplayWidget( QWidget * const widget );
+    void CentralizeDisplayWidget( QWidget * const widget, QSize const & size);
     void LogUserIn( QString const & username, QString const & password );
     void PingServerNetwork();
     void LoadSettingsFile();
     void OnLoginButtonClicked();
     void OnLogoutButtonClicked();
     void OnOrderActionTriggered();
+    void OnAddProductTriggered();
     void GetEndpointsFromServer( QString const & url, QString const & username,
                                  QString const & password, QString const & company_id );
     void WriteEndpointsToPersistenceStorage( utilities::Endpoint const & );
     void SetEnableCentralWindowBars( bool const enabled );
+    void SetEnableActionButtons( bool const enable = true );
 private:
     Ui::CentralWindow *ui;
     QMdiArea *workspace;

@@ -140,6 +140,10 @@ namespace utilities {
             return endpoint_object.value( "ping" ).toString();
         }
 
+        QString UploadPhoto() const {
+            return endpoint_object.value( "upload_images" ).toString();
+        }
+
     public:
         Endpoint( Endpoint && ) = delete;
         Endpoint( Endpoint const & ) = delete;

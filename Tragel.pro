@@ -34,7 +34,9 @@ SOURCES += \
     createstaffdialog.cpp \
     centralwindow.cpp \
     userlogindialog.cpp \
-    orderwindow.cpp
+    orderwindow.cpp \
+    addproductdialog.cpp \
+    editproductdialog.cpp
 
 HEADERS += \
     DarkStyle.h \
@@ -46,7 +48,9 @@ HEADERS += \
     createstaffdialog.hpp \
     centralwindow.hpp \
     userlogindialog.hpp \
-    orderwindow.hpp
+    orderwindow.hpp \
+    addproductdialog.hpp \
+    editproductdialog.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
@@ -54,7 +58,9 @@ FORMS += \
     createstaffdialog.ui \
     centralwindow.ui \
     userlogindialog.ui \
-    orderwindow.ui
+    orderwindow.ui \
+    addproductdialog.ui \
+    editproductdialog.ui
 
 RESOURCES += \
     darkstyle.qrc \
