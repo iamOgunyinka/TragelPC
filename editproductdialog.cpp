@@ -4,9 +4,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-EditProductDialog::EditProductDialog(QWidget *parent) :
-    QDialog(parent),
-    ui( new Ui::EditProductDialog )
+EditProductDialog::EditProductDialog( QWidget *parent ) :
+    QDialog(parent), ui( new Ui::EditProductDialog )
 {
     ui->setupUi( this );
     QObject::connect( ui->change_button, &QPushButton::clicked, this,
@@ -61,16 +60,12 @@ void EditProductDialog::OnChangeButtonClicked()
     this->accept();
 }
 
-QJsonObject EditProductDialog::GetValue() const
+utilities::ProductData EditProductDialog::GetValue() const
 {
     double const price = ui->price_line->text().trimmed().toDouble();
     QString const product_name{ ui->name_edit->text().trimmed() };
 
-    QJsonObject value { { "name", product_name }, { "price", price } };
-    if( ui->upload_checkbox->isChecked() ){
-        value.insert( "thumbnail", temp_file );
-    }
-    return value;
+    return utilities::ProductData{ product_name, temp_file, "", price };
 }
 
 void EditProductDialog::SetName( QString const & name )
@@ -87,4 +82,5 @@ void EditProductDialog::SetThumbnail( QString const & filename )
 {
     ui->upload_checkbox->setChecked( true );
     ui->image_preview->setPixmap( QPixmap( filename ).scaled( QSize( 100, 100 ) ));
+    temp_file = filename;
 }

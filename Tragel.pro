@@ -36,7 +36,12 @@ SOURCES += \
     userlogindialog.cpp \
     orderwindow.cpp \
     addproductdialog.cpp \
-    editproductdialog.cpp
+    editproductdialog.cpp \
+    allproductsdialog.cpp \
+    productmodel.cpp \
+    productthumbnaildelegate.cpp \
+    productuploaddialog.cpp \
+    uploadwidget.cpp
 
 HEADERS += \
     DarkStyle.h \
@@ -50,7 +55,12 @@ HEADERS += \
     userlogindialog.hpp \
     orderwindow.hpp \
     addproductdialog.hpp \
-    editproductdialog.hpp
+    editproductdialog.hpp \
+    allproductsdialog.hpp \
+    productmodel.hpp \
+    productthumbnaildelegate.hpp \
+    productuploaddialog.hpp \
+    uploadwidget.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
@@ -60,7 +70,10 @@ FORMS += \
     userlogindialog.ui \
     orderwindow.ui \
     addproductdialog.ui \
-    editproductdialog.ui
+    editproductdialog.ui \
+    allproductsdialog.ui \
+    productuploaddialog.ui \
+    uploadwidget.ui
 
 RESOURCES += \
     darkstyle.qrc \

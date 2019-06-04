@@ -2,15 +2,13 @@
 #define SPLASHSCREEN_HPP
 
 #include <QApplication>
-#include <QObject>
 #include <QSplashScreen>
-#include <QString>
 
 class SplashScreen : public QObject
 {
     Q_OBJECT
 public:
-    explicit SplashScreen(QApplication& app, QObject *parent = nullptr );
+    explicit SplashScreen( QApplication& app, QObject *parent = nullptr );
     void DisplaySplash();
 
 signals:

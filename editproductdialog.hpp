@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QJsonObject>
+#include "resources.hpp"
 
 namespace Ui {
 class EditProductDialog;
@@ -15,7 +16,7 @@ class EditProductDialog : public QDialog
 public:
     explicit EditProductDialog(QWidget *parent = 0);
     ~EditProductDialog();
-    QJsonObject GetValue() const;
+    utilities::ProductData GetValue() const;
     void SetThumbnail( QString const & );
     void SetName( QString const & );
     void SetPrice( double const );

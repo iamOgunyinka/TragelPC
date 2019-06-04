@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QStandardItemModel>
 #include <QJsonArray>
+#include "resources.hpp"
 
 namespace Ui {
 class AddProductDialog;
@@ -18,16 +19,17 @@ public:
     ~AddProductDialog();
 private:
     void OnContextMenuItemRequested( QPoint const & point );
-    void OnUploadButtonClicked();
+    void OnShowImageButtonClicked();
+    void OnUploadDataToServerButtonClicked();
     void OnAddItemButtonClicked();
     void OnRemoveItemButtonClicked();
     void OnEditItemButtonClicked();
-    void UpdateModel( QJsonObject const &value, qint64 const size );
+    void UpdateModel( utilities::ProductData const &value, qint64 const size );
 private:
     Ui::AddProductDialog *ui;
     QStandardItemModel *data_model;
     QString temp_file {};
-    QJsonArray product_item_list {};
+    QList<utilities::ProductData> product_item_list {};
 };
 
 #endif // ADDPRODUCTDIALOG_HPP

@@ -28,7 +28,7 @@
      <string>Session</string>
     </property>
     <addaction name="separator"/>
-    <addaction name="actionShow_all_logged_in_users"/>
+    <addaction name="actionShow_all_users"/>
     <addaction name="separator"/>
     <addaction name="actionLogin"/>
     <addaction name="actionLogout"/>
@@ -39,8 +39,7 @@
     <property name="title">
      <string>Orders</string>
     </property>
-    <addaction name="actionShow_today_s_orders"/>
-    <addaction name="actionSearch_an_order"/>
+    <addaction name="actionOrders"/>
     <addaction name="actionShow_all_orders"/>
    </widget>
    <widget class="QMenu" name="menuTools">
@@ -56,8 +55,6 @@
        <string>Products</string>
       </property>
       <addaction name="actionAdd_products"/>
-      <addaction name="actionUpdate_product"/>
-      <addaction name="actionRemove_product"/>
       <addaction name="actionList_all_products"/>
      </widget>
      <widget class="QMenu" name="menuUsers">
@@ -67,9 +64,8 @@
       <addaction name="actionAdd_user"/>
       <addaction name="actionAdd_administrator"/>
       <addaction name="actionUpdate_Change"/>
-      <addaction name="actionRemove"/>
+      <addaction name="actionRemoveUser"/>
       <addaction name="separator"/>
-      <addaction name="actionDefine_roles"/>
      </widget>
      <addaction name="menuProducts"/>
      <addaction name="menuUsers"/>
@@ -115,7 +111,7 @@
    <addaction name="separator"/>
    <addaction name="actionAdd_user"/>
    <addaction name="actionAdd_administrator"/>
-   <addaction name="actionRemove"/>
+   <addaction name="actionRemoveUser"/>
    <addaction name="separator"/>
    <addaction name="actionSettings"/>
   </widget>
@@ -143,11 +139,6 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionItems">
-   <property name="text">
-    <string>Items</string>
-   </property>
-  </action>
   <action name="actionAdd_products">
    <property name="icon">
     <iconset resource="images.qrc">
@@ -163,17 +154,12 @@
      <normaloff>:/all_images/images/update-icon.png</normaloff>:/all_images/images/update-icon.png</iconset>
    </property>
    <property name="text">
-    <string>Update product</string>
+    <string>Update our products</string>
    </property>
   </action>
   <action name="actionList_all_products">
    <property name="text">
     <string>List all products</string>
-   </property>
-  </action>
-  <action name="actionRemove_product">
-   <property name="text">
-    <string>Remove product</string>
    </property>
   </action>
   <action name="actionAdd_user">
@@ -203,7 +189,7 @@
     <string>Update/Change</string>
    </property>
   </action>
-  <action name="actionRemove">
+  <action name="actionRemoveUser">
    <property name="icon">
     <iconset resource="images.qrc">
      <normaloff>:/all_images/images/user_delete.png</normaloff>:/all_images/images/user_delete.png</iconset>
@@ -212,45 +198,13 @@
     <string>Remove</string>
    </property>
   </action>
-  <action name="actionDefine_roles">
-   <property name="icon">
-    <iconset resource="images.qrc">
-     <normaloff>:/all_images/images/Admin.png</normaloff>:/all_images/images/Admin.png</iconset>
-   </property>
-   <property name="text">
-    <string>Define roles</string>
-   </property>
-  </action>
-  <action name="actionShow_today_s_orders">
-   <property name="icon">
-    <iconset resource="images.qrc">
-     <normaloff>:/all_images/images/business_marketing-13-512.png</normaloff>:/all_images/images/business_marketing-13-512.png</iconset>
-   </property>
-   <property name="text">
-    <string>Show today's orders</string>
-   </property>
-  </action>
-  <action name="actionShow_all_orders">
-   <property name="icon">
-    <iconset resource="images.qrc">
-     <normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</iconset>
-   </property>
-   <property name="text">
-    <string>Show all orders</string>
-   </property>
-  </action>
-  <action name="actionSearch_an_order">
-   <property name="text">
-    <string>Filter orders</string>
-   </property>
-  </action>
-  <action name="actionShow_all_logged_in_users">
+  <action name="actionShow_all_users">
    <property name="icon">
     <iconset resource="images.qrc">
      <normaloff>:/all_images/images/waitresses.jpg</normaloff>:/all_images/images/waitresses.jpg</iconset>
    </property>
    <property name="text">
-    <string>Show all logged in users</string>
+    <string>Show all users</string>
    </property>
   </action>
   <action name="actionList_our_subscriptions">
@@ -293,6 +247,24 @@
    </property>
    <property name="text">
     <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionOrders">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</iconset>
+   </property>
+   <property name="text">
+    <string>Make order</string>
+   </property>
+  </action>
+  <action name="actionShow_all_orders">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/410392.png</normaloff>:/all_images/images/410392.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show all orders</string>
    </property>
   </action>
  </widget>

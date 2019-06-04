@@ -33,8 +33,12 @@ private:
     void OnLogoutButtonClicked();
     void OnOrderActionTriggered();
     void OnAddProductTriggered();
+    void OnAddUserTriggered();
+    void OnListAllProductsTriggered();
     void GetEndpointsFromServer( QString const & url, QString const & username,
                                  QString const & password, QString const & company_id );
+    void SendStaffRegistrationUserData(QJsonObject const & data,
+                                        QMdiSubWindow * const data_widget );
     void WriteEndpointsToPersistenceStorage( utilities::Endpoint const & );
     void SetEnableCentralWindowBars( bool const enabled );
     void SetEnableActionButtons( bool const enable = true );

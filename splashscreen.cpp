@@ -26,7 +26,7 @@ void SplashScreen::DisplaySplash()
     splash_screen->showMessage( "Loading application settings",
                                 Qt::AlignBottom | Qt::AlignHCenter, Qt::blue );
     main_app.processEvents();
-    this->thread()->sleep( 5 );
+    this->thread()->sleep( 2 );
     emit done();
 }
 

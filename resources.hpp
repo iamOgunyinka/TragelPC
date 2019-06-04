@@ -166,9 +166,36 @@ namespace utilities {
         }
     };
 
+    struct ProductPageUrlData
+    {
+        QString next_url {};
+        QString previous_url {};
+        uint    page_number {};
+    };
+
+    struct ProductPageQuery
+    {
+        uint    number_of_pages {};
+        uint    result_per_page {};
+        uint    total_result {};
+        QString first_url{};
+        QString last_url{};
+        QList<ProductPageUrlData> urls {};
+    };
+
+    struct ProductData
+    {
+        QString name;
+        QString thumbnail_location;
+        QString constant_url;
+        double  price;
+    };
+
     QNetworkRequest GetRequestInterface( QUrl const &address );
     QNetworkRequest PostRequestInterface( QUrl const &address );
     QJsonObject     GetJsonNetworkData(QNetworkReply *data, bool show_error_message = false );
+    QPair<QNetworkRequest, QByteArray> PostImageRequestInterface( QUrl const &address,
+                                                                  QList<QString> const &data );
 }
 
 #endif // RESOURCES_HPP

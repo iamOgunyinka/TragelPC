@@ -9,15 +9,16 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-#include "centralwindow.hpp"
-#include "ui_centralwindow.h"
+#include "addproductdialog.hpp"
 #include "adminsetupdialog.hpp"
+#include "allproductsdialog.hpp"
+#include "centralwindow.hpp"
 #include "createstaffdialog.hpp"
+#include "framelesswindow.h"
 #include "orderwindow.hpp"
 #include "resources.hpp"
 #include "userlogindialog.hpp"
-#include "framelesswindow.h"
-#include "addproductdialog.hpp"
+#include "ui_centralwindow.h"
 
 
 CentralWindow::CentralWindow( QWidget *parent ) :
@@ -32,14 +33,16 @@ CentralWindow::CentralWindow( QWidget *parent ) :
                       &CentralWindow::OnLoginButtonClicked );
     QObject::connect( ui->actionLogout, &QAction::triggered, this,
                       &CentralWindow::OnLogoutButtonClicked );
-    QObject::connect( ui->actionSearch_an_order, &QAction::triggered, this,
-                      &CentralWindow::OnOrderActionTriggered );
     QObject::connect( ui->actionShow_all_orders, &QAction::triggered, this,
-                      &CentralWindow::OnOrderActionTriggered );
-    QObject::connect( ui->actionShow_today_s_orders, &QAction::triggered, this,
                       &CentralWindow::OnOrderActionTriggered );
     QObject::connect( ui->actionAdd_products, &QAction::triggered, this,
                       &CentralWindow::OnAddProductTriggered );
+    QObject::connect( ui->actionAdd_administrator, &QAction::triggered, this,
+                      &CentralWindow::OnAddUserTriggered );
+    QObject::connect( ui->actionAdd_user, &QAction::triggered, this,
+                      &CentralWindow::OnAddUserTriggered );
+    QObject::connect( ui->actionList_all_products, &QAction::triggered, this,
+                      &CentralWindow::OnListAllProductsTriggered );
 }
 
 CentralWindow::~CentralWindow()
@@ -72,6 +75,69 @@ void CentralWindow::OnAddProductTriggered()
     sub_window->showMaximized();
 }
 
+void CentralWindow::SendStaffRegistrationUserData( QJsonObject const & data,
+                                                   QMdiSubWindow* const data_widget )
+{
+    QProgressDialog *progress_dialog{ new QProgressDialog( "Sending information to server",
+                                                           "Cancel", 1, 100, this )};
+    QUrl const address{ QUrl::fromUserInput( utilities::Endpoint::GetEndpoints().CreateUser() )};
+    QNetworkRequest const post_request{ utilities::PostRequestInterface( address ) };
+    auto& network_manager = utilities::NetworkManager::GetNetwork();
+    auto& network_cookie = utilities::NetworkManager::GetSessionCookie();
+    network_manager.setCookieJar( &network_cookie );
+    network_cookie.setParent( nullptr );
+
+    QByteArray const request_data{ QJsonDocument( data ).toJson() };
+    progress_dialog->show();
+    QNetworkReply *reply{ network_manager.post( post_request, request_data ) };
+    QObject::connect( reply, &QNetworkReply::downloadProgress, [=](qint64 received, qint64 total)
+    {
+        progress_dialog->setMaximum( total + ( total * 0.25 ) );
+        progress_dialog->setValue( received );
+    });
+    QObject::connect( progress_dialog, &QProgressDialog::canceled, reply, &QNetworkReply::abort );
+    QObject::connect( reply, &QNetworkReply::finished, progress_dialog, &QProgressDialog::close );
+    QObject::connect( reply, &QNetworkReply::finished, [=]{
+        QJsonObject const response { utilities::GetJsonNetworkData( reply, true ) };
+        if( response.isEmpty() && data_widget ) {
+            data_widget->setHidden( false );
+            return;
+        }
+        data_widget->close();
+        QMessageBox::information( this, "Registration", "User added successfully" );
+    });
+    QObject::connect( reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater );
+}
+
+void CentralWindow::OnAddUserTriggered()
+{
+    CreateStaffDialog *staff_dialog{ new CreateStaffDialog( this ) };
+    QMdiSubWindow *sub_window{ workspace->addSubWindow( staff_dialog ) };
+    sub_window->setAttribute( Qt::WA_DeleteOnClose );
+    QAction *const object_sender = qobject_cast<QAction*>( sender() );
+    object_sender->setDisabled( true );
+    if( object_sender == ui->actionAdd_administrator ){
+        sub_window->setWindowTitle( "Create administrator" );
+        staff_dialog->SetUserRole( UserRole::Administrator );
+    } else {
+        sub_window->setWindowTitle( "Create staff" );
+        staff_dialog->SetUserRole( UserRole::BasicUser );
+    }
+    QObject::connect( sub_window, &QMdiSubWindow::destroyed, [=]{
+        object_sender->setEnabled( true );
+    });
+    QObject::connect( staff_dialog, &CreateStaffDialog::validated, [=]
+    {
+        sub_window->hide();
+        QJsonObject const staff_data{ staff_dialog->GetStaffData() };
+        SendStaffRegistrationUserData( staff_data, sub_window );
+    });
+    QSize min_max_size{ 516, 354 };
+    sub_window->setMinimumSize( min_max_size );
+    sub_window->setMaximumSize( min_max_size );
+    sub_window->show();
+}
+
 void CentralWindow::OnOrderActionTriggered()
 {
     QAction *const object_sender = qobject_cast<QAction*>( sender() );
@@ -85,6 +151,20 @@ void CentralWindow::OnOrderActionTriggered()
     QObject::connect( order_window, &OrderWindow::destroyed, [=]{
         if( ui->menuOrders ) ui->menuOrders->setEnabled( true );
         object_sender->setEnabled( true );
+    });
+}
+
+void CentralWindow::OnListAllProductsTriggered()
+{
+    ui->actionList_all_products->setDisabled( true );
+    AllProductsDialog *dialog{ new AllProductsDialog };
+    QMdiSubWindow *parent_window{ workspace->addSubWindow( dialog ) };
+    parent_window->setAttribute( Qt::WA_DeleteOnClose );
+    parent_window->setWindowTitle( "Our items" );
+    parent_window->show();
+    dialog->DownloadProducts();
+    QObject::connect( parent_window, &QMdiSubWindow::destroyed, [=]{
+        if( ui->actionList_all_products ) ui->actionList_all_products->setEnabled( true );
     });
 }
 
@@ -166,6 +246,8 @@ void CentralWindow::OnLogoutButtonClicked()
     foreach( QMdiSubWindow* const sub_window, workspace->subWindowList() ){
         sub_window->close();
     }
+    SetEnableActionButtons( false );
+    ui->actionLogin->setEnabled( true );
     QMessageBox::information( this, "Logout", "You've been logged out successfully" );
 }
 
@@ -180,20 +262,14 @@ void CentralWindow::SetEnableActionButtons( bool const enable )
     ui->actionAdd_administrator->setEnabled( enable );
     ui->actionAdd_products->setEnabled( enable );
     ui->actionAdd_user->setEnabled( enable );
-    ui->actionDefine_roles->setEnabled( enable );
-    ui->actionItems->setEnabled( enable );
     ui->actionList_all_products->setEnabled( enable );
     ui->actionList_our_subscriptions->setEnabled( enable );
     ui->actionLogin->setEnabled( enable );
     ui->actionLogout->setEnabled( enable );
-    ui->actionRemove->setEnabled( enable );
-    ui->actionRemove_product->setEnabled( enable );
-    ui->actionSearch_an_order->setEnabled( enable );
     ui->actionSettings->setEnabled( enable );
-    ui->actionShow_all_logged_in_users->setEnabled( enable );
+    ui->actionShow_all_users->setEnabled( enable );
     ui->actionShow_all_orders->setEnabled( enable );
     ui->actionShow_expiry_date->setEnabled( enable );
-    ui->actionShow_today_s_orders->setEnabled( enable );
     ui->actionSubscribe->setEnabled( enable );
     ui->actionUpdate_Change->setEnabled( enable );
     ui->actionUpdate_product->setEnabled( enable );

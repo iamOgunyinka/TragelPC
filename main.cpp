@@ -1,5 +1,5 @@
-#include "centralwindow.hpp"
 #include <QApplication>
+#include "centralwindow.hpp"
 #include "DarkStyle.h"
 #include "framelesswindow.h"
 #include "splashscreen.hpp"
