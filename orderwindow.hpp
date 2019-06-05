@@ -6,6 +6,7 @@
 #include <QUrl>
 #include <QJsonObject>
 
+
 namespace Ui {
 class OrderWindow;
 }
@@ -23,6 +24,7 @@ private:
     void    DisplayOrderData( QJsonObject const & data );
     QString DateToString( QDate const & date );
 private:
+    QStandard
     Ui::OrderWindow *ui;
 };
 

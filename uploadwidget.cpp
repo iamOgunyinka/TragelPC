@@ -18,7 +18,7 @@ UploadWidget::~UploadWidget()
 
 void UploadWidget::SetMessage( QString const & message )
 {
-    ui->data_item_status_edit->appendPlainText( message + "\n" );
+    ui->data_item_status_edit->appendPlainText( message );
 }
 
 void UploadWidget::SetProgress( qint64 current_value, qint64 total )

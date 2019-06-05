@@ -41,7 +41,8 @@ SOURCES += \
     productmodel.cpp \
     productthumbnaildelegate.cpp \
     productuploaddialog.cpp \
-    uploadwidget.cpp
+    uploadwidget.cpp \
+    ordermodel.cpp
 
 HEADERS += \
     DarkStyle.h \
@@ -60,7 +61,8 @@ HEADERS += \
     productmodel.hpp \
     productthumbnaildelegate.hpp \
     productuploaddialog.hpp \
-    uploadwidget.hpp
+    uploadwidget.hpp \
+    ordermodel.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \

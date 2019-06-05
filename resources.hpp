@@ -9,7 +9,7 @@
 #include <QNetworkCookieJar>
 #include <QNetworkCookie>
 #include <QList>
-
+#include <QVector>
 
 namespace utilities {
     static QString const USER_AGENT{ "Mozilla/5.0 (X11; Linux i586; rv:31.0) "
@@ -180,7 +180,7 @@ namespace utilities {
         uint    total_result {};
         QString first_url{};
         QString last_url{};
-        QList<ProductPageUrlData> urls {};
+        QVector<ProductPageUrlData> urls {};
     };
 
     struct ProductData
@@ -189,13 +189,19 @@ namespace utilities {
         QString thumbnail_location;
         QString constant_url;
         double  price;
+
+        QJsonObject ToJson() const;
+    };
+
+    struct OrderData
+    {
     };
 
     QNetworkRequest GetRequestInterface( QUrl const &address );
     QNetworkRequest PostRequestInterface( QUrl const &address );
     QJsonObject     GetJsonNetworkData(QNetworkReply *data, bool show_error_message = false );
     QPair<QNetworkRequest, QByteArray> PostImageRequestInterface( QUrl const &address,
-                                                                  QList<QString> const &data );
+                                                                  QVector<QString> const &data );
 }
 
 #endif // RESOURCES_HPP

@@ -14,7 +14,7 @@ EditProductDialog::EditProductDialog( QWidget *parent ) :
     ui->upload_checkbox->setChecked( false );
     QObject::connect( ui->upload_checkbox, &QCheckBox::toggled, [=]( bool const checked ){
         ui->choose_image_button->setEnabled( checked );
-        if( checked ) ui->image_preview->clear();
+        ui->image_preview->setEnabled( checked );
     });
     QObject::connect( ui->choose_image_button, &QToolButton::clicked, [=]{
         QString const filename{ QFileDialog::getOpenFileName( this, "Choose custom preview file",

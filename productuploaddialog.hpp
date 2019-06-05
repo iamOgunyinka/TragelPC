@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QWidget>
-#include <QList>
+#include <QVector>
 
 #include "resources.hpp"
 
@@ -14,18 +14,30 @@ class ProductUploadDialog;
 class ProductUploadDialog : public QDialog
 {
     Q_OBJECT
-
+signals:
+    void image_upload_completed( bool with_error );
+    void uploads_completed( bool with_error );
 public:
-    explicit ProductUploadDialog( QList<utilities::ProductData> &products,
+    explicit ProductUploadDialog( QVector<utilities::ProductData> &products,
                                   QWidget *parent = nullptr );
     ~ProductUploadDialog();
     void StartUpload();
 private:
+    enum class UploadStatus: unsigned char
+    {
+        PendingUpload = 0x8,
+        Uploaded = 0x10,
+        ErrorEncountered = 0x20
+    };
+
     void UploadProductImagesByIndex( int const index );
     void SendUploadCompleteSignalWhenDone();
+    void OnUploadCompleted( bool const has_error );
+    void UploadProducts( QJsonArray const & product_list );
 private:
     Ui::ProductUploadDialog *ui;
-    QList<utilities::ProductData> &products_;
+    QVector<utilities::ProductData> &products_;
+    QVector<UploadStatus> product_upload_status_;
 };
 
 #endif // PRODUCTUPLOADDIALOG_HPP

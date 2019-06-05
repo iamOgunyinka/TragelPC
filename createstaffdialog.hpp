@@ -20,12 +20,14 @@ public:
     explicit CreateStaffDialog(QWidget *parent = 0);
     ~CreateStaffDialog();
     void SetUserRole( UserRole role );
-    QJsonObject GetStaffData() const;
 signals:
     // emitted instead of accepted,since we dont want the window to close(hence deleted)just yet
     void validated();
 private:
+    QJsonObject GetStaffData() const;
     void OnAddStaffButtonClicked();
+    void SendStaffRegistrationUserData();
+    void ClearDataColumn();
 private:
     Ui::CreateStaffDialog *ui;
     UserRole user_role;

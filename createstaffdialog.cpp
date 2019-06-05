@@ -3,6 +3,10 @@
 
 #include <QMessageBox>
 #include <QByteArray>
+#include <QProgressDialog>
+#include <QJsonDocument>
+
+#include "resources.hpp"
 
 CreateStaffDialog::CreateStaffDialog(QWidget *parent) :
     QDialog(parent),
@@ -13,6 +17,8 @@ CreateStaffDialog::CreateStaffDialog(QWidget *parent) :
     ui->role_combo->setDisabled( true );
     QObject::connect( ui->add_button, &QPushButton::clicked, this,
                       &CreateStaffDialog::OnAddStaffButtonClicked );
+    QObject::connect( this, &CreateStaffDialog::validated, this,
+                      &CreateStaffDialog::SendStaffRegistrationUserData );
 }
 
 CreateStaffDialog::~CreateStaffDialog()
@@ -64,4 +70,47 @@ QJsonObject CreateStaffDialog::GetStaffData() const
                              { "username_password", QString( user_pass ) },
                              { "type", static_cast<int>( user_role ) } };
     return value;
+}
+
+void CreateStaffDialog::SendStaffRegistrationUserData()
+{
+    ui->add_button->setEnabled( false );
+    QProgressDialog *progress_dialog{ new QProgressDialog( "Sending information to server",
+                                                           "Cancel", 1, 100, this )};
+    QUrl const address{ utilities::Endpoint::GetEndpoints().CreateUser() };
+    QNetworkRequest const request{ utilities::PostRequestInterface( address ) };
+    auto& network_manager = utilities::NetworkManager::GetNetwork();
+    auto& network_cookie = utilities::NetworkManager::GetSessionCookie();
+    network_manager.setCookieJar( &network_cookie );
+    network_cookie.setParent( nullptr );
+
+    QByteArray const payload{ QJsonDocument( GetStaffData() ).toJson() };
+    progress_dialog->show();
+    QNetworkReply *reply{ network_manager.post( request, payload ) };
+    connect( reply, &QNetworkReply::downloadProgress, [=]( qint64 received, qint64 total )
+    {
+        progress_dialog->setMaximum( total + ( total * 0.25 ) );
+        progress_dialog->setValue( received );
+    });
+    connect( progress_dialog, &QProgressDialog::canceled, reply, &QNetworkReply::abort );
+    connect( reply, &QNetworkReply::finished, progress_dialog, &QProgressDialog::close );
+    connect( reply, &QNetworkReply::finished, [=]{
+        ui->add_button->setEnabled( true );
+        QJsonObject const response { utilities::GetJsonNetworkData( reply, true ) };
+        if( response.isEmpty() ) return;
+        QMessageBox::information( this, "Registration", "User added successfully" );
+        ClearDataColumn();
+    });
+    QObject::connect( reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater );
+}
+
+void CreateStaffDialog::ClearDataColumn()
+{
+    ui->address_edit->clear();
+    ui->email_edit->clear();
+    ui->password_edit->clear();
+    ui->repeat_password_edit->clear();
+    ui->username_edit->clear();
+    ui->name_edit->clear();
+    ui->name_edit->setFocus();
 }

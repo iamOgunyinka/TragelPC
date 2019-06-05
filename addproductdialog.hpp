@@ -29,7 +29,7 @@ private:
     Ui::AddProductDialog *ui;
     QStandardItemModel *data_model;
     QString temp_file {};
-    QList<utilities::ProductData> product_item_list {};
+    QVector<utilities::ProductData> product_item_list {};
 };
 
 #endif // ADDPRODUCTDIALOG_HPP

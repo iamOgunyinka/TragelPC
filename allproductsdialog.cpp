@@ -118,7 +118,7 @@ void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
     }
 
     QJsonArray product_array{ result.value( "products" ).toArray() };
-    QList<utilities::ProductData> products {};
+    QVector<utilities::ProductData> products {};
     while( !product_array.isEmpty() ){
         QJsonValue const value{ product_array[0] };
         if( value.isArray() ){
@@ -138,5 +138,6 @@ void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
     QObject::connect( new_product_model, &ProductModel::destroyed, new_product_model,
                       &ProductModel::deleteLater );
     ui->tableView->setModel( new_product_model );
+    ui->tableView->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
     ui->tableView->resizeColumnsToContents();
 }

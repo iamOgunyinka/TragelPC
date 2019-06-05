@@ -1,18 +1,16 @@
-#ifndef PRODUCTMODEL_HPP
-#define PRODUCTMODEL_HPP
+#ifndef ORDERMODEL_HPP
+#define ORDERMODEL_HPP
 
-#include <QObject>
-#include <QAbstractTableModel>
-#include <QVariant>
+#include <QAbstractItemModel>
 #include <QVector>
 #include "resources.hpp"
 
-class ProductModel : public QAbstractTableModel
+class OrderModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit ProductModel( QVector<utilities::ProductData> &&products,
-                           QObject *parent = nullptr );
+    explicit OrderModel( QVector<utilities::OrderData> &&orders,
+                         QObject *parent = nullptr );
     Qt::ItemFlags flags( QModelIndex const &index ) const override;
     QVariant data( QModelIndex const& index, int role) const override;
     QVariant headerData( int section, Qt::Orientation orientation, int role ) const override;
@@ -22,7 +20,6 @@ signals:
 
 public slots:
 private:
-    QVector<utilities::ProductData> products_;
+    QVector<utilities::OrderData> products_;
 };
-
-#endif // PRODUCTMODEL_HPP
+#endif // ORDERMODEL_HPP

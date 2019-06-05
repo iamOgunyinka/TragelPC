@@ -64,49 +64,12 @@ void CentralWindow::closeEvent( QCloseEvent* event )
 
 void CentralWindow::OnAddProductTriggered()
 {
-    ui->actionAdd_products->setDisabled( true );
     AddProductDialog *product_dialog{ new AddProductDialog };
     auto sub_window = workspace->addSubWindow( product_dialog );
     sub_window->setAttribute( Qt::WA_DeleteOnClose );
     sub_window->setWindowTitle( "Add new product(s)" );
-    QObject::connect( sub_window, &QMdiSubWindow::destroyed, [=]{
-        ui->actionAdd_products->setEnabled( true );
-    });
+    connect( product_dialog, &AddProductDialog::finished, sub_window, &QMdiSubWindow::close );
     sub_window->showMaximized();
-}
-
-void CentralWindow::SendStaffRegistrationUserData( QJsonObject const & data,
-                                                   QMdiSubWindow* const data_widget )
-{
-    QProgressDialog *progress_dialog{ new QProgressDialog( "Sending information to server",
-                                                           "Cancel", 1, 100, this )};
-    QUrl const address{ QUrl::fromUserInput( utilities::Endpoint::GetEndpoints().CreateUser() )};
-    QNetworkRequest const post_request{ utilities::PostRequestInterface( address ) };
-    auto& network_manager = utilities::NetworkManager::GetNetwork();
-    auto& network_cookie = utilities::NetworkManager::GetSessionCookie();
-    network_manager.setCookieJar( &network_cookie );
-    network_cookie.setParent( nullptr );
-
-    QByteArray const request_data{ QJsonDocument( data ).toJson() };
-    progress_dialog->show();
-    QNetworkReply *reply{ network_manager.post( post_request, request_data ) };
-    QObject::connect( reply, &QNetworkReply::downloadProgress, [=](qint64 received, qint64 total)
-    {
-        progress_dialog->setMaximum( total + ( total * 0.25 ) );
-        progress_dialog->setValue( received );
-    });
-    QObject::connect( progress_dialog, &QProgressDialog::canceled, reply, &QNetworkReply::abort );
-    QObject::connect( reply, &QNetworkReply::finished, progress_dialog, &QProgressDialog::close );
-    QObject::connect( reply, &QNetworkReply::finished, [=]{
-        QJsonObject const response { utilities::GetJsonNetworkData( reply, true ) };
-        if( response.isEmpty() && data_widget ) {
-            data_widget->setHidden( false );
-            return;
-        }
-        data_widget->close();
-        QMessageBox::information( this, "Registration", "User added successfully" );
-    });
-    QObject::connect( reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater );
 }
 
 void CentralWindow::OnAddUserTriggered()
@@ -123,16 +86,8 @@ void CentralWindow::OnAddUserTriggered()
         sub_window->setWindowTitle( "Create staff" );
         staff_dialog->SetUserRole( UserRole::BasicUser );
     }
-    QObject::connect( sub_window, &QMdiSubWindow::destroyed, [=]{
-        object_sender->setEnabled( true );
-    });
-    QObject::connect( staff_dialog, &CreateStaffDialog::validated, [=]
-    {
-        sub_window->hide();
-        QJsonObject const staff_data{ staff_dialog->GetStaffData() };
-        SendStaffRegistrationUserData( staff_data, sub_window );
-    });
-    QSize min_max_size{ 516, 354 };
+    connect( sub_window, &QMdiSubWindow::destroyed, [=]{ object_sender->setEnabled( true ); });
+    QSize const min_max_size{ 516, 370 };
     sub_window->setMinimumSize( min_max_size );
     sub_window->setMaximumSize( min_max_size );
     sub_window->show();
@@ -273,6 +228,7 @@ void CentralWindow::SetEnableActionButtons( bool const enable )
     ui->actionSubscribe->setEnabled( enable );
     ui->actionUpdate_Change->setEnabled( enable );
     ui->actionUpdate_product->setEnabled( enable );
+    ui->actionOrders->setEnabled( enable );
 }
 
 void CentralWindow::StartApplication()

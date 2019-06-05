@@ -15,24 +15,27 @@ AddProductDialog::AddProductDialog(QWidget *parent) : QDialog(parent),
     ui->setupUi( this );
     ui->choose_image_button->setEnabled( false );
     ui->upload_checkbox->setChecked( false );
+    ui->name_edit->setFocus();
+
+    data_model->setHorizontalHeaderItem( 0, new QStandardItem( "Product name" ) );
+    data_model->setHorizontalHeaderItem( 1, new QStandardItem( "Product price" ) );
+    data_model->setHorizontalHeaderItem( 2, new QStandardItem( "Picture" ) );
+
+    ui->product_view->setDragDropMode( QAbstractItemView::NoDragDrop );
+    ui->product_view->setContextMenuPolicy( Qt::CustomContextMenu );
+    ui->product_view->setSelectionBehavior( QAbstractItemView::SelectRows );
+    ui->product_view->setSelectionMode( QAbstractItemView::SingleSelection );
+    ui->product_view->setItemDelegateForColumn( 2, new LocalProductUploadDelegate );
+    ui->product_view->resizeColumnsToContents();
+    ui->product_view->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+    ui->upload_data_button->setEnabled( false );
+
     QObject::connect( ui->upload_checkbox, &QCheckBox::toggled, [=]( bool const checked ){
         ui->choose_image_button->setEnabled( checked );
         if( checked ) ui->image_preview->clear();
         temp_file.clear();
     });
 
-    ui->product_view->setDragDropMode( QAbstractItemView::NoDragDrop );
-    ui->product_view->setContextMenuPolicy( Qt::CustomContextMenu );
-    ui->product_view->setSelectionBehavior( QAbstractItemView::SelectRows );
-    ui->product_view->setSelectionMode( QAbstractItemView::SingleSelection );
-    ui->product_view->resizeColumnsToContents();
-    ui->product_view->setItemDelegateForColumn( 2, new LocalProductUploadDelegate );
-
-    data_model->setHorizontalHeaderItem( 0, new QStandardItem( "Product name" ) );
-    data_model->setHorizontalHeaderItem( 1, new QStandardItem( "Product price" ) );
-    data_model->setHorizontalHeaderItem( 2, new QStandardItem( "Picture" ) );
-
-    ui->upload_data_button->setEnabled( false );
     QObject::connect( ui->product_view, &QTableView::customContextMenuRequested, this,
                       &AddProductDialog::OnContextMenuItemRequested );
     QObject::connect( ui->product_view, &QTableView::doubleClicked, this,
@@ -49,7 +52,6 @@ AddProductDialog::AddProductDialog(QWidget *parent) : QDialog(parent),
                       &AddProductDialog::OnRemoveItemButtonClicked );
     QObject::connect( ui->upload_data_button, &QPushButton::clicked, this,
                       &AddProductDialog::OnUploadDataToServerButtonClicked );
-    ui->name_edit->setFocus();
 }
 
 AddProductDialog::~AddProductDialog()
@@ -123,7 +125,7 @@ void AddProductDialog::UpdateModel( utilities::ProductData const & data_item,
         thumbnail_item->setText( data_item.thumbnail_location );
     }
 
-    if( editing_item ){ // when an edited question is used
+    if( editing_item ){ // when an existing product is edited
         data_model->removeRow( index );
         data_model->insertRow( index, { name_item, price_item, thumbnail_item } );
     } else {
@@ -150,11 +152,15 @@ void AddProductDialog::OnShowImageButtonClicked()
     QString const filename{ QFileDialog::getOpenFileName( this, "Choose custom preview file",
                                                           "", "PNG Files(*.png);;"
                                                               "JPEG Files(*.jpg)" ) };
-    if( filename.isEmpty() || filename.isNull() ) return;
+    if( filename.isEmpty() || filename.isNull() ){
+        ui->upload_checkbox->setChecked( false );
+        return;
+    }
     qint64 const file_size{ QFileInfo( filename ).size() };
     // if file does not exist or it exceeds 150KB
     if( file_size == 0 || file_size > (150 * 1024) ){
         QMessageBox::warning( this, "Image upload", "The size of the thumbnail exceeds 150KB." );
+        ui->upload_checkbox->setChecked( false );
         return;
     }
     ui->image_preview->clear();
@@ -185,8 +191,15 @@ void AddProductDialog::OnEditItemButtonClicked()
 void AddProductDialog::OnUploadDataToServerButtonClicked()
 {
     ProductUploadDialog *upload_dialog{ new ProductUploadDialog( product_item_list, this ) };
-    upload_dialog->StartUpload();
-    upload_dialog->setWindowModality( Qt::WindowModal );
     upload_dialog->setAttribute( Qt::WA_DeleteOnClose );
-    upload_dialog->exec();
+    upload_dialog->StartUpload();
+    connect( upload_dialog, &ProductUploadDialog::uploads_completed, [=]( bool const has_error )
+    {
+        if( !has_error ){
+            QMessageBox::information( this, "Uploads", "Products successfully submitted" );
+            upload_dialog->accept();
+            this->accept();
+        }
+    });
+    upload_dialog->show();
 }

@@ -2,7 +2,7 @@
 #include <QJsonObject>
 
 
-ProductModel::ProductModel( QList<utilities::ProductData> &&products, QObject *parent )
+ProductModel::ProductModel( QVector<utilities::ProductData> &&products, QObject *parent )
     : QAbstractTableModel( parent ), products_{ std::move( products ) }
 {
 }

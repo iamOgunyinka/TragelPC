@@ -23,7 +23,7 @@ QNetworkRequest PostRequestInterface( QUrl const &address )
 }
 
 QPair<QNetworkRequest, QByteArray> PostImageRequestInterface( QUrl const &address,
-                                                              QList<QString> const & data )
+                                                              QVector<QString> const & data )
 {
     if( data.size() < 2 ) return {};
     QString const filename{ data[0] };
@@ -60,5 +60,13 @@ QJsonObject GetJsonNetworkData( QNetworkReply* network_reply, bool show_error_me
 
     if( json_document.isNull() ) return {};
     return json_document.object();
+}
+
+QJsonObject ProductData::ToJson() const
+{
+    QJsonObject const object{ { "price", price }, {"name", name },
+                              { "thumbnail", thumbnail_location },
+                              { "url", constant_url } };
+    return object;
 }
 }
