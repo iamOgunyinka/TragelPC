@@ -92,31 +92,11 @@ void AllProductsDialog::DownloadProducts()
 
 void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
 {
-    QJsonObject const page_information{ result.value( "pages" ).toObject() };
-    uint& total_result = product_query_data.total_result;
-    total_result = page_information.value( "total" ).toInt();
-    uint& page_total = product_query_data.number_of_pages;
-    page_total = page_information.value( "pages" ).toInt();
-
-    if( total_result == 0 || page_total == 0 ){
+    bool const no_result = utilities::ParsePageUrls( result, product_query_data );
+    if( no_result ){
         QMessageBox::information( this, "Products", "No products found" );
         return;
     }
-
-    product_query_data.first_url = page_information.value( "first_url" ).toString();
-    product_query_data.last_url = page_information.value( "last_url" ).toString();
-    product_query_data.result_per_page = page_information.value( "per_page" ).toInt();
-    if( page_total > 0 ){
-        QString const next_url = page_information.value( "next_url" ).toString();
-        QString previous_url {};
-        if( page_total != 0 ){
-            previous_url = page_information.value( "prev_url" ).toString();
-        }
-        uint page_number = page_information.value( "page" ).toInt();
-        utilities::ProductPageUrlData const next_page_info{ next_url, previous_url, page_number };
-        product_query_data.urls.push_back( next_page_info );
-    }
-
     QJsonArray product_array{ result.value( "products" ).toArray() };
     QVector<utilities::ProductData> products {};
     while( !product_array.isEmpty() ){

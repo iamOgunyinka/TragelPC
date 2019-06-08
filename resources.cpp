@@ -7,6 +7,32 @@
 
 namespace utilities {
 
+bool ParsePageUrls(const QJsonObject &result, PageQuery & page_query )
+{
+    QJsonObject const page_info{ result.value( "pages" ).toObject() };
+    uint& total_result = page_query.total_result;
+    total_result = page_info.value( "total" ).toInt();
+    uint& page_total = page_query.number_of_pages;
+    page_total = page_info.value( "pages" ).toInt();
+
+    if( total_result == 0 || page_total == 0 ) return false;
+
+    page_query.first_url = page_info.value( "first_url" ).toString();
+    page_query.last_url = page_info.value( "last_url" ).toString();
+    page_query.result_per_page = page_info.value( "per_page" ).toInt();
+    if( page_total > 0 ){
+        QString const next_url = page_info.value( "next_url" ).toString();
+        QString previous_url {};
+        if( page_total != 0 ){
+            previous_url = page_info.value( "prev_url" ).toString();
+        }
+        uint page_number = page_info.value( "page" ).toInt();
+        utilities::UrlData const next_page_info{ next_url, previous_url, page_number };
+        page_query.urls.push_back( next_page_info );
+    }
+    return true;
+}
+
 QNetworkRequest GetRequestInterface( QUrl const &address )
 {
     QNetworkRequest request { address };

@@ -2,10 +2,14 @@
 #include <QUrlQuery>
 #include <QDate>
 #include <QDebug>
+#include <QJsonArray>
 #include <QProgressDialog>
 #include <QMessageBox>
+#include <QMenu>
+#include <QAction>
 
 #include "orderwindow.hpp"
+#include "ordermodel.hpp"
 #include "ui_orderwindow.h"
 #include "resources.hpp"
 
@@ -16,13 +20,15 @@ OrderWindow::OrderWindow( QWidget *parent ): QMainWindow( parent ), ui( new Ui::
     ui->search_limit_checkbox->setChecked( false );
     ui->search_date_from->setEnabled( false );
     ui->search_date_to->setEnabled( false );
+    ui->tableView->setContextMenuPolicy( Qt::CustomContextMenu );
 
     QObject::connect( ui->search_limit_checkbox, &QCheckBox::toggled, [=]( bool is_checked ){
         ui->search_date_from->setEnabled( is_checked );
         ui->search_date_to->setEnabled( is_checked );
         ui->order_by_combo->setDisabled( is_checked );
     });
-
+    QObject::connect( ui->tableView, &QTableView::customContextMenuRequested, this,
+                      &OrderWindow::OnCustomContextMenuRequested );
     QObject::connect( ui->find_guest_button, &QPushButton::clicked, this,
                       &OrderWindow::OnFindButtonClicked );
     QStringList const search_criteria{ "Show today's order", "Show last 7 days",
@@ -40,6 +46,41 @@ OrderWindow::~OrderWindow()
 QString OrderWindow::DateToString( QDate const & date )
 {
     return date.toString( "yyyy-MM-dd" );
+}
+
+void OrderWindow::OnCustomContextMenuRequested( QPoint const & point )
+{
+    QModelIndex const index{ ui->tableView->indexAt( point )};
+    if( !index.isValid() ) return;
+
+    QMenu custom_menu( this );
+    custom_menu.setTitle( "Orders" );
+    if( !index.parent().isValid() ){
+        QAction* action_details{ new QAction( "Details" ) };
+        QAction* action_remove{ new QAction( "Remove" ) };
+        QObject::connect( action_details, &QAction::triggered, this,
+                          &OrderWindow::OnOrderDetailsRequested );
+        QObject::connect( action_remove, &QAction::triggered, this,
+                          &OrderWindow::OnRemoveItemActionClicked );
+        custom_menu.addAction( action_details );
+        custom_menu.addAction( action_remove );
+    }
+    custom_menu.exec( ui->tableView->mapToGlobal( point ) );
+}
+
+void OrderWindow::OnOrderDetailsRequested()
+{
+    QModelIndex const index{ ui->tableView->currentIndex() };
+    if( !index.isValid() ) return;
+}
+
+void OrderWindow::OnRemoveItemActionClicked()
+{
+    QModelIndex const index{ ui->tableView->currentIndex() };
+    if( !index.isValid() ) return;
+    if( !index.parent().isValid() ){
+
+    }
 }
 
 void OrderWindow::OnFindButtonClicked()
@@ -104,9 +145,53 @@ void OrderWindow::SendNetworkRequest( QUrl const &address )
 
 void OrderWindow::DisplayOrderData( QJsonObject const & data )
 {
-    QJsonObject const orders{ data.value( "orders" ).toObject() };
-    if( orders.isEmpty() ){
+    bool const result_found{ utilities::ParsePageUrls( data, orders_page_query )};
+    if( !result_found ){
         QMessageBox::information( this, "Orders", "No result matching that criteria" );
         return;
+    }
+    QJsonArray order_list{ data.value( "orders" ).toArray() };
+    QVector<utilities::OrderData> orders {};
+    while( !order_list.isEmpty() ){
+        QJsonValue const value{ order_list[0] };
+        if( value.isArray() ){
+            order_list = value.toArray();
+        } else {
+            break;
+        }
+    }
+    ParseOrderResult( order_list, orders );
+    if( orders.isEmpty() ){
+        QMessageBox::information( this, "Orders", "No result found" );
+        return;
+    }
+
+    OrderModel *model{ new OrderModel( std::move( orders ), ui->tableView ) };
+    ui->tableView->setModel( model );
+    ui->tableView->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+    ui->tableView->resizeColumnsToContents();
+}
+
+void OrderWindow::ParseOrderResult( QJsonArray const & order_object_list,
+                                    QVector<utilities::OrderData> &orders )
+{
+    for( auto const &value: order_object_list ){
+        QJsonObject const & object = value.toObject();
+        utilities::OrderData order {};
+        QString const date_str{ object.value( "date" ).toString() };
+        auto const order_date{ QDateTime::fromString( date_str, Qt::ISODateWithMs )};
+        qint64 const order_id{ object.value( "id" ).toInt() };
+
+        for( auto const & item: object.value( "items" ).toArray() ){
+            QJsonObject const item_object{ item.toObject() };
+            QString const product_name { item_object.value( "product" ).toString() };
+            qint64 const quantity{ item_object.value( "quantity" ).toInt() };
+            order.items.push_back( { product_name, quantity } );
+        }
+        order.order_date = order_date;
+        order.order_id = order_id;
+        order.reference_id = object.value( "payment_reference" ).toString();
+        order.staff_username = object.value( "staff" ).toString();
+        orders.push_back( order );
     }
 }

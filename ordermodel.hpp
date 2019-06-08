@@ -20,6 +20,6 @@ signals:
 
 public slots:
 private:
-    QVector<utilities::OrderData> products_;
+    QVector<utilities::OrderData> orders_;
 };
 #endif // ORDERMODEL_HPP

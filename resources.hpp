@@ -166,21 +166,21 @@ namespace utilities {
         }
     };
 
-    struct ProductPageUrlData
+    struct UrlData
     {
         QString next_url {};
         QString previous_url {};
         uint    page_number {};
     };
 
-    struct ProductPageQuery
+    struct PageQuery
     {
         uint    number_of_pages {};
         uint    result_per_page {};
         uint    total_result {};
         QString first_url{};
         QString last_url{};
-        QVector<ProductPageUrlData> urls {};
+        QVector<UrlData> urls {};
     };
 
     struct ProductData
@@ -195,7 +195,18 @@ namespace utilities {
 
     struct OrderData
     {
+        qint64 order_id;
+        QString reference_id;
+        QString staff_username;
+        QDateTime order_date;
+        struct Item {
+            QString product_name;
+            qint64  quantity;
+        };
+        QVector<Item> items;
     };
+
+    bool ParsePageUrls( QJsonObject const & page_url, PageQuery& page_information );
 
     QNetworkRequest GetRequestInterface( QUrl const &address );
     QNetworkRequest PostRequestInterface( QUrl const &address );

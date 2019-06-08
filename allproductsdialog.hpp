@@ -23,7 +23,7 @@ private:
     void OnRemoveItemButtonClicked();
 private:
     Ui::AllProductsDialog *ui;
-    utilities::ProductPageQuery product_query_data;
+    utilities::PageQuery product_query_data;
 };
 
 #endif // ALLPRODUCTSDIALOG_HPP

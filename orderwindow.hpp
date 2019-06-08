@@ -5,6 +5,7 @@
 #include <QDate>
 #include <QUrl>
 #include <QJsonObject>
+#include "resources.hpp"
 
 
 namespace Ui {
@@ -23,8 +24,13 @@ private:
     void    SendNetworkRequest( QUrl const & address );
     void    DisplayOrderData( QJsonObject const & data );
     QString DateToString( QDate const & date );
+    void    ParseOrderResult( QJsonArray const & order_object_list,
+                              QVector<utilities::OrderData> &orders );
+    void    OnCustomContextMenuRequested( QPoint const & point );
+    void    OnOrderDetailsRequested();
+    void    OnRemoveItemActionClicked();
 private:
-    QStandard
+    utilities::PageQuery orders_page_query{};
     Ui::OrderWindow *ui;
 };
 
