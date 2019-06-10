@@ -22,9 +22,17 @@ AllProductsDialog::AllProductsDialog( QWidget *parent ) :
     ui->next_button->setDisabled( true );
     ui->prev_button->setDisabled( true );
     ui->tableView->setContextMenuPolicy( Qt::CustomContextMenu );
+    ui->tableView->setItemDelegateForColumn( 2, new ProductThumbnailDelegate );
     QObject::connect( ui->tableView, &QTableView::customContextMenuRequested, this,
                       &AllProductsDialog::OnCustomContextMenuRequested );
-    ui->tableView->setItemDelegateForColumn( 2, new ProductThumbnailDelegate );
+    QObject::connect( ui->next_button, &QToolButton::clicked, this,
+                      &AllProductsDialog::OnNextPageButtonClicked );
+    QObject::connect( ui->prev_button, &QToolButton::clicked, this,
+                      &AllProductsDialog::OnPreviousPageButtonClicked );
+    QObject::connect( ui->last_page_button, &QToolButton::clicked, this,
+                      &AllProductsDialog::OnLastPageButtonClicked );
+    QObject::connect( ui->first_page_button, &QToolButton::clicked, this,
+                      &AllProductsDialog::OnFirstPageButtonClicked );
 }
 
 AllProductsDialog::~AllProductsDialog()
@@ -40,6 +48,30 @@ void AllProductsDialog::OnEditItemButtonClicked()
 void AllProductsDialog::OnRemoveItemButtonClicked()
 {
 
+}
+
+void AllProductsDialog::OnFirstPageButtonClicked()
+{
+    QUrl const first_page_address{ product_query_data.first_url };
+    DownloadProducts( first_page_address );
+}
+
+void AllProductsDialog::OnLastPageButtonClicked()
+{
+    QUrl const last_page_address{ product_query_data.last_url };
+    DownloadProducts( last_page_address );
+}
+
+void AllProductsDialog::OnNextPageButtonClicked()
+{
+    QUrl const& next_page_address{ product_query_data.other_url.next_url };
+    DownloadProducts( next_page_address );
+}
+
+void AllProductsDialog::OnPreviousPageButtonClicked()
+{
+    QUrl const& next_page_address{ product_query_data.other_url.previous_url };
+    DownloadProducts( next_page_address );
 }
 
 void AllProductsDialog::OnCustomContextMenuRequested( QPoint const &point )
@@ -62,8 +94,13 @@ void AllProductsDialog::OnCustomContextMenuRequested( QPoint const &point )
     custom_menu.exec( ui->tableView->mapToGlobal( point ) );
 }
 
-void AllProductsDialog::DownloadProducts()
+void AllProductsDialog::DownloadProducts( QUrl const & address )
 {
+    ui->first_page_button->setDisabled( true );
+    ui->last_page_button->setDisabled( true );
+    ui->prev_button->setDisabled( true );
+    ui->next_button->setDisabled( true );
+
     QProgressDialog* progress_dialog{ new QProgressDialog( "Please wait", "Cancel",
                                                            1, 100, this ) };
     progress_dialog->show();
@@ -71,11 +108,10 @@ void AllProductsDialog::DownloadProducts()
     QNetworkCookieJar& session_cookie{ utilities::NetworkManager::GetSessionCookie() };
     network_manager.setCookieJar( &session_cookie );
     session_cookie.setParent( nullptr ); // network manager doesn't own the session cookie
-    QUrl const address{ utilities::Endpoint::GetEndpoints().GetProducts() };
     QNetworkRequest request{ utilities::GetRequestInterface( address ) };
     QNetworkReply* reply{ network_manager.get( request ) };
 
-    QObject::connect( reply, &QNetworkReply::downloadProgress, [=]( qint64 received, qint64 total)
+    connect( reply, &QNetworkReply::downloadProgress, [=]( qint64 received, qint64 total )
     {
         progress_dialog->setMaximum( total + ( total * 0.25 ));
         progress_dialog->setValue( received );
@@ -88,6 +124,34 @@ void AllProductsDialog::DownloadProducts()
         if( result.isEmpty() ) return;
         OnDownloadResultObtained( result );
     });
+}
+
+void AllProductsDialog::DownloadProducts()
+{
+    QUrl const address{ utilities::Endpoint::GetEndpoints().GetProducts() };
+    DownloadProducts( address );
+}
+
+void AllProductsDialog::UpdatePageData()
+{
+    utilities::UrlData const& url_data{ product_query_data.other_url };
+    ui->page_label->setText( QString( "Page %1 of %2" ).arg( url_data.page_number )
+                             .arg( product_query_data.number_of_pages ));
+    auto& page_number = url_data.page_number;
+    if( page_number < product_query_data.number_of_pages ){
+        ui->next_button->setEnabled( true );
+        ui->last_page_button->setEnabled( true );
+    } else if( page_number > 1 ){
+        if( page_number == product_query_data.number_of_pages ){
+            ui->prev_button->setEnabled( true );
+            ui->first_page_button->setEnabled( true );
+        } else {
+            ui->first_page_button->setEnabled( true );
+            ui->last_page_button->setEnabled( true );
+            ui->prev_button->setEnabled( true );
+            ui->next_button->setEnabled( true );
+        }
+    }
 }
 
 void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
@@ -105,7 +169,7 @@ void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
             product_array = value.toArray();
         } else {
             for( auto const &value: product_array ){
-                QJsonObject const & object = value.toObject();
+                QJsonObject const object = value.toObject();
                 QString const name{ object.value( "name" ).toString() };
                 QString const thumbnail_url{ object.value( "thumbnail" ).toString() };
                 double const price{ object.value( "price" ).toDouble() };
@@ -114,10 +178,13 @@ void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
             break;
         }
     }
+    UpdatePageData();
     ProductModel *new_product_model { new ProductModel( std::move( products ), ui->tableView )};
     QObject::connect( new_product_model, &ProductModel::destroyed, new_product_model,
                       &ProductModel::deleteLater );
+    ui->tableView->setVisible( false );
     ui->tableView->setModel( new_product_model );
-    ui->tableView->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
     ui->tableView->resizeColumnsToContents();
+    ui->tableView->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+    ui->tableView->setVisible( true );
 }

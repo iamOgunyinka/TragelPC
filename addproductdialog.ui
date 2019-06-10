@@ -53,6 +53,13 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
+          <widget class="QPushButton" name="add_item_button">
+           <property name="text">
+            <string>Add to list</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QCheckBox" name="upload_checkbox">
            <property name="text">
             <string>Set thumbnail</string>
@@ -74,14 +81,14 @@
       <widget class="QLabel" name="image_preview">
        <property name="minimumSize">
         <size>
-         <width>100</width>
-         <height>100</height>
+         <width>150</width>
+         <height>150</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>200</width>
-         <height>200</height>
+         <width>300</width>
+         <height>300</height>
         </size>
        </property>
        <property name="text">
@@ -97,16 +104,9 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QPushButton" name="add_item_button">
-       <property name="text">
-        <string>Add</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="edit_item_button">
        <property name="text">
-        <string>Edit</string>
+        <string>Edit product</string>
        </property>
       </widget>
      </item>
@@ -116,6 +116,19 @@
         <string>Remove</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
      <item>
       <widget class="QPushButton" name="upload_data_button">
@@ -128,6 +141,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>name_edit</tabstop>
+  <tabstop>price_line</tabstop>
+  <tabstop>upload_checkbox</tabstop>
+  <tabstop>choose_image_button</tabstop>
+  <tabstop>add_item_button</tabstop>
+  <tabstop>product_view</tabstop>
+  <tabstop>edit_item_button</tabstop>
+  <tabstop>remove_item_button</tabstop>
+  <tabstop>upload_data_button</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

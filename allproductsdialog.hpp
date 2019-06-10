@@ -17,10 +17,16 @@ public:
     ~AllProductsDialog();
     void DownloadProducts();
 private:
+    void DownloadProducts( QUrl const & address );
     void OnCustomContextMenuRequested( QPoint const & point );
     void OnDownloadResultObtained( QJsonObject const & result );
     void OnEditItemButtonClicked();
     void OnRemoveItemButtonClicked();
+    void UpdatePageData();
+    void OnNextPageButtonClicked();
+    void OnPreviousPageButtonClicked();
+    void OnFirstPageButtonClicked();
+    void OnLastPageButtonClicked();
 private:
     Ui::AllProductsDialog *ui;
     utilities::PageQuery product_query_data;

@@ -12,7 +12,7 @@
 #include "ordermodel.hpp"
 #include "ui_orderwindow.h"
 #include "resources.hpp"
-
+#include "orderitemdetaildialog.hpp"
 
 OrderWindow::OrderWindow( QWidget *parent ): QMainWindow( parent ), ui( new Ui::OrderWindow )
 {
@@ -21,6 +21,10 @@ OrderWindow::OrderWindow( QWidget *parent ): QMainWindow( parent ), ui( new Ui::
     ui->search_date_from->setEnabled( false );
     ui->search_date_to->setEnabled( false );
     ui->tableView->setContextMenuPolicy( Qt::CustomContextMenu );
+    ui->first_page_button->setDisabled( true );
+    ui->last_page_button->setDisabled( true );
+    ui->prev_button->setDisabled( true );
+    ui->next_button->setDisabled( true );
 
     QObject::connect( ui->search_limit_checkbox, &QCheckBox::toggled, [=]( bool is_checked ){
         ui->search_date_from->setEnabled( is_checked );
@@ -31,6 +35,14 @@ OrderWindow::OrderWindow( QWidget *parent ): QMainWindow( parent ), ui( new Ui::
                       &OrderWindow::OnCustomContextMenuRequested );
     QObject::connect( ui->find_guest_button, &QPushButton::clicked, this,
                       &OrderWindow::OnFindButtonClicked );
+    QObject::connect( ui->next_button, &QToolButton::clicked, this,
+                      &OrderWindow::OnNextPageButtonClicked );
+    QObject::connect( ui->prev_button, &QToolButton::clicked, this,
+                      &OrderWindow::OnPreviousPageButtonClicked );
+    QObject::connect( ui->last_page_button, &QToolButton::clicked, this,
+                      &OrderWindow::OnLastPageButtonClicked );
+    QObject::connect( ui->first_page_button, &QToolButton::clicked, this,
+                      &OrderWindow::OnFirstPageButtonClicked );
     QStringList const search_criteria{ "Show today's order", "Show last 7 days",
                                        "Show this month's" };
     ui->order_by_combo->addItems( search_criteria );
@@ -72,15 +84,47 @@ void OrderWindow::OnOrderDetailsRequested()
 {
     QModelIndex const index{ ui->tableView->currentIndex() };
     if( !index.isValid() ) return;
+    OrderModel* model{ qobject_cast<OrderModel*>( ui->tableView->model() ) };
+    auto const & order_items{ model->ItemDataAt( index.row() )};
+    OrderItemDetailDialog *order_detail_dialog{ new OrderItemDetailDialog( order_items ) };
+
+    auto window_title{ QString( "Order: %1" ).arg( model->ReferenceIdAtIndex( index.row() ) )};
+    order_detail_dialog->setWindowTitle( window_title );
+
+    order_detail_dialog->setWindowModality( Qt::WindowModal );
+    order_detail_dialog->setAttribute( Qt::WA_DeleteOnClose );
+    order_detail_dialog->show();
 }
 
 void OrderWindow::OnRemoveItemActionClicked()
 {
     QModelIndex const index{ ui->tableView->currentIndex() };
     if( !index.isValid() ) return;
-    if( !index.parent().isValid() ){
 
-    }
+}
+
+void OrderWindow::OnFirstPageButtonClicked()
+{
+    QUrl const first_page_address{ orders_page_query.first_url };
+    SendNetworkRequest( first_page_address );
+}
+
+void OrderWindow::OnLastPageButtonClicked()
+{
+    QUrl const last_page_address{ orders_page_query.last_url };
+    SendNetworkRequest( last_page_address );
+}
+
+void OrderWindow::OnNextPageButtonClicked()
+{
+    QUrl const& next_page_address{ orders_page_query.other_url.next_url };
+    SendNetworkRequest( next_page_address );
+}
+
+void OrderWindow::OnPreviousPageButtonClicked()
+{
+    QUrl const& next_page_address{ orders_page_query.other_url.previous_url };
+    SendNetworkRequest( next_page_address );
 }
 
 void OrderWindow::OnFindButtonClicked()
@@ -113,6 +157,11 @@ void OrderWindow::OnFindButtonClicked()
 
 void OrderWindow::SendNetworkRequest( QUrl const &address )
 {
+    ui->first_page_button->setDisabled( true );
+    ui->last_page_button->setDisabled( true );
+    ui->prev_button->setDisabled( true );
+    ui->next_button->setDisabled( true );
+
     QNetworkAccessManager& network_manager{ utilities::NetworkManager::GetNetwork() };
     auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
     network_manager.setCookieJar( &session_cookie );
@@ -143,6 +192,29 @@ void OrderWindow::SendNetworkRequest( QUrl const &address )
     });
 }
 
+void OrderWindow::UpdatePageData()
+{
+    utilities::UrlData const& url_data{ orders_page_query.other_url };
+    ui->page_label->setText( QString( "Page %1 of %2" ).arg( url_data.page_number )
+                             .arg( orders_page_query.number_of_pages ));
+    auto& page_number = url_data.page_number;
+    auto& number_of_pages = orders_page_query.number_of_pages;
+    if( page_number < number_of_pages ){
+        ui->next_button->setEnabled( true );
+        ui->last_page_button->setEnabled( true );
+    } else if( page_number > 1 ){
+        if( page_number == number_of_pages ){
+            ui->prev_button->setEnabled( true );
+            ui->first_page_button->setEnabled( true );
+        } else {
+            ui->first_page_button->setEnabled( true );
+            ui->last_page_button->setEnabled( true );
+            ui->prev_button->setEnabled( true );
+            ui->next_button->setEnabled( true );
+        }
+    }
+}
+
 void OrderWindow::DisplayOrderData( QJsonObject const & data )
 {
     bool const result_found{ utilities::ParsePageUrls( data, orders_page_query )};
@@ -165,11 +237,13 @@ void OrderWindow::DisplayOrderData( QJsonObject const & data )
         QMessageBox::information( this, "Orders", "No result found" );
         return;
     }
-
+    UpdatePageData();
     OrderModel *model{ new OrderModel( std::move( orders ), ui->tableView ) };
+    ui->tableView->setVisible( false );
     ui->tableView->setModel( model );
     ui->tableView->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
     ui->tableView->resizeColumnsToContents();
+    ui->tableView->setVisible( true );
 }
 
 void OrderWindow::ParseOrderResult( QJsonArray const & order_object_list,
@@ -186,7 +260,8 @@ void OrderWindow::ParseOrderResult( QJsonArray const & order_object_list,
             QJsonObject const item_object{ item.toObject() };
             QString const product_name { item_object.value( "product" ).toString() };
             qint64 const quantity{ item_object.value( "quantity" ).toInt() };
-            order.items.push_back( { product_name, quantity } );
+            double const price{ item_object.value( "price" ).toDouble() };
+            order.items.push_back( { product_name, quantity, price } );
         }
         order.order_date = order_date;
         order.order_id = order_id;

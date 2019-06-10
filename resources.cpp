@@ -7,7 +7,7 @@
 
 namespace utilities {
 
-bool ParsePageUrls(const QJsonObject &result, PageQuery & page_query )
+bool ParsePageUrls( QJsonObject const &result, PageQuery & page_query )
 {
     QJsonObject const page_info{ result.value( "pages" ).toObject() };
     uint& total_result = page_query.total_result;
@@ -26,9 +26,9 @@ bool ParsePageUrls(const QJsonObject &result, PageQuery & page_query )
         if( page_total != 0 ){
             previous_url = page_info.value( "prev_url" ).toString();
         }
-        uint page_number = page_info.value( "page" ).toInt();
-        utilities::UrlData const next_page_info{ next_url, previous_url, page_number };
-        page_query.urls.push_back( next_page_info );
+        uint const page_number = page_info.value( "page" ).toInt();
+        utilities::UrlData next_page_info{ next_url, previous_url, page_number };
+        page_query.other_url = std::move( next_page_info );
     }
     return true;
 }

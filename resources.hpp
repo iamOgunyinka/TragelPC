@@ -180,7 +180,7 @@ namespace utilities {
         uint    total_result {};
         QString first_url{};
         QString last_url{};
-        QVector<UrlData> urls {};
+        UrlData other_url{};
     };
 
     struct ProductData
@@ -202,6 +202,7 @@ namespace utilities {
         struct Item {
             QString product_name;
             qint64  quantity;
+            double  price;
         };
         QVector<Item> items;
     };

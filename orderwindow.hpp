@@ -29,6 +29,11 @@ private:
     void    OnCustomContextMenuRequested( QPoint const & point );
     void    OnOrderDetailsRequested();
     void    OnRemoveItemActionClicked();
+    void    UpdatePageData();
+    void    OnNextPageButtonClicked();
+    void    OnPreviousPageButtonClicked();
+    void    OnFirstPageButtonClicked();
+    void    OnLastPageButtonClicked();
 private:
     utilities::PageQuery orders_page_query{};
     Ui::OrderWindow *ui;

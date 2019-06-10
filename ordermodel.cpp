@@ -42,6 +42,16 @@ int OrderModel::columnCount( QModelIndex const &) const
     return 4;
 }
 
+QString OrderModel::ReferenceIdAtIndex( int const row ) const
+{
+    return orders_[row].reference_id;
+}
+
+QVector<utilities::OrderData::Item> const & OrderModel::ItemDataAt( int const row ) const
+{
+    return orders_[row].items;
+}
+
 QVariant OrderModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if( role != Qt::DisplayRole ) return QVariant{};
@@ -55,6 +65,70 @@ QVariant OrderModel::headerData(int section, Qt::Orientation orientation, int ro
             return QString( "Staff" );
         case 3:
             return QString( "Number of items purchased" );
+        default:
+            return QVariant{};
+        }
+    }
+    return section + 1;
+}
+
+
+OrderDetailModel::OrderDetailModel( QVector<utilities::OrderData::Item> const &order_items,
+                                    QObject *parent )
+    : QAbstractTableModel( parent ),
+      order_items_{ order_items }
+{
+}
+
+Qt::ItemFlags OrderDetailModel::flags( QModelIndex const & ) const
+{
+    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+}
+
+QVariant OrderDetailModel::data( QModelIndex const &index, int role ) const
+{
+    if( role == Qt::DisplayRole ){
+        int const row_number{ index.row() };
+        utilities::OrderData::Item const & row_data{ order_items_[row_number] };
+        switch( index.column() ){
+        case 0:
+            return row_data.product_name;
+        case 1:
+            return row_data.quantity;
+        case 2:
+            return row_data.price;
+        case 3:
+            return row_data.quantity * row_data.price;
+        default:
+            return QVariant{};
+        }
+    }
+    return QVariant{};
+}
+
+int OrderDetailModel::rowCount( QModelIndex const & ) const
+{
+    return order_items_.size();
+}
+
+int OrderDetailModel::columnCount( QModelIndex const &) const
+{
+    return 4;
+}
+
+QVariant OrderDetailModel::headerData( int section, Qt::Orientation orientation, int role )const
+{
+    if( role != Qt::DisplayRole ) return QVariant{};
+    if( orientation == Qt::Horizontal ){
+        switch( section ){
+        case 0:
+            return QString( "Product" );
+        case 1:
+            return QString( "Quantity" );
+        case 2:
+            return QString( "Price" );
+        case 3:
+            return QString( "Total" );
         default:
             return QVariant{};
         }

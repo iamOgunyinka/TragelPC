@@ -44,7 +44,7 @@ AddProductDialog::AddProductDialog(QWidget *parent) : QDialog(parent),
                       &AddProductDialog::OnShowImageButtonClicked );
     QObject::connect( ui->add_item_button, &QPushButton::clicked, this,
                       &AddProductDialog::OnAddItemButtonClicked );
-    QObject::connect( data_model, SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
+    QObject::connect( data_model, SIGNAL( dataChanged( QModelIndex,QModelIndex,QVector<int> ) ),
                       ui->product_view, SLOT(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
     QObject::connect( ui->edit_item_button, &QPushButton::clicked, this,
                       &AddProductDialog::OnEditItemButtonClicked );
@@ -100,8 +100,9 @@ void AddProductDialog::OnAddItemButtonClicked()
     product_item_list.append( value );
     ui->upload_data_button->setEnabled( true );
     UpdateModel( value, product_item_list.size() );
+    ui->product_view->setVisible( false );
     ui->product_view->setModel( data_model );
-
+    ui->product_view->setVisible( true );
     ui->price_line->clear();
     ui->name_edit->clear();
     ui->name_edit->setFocus();
@@ -185,14 +186,15 @@ void AddProductDialog::OnEditItemButtonClicked()
     auto const result = edit_dialog->GetValue();
     product_item_list[current_row] = result;
     UpdateModel( result, current_row );
+    ui->product_view->setVisible( false );
     ui->product_view->setModel( data_model );
+    ui->product_view->setVisible( true );
 }
 
 void AddProductDialog::OnUploadDataToServerButtonClicked()
 {
     ProductUploadDialog *upload_dialog{ new ProductUploadDialog( product_item_list, this ) };
     upload_dialog->setAttribute( Qt::WA_DeleteOnClose );
-    upload_dialog->StartUpload();
     connect( upload_dialog, &ProductUploadDialog::uploads_completed, [=]( bool const has_error )
     {
         if( !has_error ){
@@ -202,4 +204,5 @@ void AddProductDialog::OnUploadDataToServerButtonClicked()
         }
     });
     upload_dialog->show();
+    upload_dialog->StartUpload();
 }
