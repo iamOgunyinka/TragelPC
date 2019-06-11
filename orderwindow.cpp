@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QProgressDialog>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <QMenu>
 #include <QAction>
 
@@ -101,6 +102,45 @@ void OrderWindow::OnRemoveItemActionClicked()
     QModelIndex const index{ ui->tableView->currentIndex() };
     if( !index.isValid() ) return;
 
+    ui->tableView->setEnabled( false );
+    OrderModel* model = qobject_cast<OrderModel*>( ui->tableView->model() );
+    QString const order_id{ QString::number( model->OrderIdAtIndex( index.row() ) ) };
+
+    auto const reason = QInputDialog::getText( this, "Delete order",
+                                               "Why are you deleting this order?" ).trimmed();
+    if( reason.isEmpty() ){
+        ui->tableView->setEnabled( true );
+        return;
+    }
+    QNetworkAccessManager& network_manager{ utilities::NetworkManager::GetNetwork() };
+    auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
+    network_manager.setCookieJar( &session_cookie );
+    session_cookie.setParent( nullptr );
+    QUrl address{ utilities::Endpoint::GetEndpoints().RemoveOrder() };
+    QUrlQuery query{};
+    query.addQueryItem( "order_id", order_id );
+    query.addQueryItem( "reason", reason );
+    address.setQuery( query );
+    QNetworkRequest const request{ utilities::GetRequestInterface( address ) };
+    QNetworkReply* reply{ network_manager.deleteResource( request ) };
+    QProgressDialog *progress_dialog{ new QProgressDialog( "Sending request to server",
+                                                           "Cancel", 1, 100 ) };
+    progress_dialog->setAttribute( Qt::WA_DeleteOnClose );
+    progress_dialog->show();
+    connect( progress_dialog, &QProgressDialog::canceled, reply, &QNetworkReply::abort );
+    connect( reply, &QNetworkReply::downloadProgress,
+                      [=]( qint64 const received, qint64 const total )
+    {
+        progress_dialog->setMaximum( total + ( total * 0.25 ) );
+        progress_dialog->setValue( received );
+    } );
+    QObject::connect( reply, &QNetworkReply::finished, [=]{
+        ui->tableView->setEnabled( true );
+        progress_dialog->close();
+        QJsonObject const response{ utilities::GetJsonNetworkData( reply, true ) };
+        if( response.isEmpty() ) return;
+        model->removeRows( index.row(), 1, index.parent() );
+    });
 }
 
 void OrderWindow::OnFirstPageButtonClicked()
@@ -240,6 +280,8 @@ void OrderWindow::DisplayOrderData( QJsonObject const & data )
     UpdatePageData();
     OrderModel *model{ new OrderModel( std::move( orders ), ui->tableView ) };
     ui->tableView->setVisible( false );
+    QObject::connect( model, SIGNAL( dataChanged( QModelIndex,QModelIndex,QVector<int> ) ),
+                      ui->tableView, SLOT(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
     ui->tableView->setModel( model );
     ui->tableView->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
     ui->tableView->resizeColumnsToContents();

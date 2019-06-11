@@ -22,6 +22,7 @@ public:
                                   QWidget *parent = nullptr );
     ~ProductUploadDialog();
     void StartUpload();
+    void OnUploadCompleted( bool const has_error );
 private:
     enum class UploadStatus: unsigned char
     {
@@ -32,7 +33,6 @@ private:
 
     void UploadProductImagesByIndex( int const index );
     void SendUploadCompleteSignalWhenDone();
-    void OnUploadCompleted( bool const has_error );
     void UploadProducts( QJsonArray const & product_list );
 private:
     Ui::ProductUploadDialog *ui;

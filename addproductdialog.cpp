@@ -36,16 +36,18 @@ AddProductDialog::AddProductDialog(QWidget *parent) : QDialog(parent),
         temp_file.clear();
     });
 
-    QObject::connect( ui->product_view, &QTableView::customContextMenuRequested, this,
-                      &AddProductDialog::OnContextMenuItemRequested );
+    QObject::connect( ui->product_view, &QTableView::customContextMenuRequested,
+                      this, &AddProductDialog::OnContextMenuItemRequested );
     QObject::connect( ui->product_view, &QTableView::doubleClicked, this,
                       &AddProductDialog::OnEditItemButtonClicked );
     QObject::connect( ui->choose_image_button, &QToolButton::clicked, this,
                       &AddProductDialog::OnShowImageButtonClicked );
     QObject::connect( ui->add_item_button, &QPushButton::clicked, this,
                       &AddProductDialog::OnAddItemButtonClicked );
-    QObject::connect( data_model, SIGNAL( dataChanged( QModelIndex,QModelIndex,QVector<int> ) ),
-                      ui->product_view, SLOT(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
+    QObject::connect( data_model,
+                      SIGNAL( dataChanged( QModelIndex,QModelIndex,QVector<int>)),
+                      ui->product_view,
+                      SLOT(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
     QObject::connect( ui->edit_item_button, &QPushButton::clicked, this,
                       &AddProductDialog::OnEditItemButtonClicked );
     QObject::connect( ui->remove_item_button, &QPushButton::clicked, this,
@@ -83,7 +85,8 @@ void AddProductDialog::OnAddItemButtonClicked()
 {
     QString const product_name{ ui->name_edit->text().trimmed() };
     if( product_name.isEmpty() ){
-        QMessageBox::information( this, "Add item", "This field cannot be empty" );
+        QMessageBox::information( this, "Add item",
+                                  "This field cannot be empty" );
         ui->name_edit->setFocus();
         return;
     }
@@ -91,7 +94,8 @@ void AddProductDialog::OnAddItemButtonClicked()
     QString const product_price{ ui->price_line->text().trimmed() };
     double const price{ product_price.toDouble( &price_ok ) };
     if( product_price.isEmpty() || !price_ok ){
-        QMessageBox::information( this, "Add item", "You must add a price for the product" );
+        QMessageBox::information( this, "Add item",
+                                  "You must add a price for the product" );
         ui->price_line->clear();
         ui->price_line->setFocus();
         return;
@@ -116,7 +120,9 @@ void AddProductDialog::UpdateModel( utilities::ProductData const & data_item,
     bool const editing_item = index < this->product_item_list.size();
 
     QStandardItem * name_item{ new QStandardItem( data_item.name ) };
-    QStandardItem * price_item{ new QStandardItem( QString::number( data_item.price ) ) };
+    QStandardItem * price_item{
+        new QStandardItem( QString::number( data_item.price ) )
+    };
     QStandardItem * thumbnail_item{ new QStandardItem( "No thumbnail used" ) };
     name_item->setEditable( false );
     price_item->setEditable( false );
@@ -128,7 +134,7 @@ void AddProductDialog::UpdateModel( utilities::ProductData const & data_item,
 
     if( editing_item ){ // when an existing product is edited
         data_model->removeRow( index );
-        data_model->insertRow( index, { name_item, price_item, thumbnail_item } );
+        data_model->insertRow( index, { name_item, price_item, thumbnail_item });
     } else {
         data_model->appendRow( { name_item, price_item, thumbnail_item } );
     }
@@ -139,7 +145,9 @@ void AddProductDialog::OnRemoveItemButtonClicked()
     QModelIndex const index{ ui->product_view->currentIndex() };
     if( !index.isValid() ) return;
     if( !index.parent().isValid() ){
-        int const response = QMessageBox::question( this, "Delete item", "Are you sure?" );
+        int const response{
+            QMessageBox::question( this, "Delete item", "Are you sure?" )
+        };
         if( response == QMessageBox::No ) return;
         int const row = index.row();
         this->product_item_list.removeAt( row );
@@ -150,9 +158,10 @@ void AddProductDialog::OnRemoveItemButtonClicked()
 
 void AddProductDialog::OnShowImageButtonClicked()
 {
-    QString const filename{ QFileDialog::getOpenFileName( this, "Choose custom preview file",
-                                                          "", "PNG Files(*.png);;"
-                                                              "JPEG Files(*.jpg)" ) };
+    auto const filename{
+        QFileDialog::getOpenFileName( this, "Choose custom preview file",
+                                      "", "PNG Files(*.png);;JPEG Files(*.jpg)")
+    };
     if( filename.isEmpty() || filename.isNull() ){
         ui->upload_checkbox->setChecked( false );
         return;
@@ -160,7 +169,8 @@ void AddProductDialog::OnShowImageButtonClicked()
     qint64 const file_size{ QFileInfo( filename ).size() };
     // if file does not exist or it exceeds 150KB
     if( file_size == 0 || file_size > (150 * 1024) ){
-        QMessageBox::warning( this, "Image upload", "The size of the thumbnail exceeds 150KB." );
+        QMessageBox::warning( this, "Image upload",
+                              "The size of the thumbnail exceeds 150KB." );
         ui->upload_checkbox->setChecked( false );
         return;
     }
@@ -193,12 +203,21 @@ void AddProductDialog::OnEditItemButtonClicked()
 
 void AddProductDialog::OnUploadDataToServerButtonClicked()
 {
-    ProductUploadDialog *upload_dialog{ new ProductUploadDialog( product_item_list, this ) };
+    ProductUploadDialog *upload_dialog{
+        new ProductUploadDialog( product_item_list, this )
+    };
     upload_dialog->setAttribute( Qt::WA_DeleteOnClose );
-    connect( upload_dialog, &ProductUploadDialog::uploads_completed, [=]( bool const has_error )
+
+    QObject::connect( upload_dialog,
+                      &ProductUploadDialog::image_upload_completed,
+                      upload_dialog, &ProductUploadDialog::OnUploadCompleted );
+
+    QObject::connect( upload_dialog, &ProductUploadDialog::uploads_completed,
+                      [=]( bool const has_error )
     {
         if( !has_error ){
-            QMessageBox::information( this, "Uploads", "Products successfully submitted" );
+            QMessageBox::information( this, "Uploads",
+                                      "Products successfully submitted" );
             upload_dialog->accept();
             this->accept();
         }

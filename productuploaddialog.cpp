@@ -15,8 +15,6 @@ ProductUploadDialog::ProductUploadDialog( QVector<utilities::ProductData> &produ
 {
     ui->setupUi( this );
     this->setWindowTitle( "Uploads" );
-    QObject::connect( this, &ProductUploadDialog::image_upload_completed, this,
-                      &ProductUploadDialog::OnUploadCompleted );
 }
 
 ProductUploadDialog::~ProductUploadDialog()
@@ -35,11 +33,14 @@ void ProductUploadDialog::OnUploadCompleted( bool const has_error )
 {
     if( !has_error ){
         QJsonArray product_list {};
-        for( auto const & product: products_ ) product_list.append( product.ToJson() );
+        for( auto const & product: products_ ){
+            product_list.append( product.ToJson() );
+        }
         UploadProducts( product_list );
         return;
     }
-    QMessageBox::critical( this, "Upload", "There were errors uploading some of the pictures" );
+    QMessageBox::critical( this, "Upload",
+                           "There were errors uploading some of the pictures" );
 }
 
 void ProductUploadDialog::UploadProducts( QJsonArray const & product_list )

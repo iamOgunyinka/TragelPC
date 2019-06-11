@@ -106,12 +106,16 @@
    <addaction name="actionLogout"/>
    <addaction name="separator"/>
    <addaction name="actionAdd_products"/>
-   <addaction name="actionUpdate_product"/>
+   <addaction name="actionList_all_products"/>
+   <addaction name="separator"/>
+   <addaction name="actionOrders"/>
+   <addaction name="actionShow_all_orders"/>
    <addaction name="separator"/>
    <addaction name="actionAdd_user"/>
    <addaction name="actionAdd_administrator"/>
    <addaction name="separator"/>
    <addaction name="actionSettings"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLogin">
@@ -146,16 +150,11 @@
     <string>Add products</string>
    </property>
   </action>
-  <action name="actionUpdate_product">
+  <action name="actionList_all_products">
    <property name="icon">
     <iconset resource="images.qrc">
-     <normaloff>:/all_images/images/update-icon.png</normaloff>:/all_images/images/update-icon.png</iconset>
+     <normaloff>:/all_images/images/Oxygen480-places-mail-folder-inbox.svg.png</normaloff>:/all_images/images/Oxygen480-places-mail-folder-inbox.svg.png</iconset>
    </property>
-   <property name="text">
-    <string>Update our products</string>
-   </property>
-  </action>
-  <action name="actionList_all_products">
    <property name="text">
     <string>List all products</string>
    </property>

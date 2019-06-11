@@ -16,8 +16,10 @@ public:
     QVariant headerData( int section, Qt::Orientation orientation, int role ) const override;
     int rowCount( QModelIndex const& parent) const override;
     int columnCount( QModelIndex const& parent) const override;
+    bool removeRows( int row, int count, QModelIndex const &parent ) override;
     QVector<utilities::OrderData::Item> const & ItemDataAt( int const row ) const;
     QString ReferenceIdAtIndex( int const row ) const;
+    qint64  OrderIdAtIndex( int const row ) const;
 signals:
 
 public slots:

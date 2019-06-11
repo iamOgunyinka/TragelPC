@@ -42,9 +42,20 @@ int OrderModel::columnCount( QModelIndex const &) const
     return 4;
 }
 
+bool OrderModel::removeRows( int row, int count, QModelIndex const & )
+{
+    orders_.remove( row, count );
+    return true;
+}
+
 QString OrderModel::ReferenceIdAtIndex( int const row ) const
 {
     return orders_[row].reference_id;
+}
+
+qint64 OrderModel::OrderIdAtIndex( int const row ) const
+{
+    return orders_[row].order_id;
 }
 
 QVector<utilities::OrderData::Item> const & OrderModel::ItemDataAt( int const row ) const

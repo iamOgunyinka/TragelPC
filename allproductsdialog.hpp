@@ -22,6 +22,8 @@ private:
     void OnDownloadResultObtained( QJsonObject const & result );
     void OnEditItemButtonClicked();
     void OnRemoveItemButtonClicked();
+    void OnUpdateButtonClicked();
+    void OnImageUploadCompleted( bool const );
     void UpdatePageData();
     void OnNextPageButtonClicked();
     void OnPreviousPageButtonClicked();

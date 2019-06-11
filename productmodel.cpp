@@ -54,3 +54,8 @@ int ProductModel::columnCount( QModelIndex const & ) const
 {
     return 3;
 }
+
+utilities::ProductData& ProductModel::DataAtIndex( int const row )
+{
+    return products_[row];
+}
