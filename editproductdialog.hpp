@@ -20,8 +20,11 @@ public:
     void SetThumbnail( QString const & );
     void SetName( QString const & );
     void SetPrice( double const );
+    void dropEvent( QDropEvent *event ) override;
+    void dragEnterEvent(QDragEnterEvent *event) override;
 private:
     void OnChangeButtonClicked();
+    void ValidateImageData( QString const & filename );
 private:
     Ui::EditProductDialog *ui;
     QString temp_file {};

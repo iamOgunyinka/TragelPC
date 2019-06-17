@@ -207,11 +207,6 @@ void AddProductDialog::OnUploadDataToServerButtonClicked()
         new ProductUploadDialog( product_item_list, this )
     };
     upload_dialog->setAttribute( Qt::WA_DeleteOnClose );
-
-    QObject::connect( upload_dialog,
-                      &ProductUploadDialog::image_upload_completed,
-                      upload_dialog, &ProductUploadDialog::OnUploadCompleted );
-
     QObject::connect( upload_dialog, &ProductUploadDialog::uploads_completed,
                       [=]( bool const has_error )
     {

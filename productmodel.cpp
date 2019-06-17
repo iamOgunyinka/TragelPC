@@ -2,8 +2,9 @@
 #include <QJsonObject>
 
 
-ProductModel::ProductModel( QVector<utilities::ProductData> &&products, QObject *parent )
-    : QAbstractTableModel( parent ), products_{ std::move( products ) }
+ProductModel::ProductModel( QVector<utilities::ProductData>& products,
+                            QObject *parent )
+    : QAbstractTableModel( parent ), products_{ products }
 {
 }
 
@@ -34,7 +35,8 @@ QVariant ProductModel::data( QModelIndex const &index, int role ) const
     return QVariant{};
 }
 
-QVariant ProductModel::headerData( int section, Qt::Orientation orientation, int role ) const
+QVariant ProductModel::headerData( int section, Qt::Orientation orientation,
+                                   int role ) const
 {
     if( role != Qt::DisplayRole ) return QVariant{};
     if( orientation == Qt::Horizontal ){
@@ -53,9 +55,4 @@ int ProductModel::rowCount( QModelIndex const & ) const
 int ProductModel::columnCount( QModelIndex const & ) const
 {
     return 3;
-}
-
-utilities::ProductData& ProductModel::DataAtIndex( int const row )
-{
-    return products_[row];
 }

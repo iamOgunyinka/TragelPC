@@ -80,6 +80,7 @@
     </widget>
     <addaction name="menuMaintenance"/>
     <addaction name="menuSubscription"/>
+    <addaction name="actionReports"/>
     <addaction name="actionSettings"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -253,6 +254,15 @@
    </property>
    <property name="text">
     <string>Show all orders</string>
+   </property>
+  </action>
+  <action name="actionReports">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/all_images/images/x-12-512.png</normaloff>:/all_images/images/x-12-512.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reports</string>
    </property>
   </action>
  </widget>

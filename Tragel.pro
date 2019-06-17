@@ -43,7 +43,9 @@ SOURCES += \
     productuploaddialog.cpp \
     uploadwidget.cpp \
     ordermodel.cpp \
-    orderitemdetaildialog.cpp
+    orderitemdetaildialog.cpp \
+    updateuserdialog.cpp \
+    removeuserconfirmationdialog.cpp
 
 HEADERS += \
     DarkStyle.h \
@@ -64,7 +66,9 @@ HEADERS += \
     productuploaddialog.hpp \
     uploadwidget.hpp \
     ordermodel.hpp \
-    orderitemdetaildialog.hpp
+    orderitemdetaildialog.hpp \
+    updateuserdialog.hpp \
+    removeuserconfirmationdialog.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
@@ -78,7 +82,9 @@ FORMS += \
     allproductsdialog.ui \
     productuploaddialog.ui \
     uploadwidget.ui \
-    orderitemdetaildialog.ui
+    orderitemdetaildialog.ui \
+    updateuserdialog.ui \
+    removeuserconfirmationdialog.ui
 
 RESOURCES += \
     darkstyle.qrc \

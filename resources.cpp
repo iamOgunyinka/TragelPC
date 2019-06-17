@@ -27,7 +27,9 @@ bool ParsePageUrls( QJsonObject const &result, PageQuery & page_query )
             previous_url = page_info.value( "prev_url" ).toString();
         }
         uint const page_number = page_info.value( "page" ).toInt();
-        utilities::UrlData next_page_info{ next_url, previous_url, page_number };
+        utilities::UrlData next_page_info{
+            next_url, previous_url, page_number
+        };
         page_query.other_url = std::move( next_page_info );
     }
     return true;
@@ -48,8 +50,8 @@ QNetworkRequest PostRequestInterface( QUrl const &address )
     return request;
 }
 
-QPair<QNetworkRequest, QByteArray> PostImageRequestInterface( QUrl const &address,
-                                                              QVector<QString> const & data )
+QPair<QNetworkRequest, QByteArray> PostImageRequestInterface(
+        QUrl const &address, QVector<QString> const & data )
 {
     if( data.size() < 2 ) return {};
     QString const filename{ data[0] };
@@ -59,8 +61,9 @@ QPair<QNetworkRequest, QByteArray> PostImageRequestInterface( QUrl const &addres
     request.setHeader( QNetworkRequest::UserAgentHeader, USER_AGENT );
     QString const boundary{ "--TragelBoundary7MA4YWxkTrZu7gW" }; // random string
     QByteArray payload{ QString( "--" + boundary + "\r\n" ).toLocal8Bit() };
-    payload.append( QString( "Content-Disposition: form-data; name=\"photo\"; filename=\""
-                             + filename + "\"\r\nContent-Type: image/" + file_format
+    payload.append( QString( "Content-Disposition: form-data; name=\"photo\"; "
+                             "filename=\"" + filename + "\"\r\nContent-Type: "
+                                                        "image/" + file_format
                              + "\r\n\r\n" ).toLocal8Bit() );
     QFile file{ filename };
     if( !file.open( QIODevice::ReadOnly ) ) return {};
@@ -68,31 +71,44 @@ QPair<QNetworkRequest, QByteArray> PostImageRequestInterface( QUrl const &addres
     payload.append( "\r\n" );
     payload.append( "--" + boundary + "--\r\n" );
     request.setRawHeader( "Content-Type",
-                          QString( "multipart/form-data; boundary=" + boundary ).toLocal8Bit() );
-    request.setRawHeader( "Content-Length", QByteArray::number( payload.length() ) );
+                          QString( "multipart/form-data; boundary="
+                                   + boundary ).toLocal8Bit() );
+    request.setRawHeader( "Content-Length",
+                          QByteArray::number( payload.length() ) );
     return { request, payload };
 }
 
-QJsonObject GetJsonNetworkData( QNetworkReply* network_reply, bool show_error_message )
+QJsonObject GetJsonNetworkData( QNetworkReply* network_reply,
+                                bool show_error_message )
 {
     if( !network_reply ) return {};
     if( network_reply->error() != QNetworkReply::NoError ){
-        if( show_error_message )
-            QMessageBox::critical( nullptr, "Server's response", network_reply->errorString() );
+        if( show_error_message ){
+            QMessageBox::critical( nullptr, "Server's response",
+                                   network_reply->errorString() );
+        }
         return {};
     }
     QByteArray const network_response = network_reply->readAll();
-    QJsonDocument const json_document = QJsonDocument::fromJson( network_response );
-
+    QJsonDocument const json_document{
+        QJsonDocument::fromJson( network_response )
+    };
     if( json_document.isNull() ) return {};
     return json_document.object();
 }
 
 QJsonObject ProductData::ToJson() const
 {
-    QJsonObject const object{ { "price", price }, {"name", name },
-                              { "thumbnail", thumbnail_location },
-                              { "url", constant_url } };
+    QJsonObject object{ { "price", price }, {"name", name },
+                        { "thumbnail", thumbnail_location },
+                        { "url", constant_url } };
+    if( product_id != 0 ) object.insert( "id", product_id );
     return object;
+}
+
+bool operator==( ProductData const & a, ProductData const & b )
+{
+    return a.name == b.name && a.thumbnail_location == b.thumbnail_location
+            && a.constant_url == b.constant_url && a.price == b.price;
 }
 }

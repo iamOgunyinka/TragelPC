@@ -34,9 +34,11 @@ private:
     void    OnPreviousPageButtonClicked();
     void    OnFirstPageButtonClicked();
     void    OnLastPageButtonClicked();
+    QUrl    GetUrlNewMetaFromUrl( QString const &new_url );
 private:
     utilities::PageQuery orders_page_query{};
     Ui::OrderWindow *ui;
+    QNetworkRequest request_;
 };
 
 #endif // ORDERWINDOW_HPP

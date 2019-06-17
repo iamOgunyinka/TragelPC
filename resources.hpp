@@ -10,6 +10,7 @@
 #include <QNetworkCookie>
 #include <QList>
 #include <QVector>
+#include <QProgressDialog>
 
 namespace utilities {
     static QString const USER_AGENT{ "Mozilla/5.0 (X11; Linux i586; rv:31.0) "
@@ -18,6 +19,16 @@ namespace utilities {
     {
         NetworkManager() = default;
     public:
+        static QNetworkAccessManager& GetNetworkWithCookie()
+        {
+            auto& network_manager{ GetNetwork() };
+            auto& session_cookie{ GetSessionCookie() };
+            network_manager.setCookieJar( &session_cookie );
+            // don't take ownership of the session cookie
+            session_cookie.setParent( nullptr );
+            return network_manager;
+        }
+
         static QNetworkAccessManager& GetNetwork()
         {
             static QNetworkAccessManager network_manager {};
@@ -30,12 +41,16 @@ namespace utilities {
             return network_cookie;
         }
 
-        static bool SetNetworkCookie( QNetworkCookieJar& jar, QNetworkReply* network_reply )
+        static bool SetNetworkCookie( QNetworkCookieJar& jar,
+                                      QNetworkReply* network_reply )
         {
             using CookieList = QList<QNetworkCookie>;
-            auto const cookie_variant = network_reply->header( QNetworkRequest::SetCookieHeader );
-            CookieList const cookies = qvariant_cast<CookieList>( cookie_variant );
-            return jar.setCookiesFromUrl( cookies, network_reply->request().url() );
+            auto const cookie_variant = network_reply->header(
+                        QNetworkRequest::SetCookieHeader );
+            CookieList const cookies = qvariant_cast<CookieList>(
+                        cookie_variant );
+            return jar.setCookiesFromUrl( cookies,
+                                          network_reply->request().url() );
         }
     };
 
@@ -50,7 +65,9 @@ namespace utilities {
 
         static QSettings& GetAppSettings()
         {
-            static QSettings app_settings{ QSettings::UserScope, "Froist Inc.", "Tragel" };
+            static QSettings app_settings{
+                QSettings::UserScope, "Froist Inc.", "Tragel"
+            };
             return app_settings;
         }
     };
@@ -112,7 +129,11 @@ namespace utilities {
             return endpoint_object.value( "get_product" ).toString();
         }
 
-        QString UpdateProduct() const {
+        QString ListStaffs() const {
+            return endpoint_object.value( "list_users" ).toString();
+        }
+
+        QString UpdateProducts() const {
             return endpoint_object.value( "update_product" ).toString();
         }
 
@@ -154,7 +175,8 @@ namespace utilities {
             return endpoint_object;
         }
 
-        static void ParseEndpointsFromJson( Endpoint& endpoint, QJsonObject const & json_object )
+        static void ParseEndpointsFromJson( Endpoint& endpoint,
+                                            QJsonObject const & json_object )
         {
             endpoint.endpoint_object = json_object;
         }
@@ -189,9 +211,12 @@ namespace utilities {
         QString thumbnail_location;
         QString constant_url;
         double  price;
+        qint64  product_id{ 0 };
 
         QJsonObject ToJson() const;
     };
+
+    bool operator==( ProductData const & a, ProductData const & b );
 
     struct OrderData
     {
@@ -207,13 +232,46 @@ namespace utilities {
         QVector<Item> items;
     };
 
-    bool ParsePageUrls( QJsonObject const & page_url, PageQuery& page_information );
+    bool ParsePageUrls( QJsonObject const & page_url,
+                        PageQuery& page_information );
 
     QNetworkRequest GetRequestInterface( QUrl const &address );
     QNetworkRequest PostRequestInterface( QUrl const &address );
-    QJsonObject     GetJsonNetworkData(QNetworkReply *data, bool show_error_message = false );
-    QPair<QNetworkRequest, QByteArray> PostImageRequestInterface( QUrl const &address,
-                                                                  QVector<QString> const &data );
+    QJsonObject     GetJsonNetworkData( QNetworkReply *data,
+                                        bool show_error_message = false );
+    QPair<QNetworkRequest, QByteArray> PostImageRequestInterface(
+            QUrl const &address, QVector<QString> const &data );
+    template<typename FuncOnSuccess, typename FuncOnError>
+    void SendNetworkRequest( QUrl const & address, FuncOnSuccess && on_success,
+                             FuncOnError && on_error, QWidget *parent,
+                             bool report_error )
+    {
+        QNetworkRequest const request{ GetRequestInterface( address ) };
+        auto& network_manager{ NetworkManager::GetNetworkWithCookie() };
+        QProgressDialog* progress_dialog {
+            new QProgressDialog( "Please wait", "Cancel", 1, 100, parent )
+        };
+        progress_dialog->show();
+        QNetworkReply* const reply{ network_manager.get( request ) };
+        QObject::connect( reply, &QNetworkReply::downloadProgress,
+                          [=]( qint64 const received, qint64 const total )
+        {
+            progress_dialog->setMaximum( total + ( total * 0.25 ));
+            progress_dialog->setValue( received );
+        });
+        QObject::connect( progress_dialog, &QProgressDialog::canceled, reply,
+                          &QNetworkReply::abort );
+        QObject::connect( reply, &QNetworkReply::finished, progress_dialog,
+                          &QProgressDialog::close );
+        QObject::connect( reply, &QNetworkReply::finished, [=]
+        {
+            QJsonObject const result {
+                utilities::GetJsonNetworkData( reply, report_error )
+            };
+            if( result.isEmpty() ) on_error();
+            else on_success( result );
+        });
+    }
 }
 
 #endif // RESOURCES_HPP

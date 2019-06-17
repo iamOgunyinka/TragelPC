@@ -21,7 +21,8 @@ public:
     ~CreateStaffDialog();
     void SetUserRole( UserRole role );
 signals:
-    // emitted instead of accepted,since we dont want the window to close(hence deleted)just yet
+    // emitted instead of accepted,since we dont want the window to
+    // close(hence deleted)just yet
     void validated();
 private:
     QJsonObject GetStaffData() const;

@@ -21,9 +21,7 @@ private:
     void OnCustomContextMenuRequested( QPoint const & point );
     void OnDownloadResultObtained( QJsonObject const & result );
     void OnEditItemButtonClicked();
-    void OnRemoveItemButtonClicked();
     void OnUpdateButtonClicked();
-    void OnImageUploadCompleted( bool const );
     void UpdatePageData();
     void OnNextPageButtonClicked();
     void OnPreviousPageButtonClicked();
@@ -31,7 +29,8 @@ private:
     void OnLastPageButtonClicked();
 private:
     Ui::AllProductsDialog *ui;
-    utilities::PageQuery product_query_data;
+    utilities::PageQuery product_query_data_;
+    QVector<utilities::ProductData> products_ {};
 };
 
 #endif // ALLPRODUCTSDIALOG_HPP

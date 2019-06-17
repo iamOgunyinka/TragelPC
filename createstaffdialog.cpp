@@ -44,13 +44,16 @@ void CreateStaffDialog::OnAddStaffButtonClicked()
     QString const username{ ui->username_edit->text().trimmed() };
     QString const password{ ui->password_edit->text() };
 
-    if( name.isEmpty() || address.isEmpty() || email.isEmpty() || username.isEmpty() || password.isEmpty() ){
+    if( name.isEmpty() || address.isEmpty() || email.isEmpty() ||
+            username.isEmpty() || password.isEmpty() )
+    {
         ui->name_edit->setFocus();
         return;
     }
 
     if( password != ui->repeat_password_edit->text() ){
-        QMessageBox::critical( this, "Password", "The password fields do not match" );
+        QMessageBox::critical( this, "Password",
+                               "The password fields do not match" );
         ui->repeat_password_edit->setFocus();
         return;
     }
@@ -65,10 +68,14 @@ QJsonObject CreateStaffDialog::GetStaffData() const
     QString const username{ ui->username_edit->text().trimmed() };
     QString const password{ ui->password_edit->text() };
 
-    QByteArray const user_pass{ QString( username + ":" + password ).toLocal8Bit().toBase64() };
-    QJsonObject const value{ { "name", name }, { "address", address }, { "email", email },
-                             { "username_password", QString( user_pass ) },
-                             { "type", static_cast<int>( user_role ) } };
+    QByteArray const user_pass{
+        QString( username + ":" + password ).toLocal8Bit().toBase64()
+    };
+    QJsonObject const value{
+        { "name", name }, { "address", address }, { "email", email },
+        { "username_password", QString( user_pass ) },
+        { "type", static_cast<int>( user_role ) }
+    };
     return value;
 }
 
@@ -79,10 +86,7 @@ void CreateStaffDialog::SendStaffRegistrationUserData()
                                                            "Cancel", 1, 100, this )};
     QUrl const address{ utilities::Endpoint::GetEndpoints().CreateUser() };
     QNetworkRequest const request{ utilities::PostRequestInterface( address ) };
-    auto& network_manager = utilities::NetworkManager::GetNetwork();
-    auto& network_cookie = utilities::NetworkManager::GetSessionCookie();
-    network_manager.setCookieJar( &network_cookie );
-    network_cookie.setParent( nullptr );
+    auto& network_manager = utilities::NetworkManager::GetNetworkWithCookie();
 
     QByteArray const payload{ QJsonDocument( GetStaffData() ).toJson() };
     progress_dialog->show();

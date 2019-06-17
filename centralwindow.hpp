@@ -35,6 +35,8 @@ private:
     void OnAddProductTriggered();
     void OnAddUserTriggered();
     void OnListAllProductsTriggered();
+    void OnListUsersTriggered();
+    void OnReportsActionTriggered();
     void GetEndpointsFromServer( QString const & url, QString const & username,
                                  QString const & password, QString const & company_id );
     void WriteEndpointsToPersistenceStorage( utilities::Endpoint const & );

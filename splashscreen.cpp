@@ -13,8 +13,8 @@
 #include "resources.hpp"
 #include "framelesswindow.h"
 
-SplashScreen::SplashScreen( QApplication& app, QObject *parent ) : QObject(parent),
-    main_app{ app }, splash_screen{ nullptr }
+SplashScreen::SplashScreen( QApplication& app, QObject *parent ) :
+    QObject( parent ), main_app{ app }, splash_screen{ nullptr }
 {
     QPixmap splash_screen_pixmap{ ":/all_images/images/tragel.png" };
     splash_screen = new QSplashScreen{ splash_screen_pixmap.scaled( 600, 400 ) };
@@ -34,4 +34,3 @@ void SplashScreen::close( QWidget *main_window )
 {
     splash_screen->finish( main_window );
 }
-

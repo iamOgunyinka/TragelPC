@@ -19,6 +19,7 @@
 #include "resources.hpp"
 #include "userlogindialog.hpp"
 #include "ui_centralwindow.h"
+#include "updateuserdialog.hpp"
 
 
 CentralWindow::CentralWindow( QWidget *parent ) :
@@ -45,6 +46,10 @@ CentralWindow::CentralWindow( QWidget *parent ) :
                       &CentralWindow::OnAddUserTriggered );
     QObject::connect( ui->actionList_all_products, &QAction::triggered, this,
                       &CentralWindow::OnListAllProductsTriggered );
+    QObject::connect( ui->actionUpdate_Change, &QAction::triggered, this,
+                      &CentralWindow::OnListUsersTriggered );
+    QObject::connect( ui->actionReports, &QAction::triggered, this,
+                      &CentralWindow::OnReportsActionTriggered );
 }
 
 CentralWindow::~CentralWindow()
@@ -72,7 +77,29 @@ void CentralWindow::OnAddProductTriggered()
     sub_window->setWindowTitle( "Add new product(s)" );
     QObject::connect( product_dialog, &AddProductDialog::finished, sub_window,
              &QMdiSubWindow::close );
-    sub_window->showMaximized();
+    sub_window->setFixedHeight( workspace->height() );
+    product_dialog->show();
+}
+
+void CentralWindow::OnReportsActionTriggered()
+{
+
+}
+
+void CentralWindow::OnListUsersTriggered()
+{
+    ui->actionUpdate_Change->setDisabled( true );
+    UpdateUserDialog* update_dialog{ new UpdateUserDialog( this ) };
+    QMdiSubWindow* sub_window{ workspace->addSubWindow( update_dialog )};
+    sub_window->setAttribute( Qt::WA_DeleteOnClose );
+    sub_window->setFixedHeight( workspace->height() );
+    QObject::connect( update_dialog, &UpdateUserDialog::finished, [=]{
+        if( ui->actionUpdate_Change )
+            ui->actionUpdate_Change->setEnabled( true );
+        sub_window->close();
+    });
+    update_dialog->show();
+    update_dialog->GetAllUsers();
 }
 
 void CentralWindow::OnAddUserTriggered()
@@ -89,12 +116,14 @@ void CentralWindow::OnAddUserTriggered()
         sub_window->setWindowTitle( "Create staff" );
         staff_dialog->SetUserRole( UserRole::BasicUser );
     }
-    QObject::connect( sub_window, &QMdiSubWindow::destroyed,
-             [=]{ object_sender->setEnabled( true ); });
+    QObject::connect( staff_dialog, &CreateStaffDialog::finished, [=]{
+        sub_window->close();
+        object_sender->setEnabled( true );
+    });
     QSize const min_max_size{ 516, 370 };
     sub_window->setMinimumSize( min_max_size );
     sub_window->setMaximumSize( min_max_size );
-    sub_window->show();
+    staff_dialog->show();
 }
 
 void CentralWindow::OnOrderActionTriggered()
@@ -105,8 +134,9 @@ void CentralWindow::OnOrderActionTriggered()
     OrderWindow* order_window{ new OrderWindow };
     QMdiSubWindow *sub_window = workspace->addSubWindow( order_window );
     sub_window->setAttribute( Qt::WA_DeleteOnClose );
+    sub_window->setFixedHeight( workspace->height() );
     sub_window->setWindowTitle( "Orders" );
-    sub_window->showMaximized();
+    order_window->show();
     QObject::connect( order_window, &OrderWindow::destroyed, [=]{
         if( ui->menuOrders ) ui->menuOrders->setEnabled( true );
         object_sender->setEnabled( true );
@@ -121,12 +151,13 @@ void CentralWindow::OnListAllProductsTriggered()
     parent_window->setFixedHeight( workspace->height() );
     parent_window->setAttribute( Qt::WA_DeleteOnClose );
     parent_window->setWindowTitle( "Our items" );
-    parent_window->show();
+    dialog->show();
     dialog->DownloadProducts();
-    QObject::connect( parent_window, &QMdiSubWindow::destroyed, [=]{
+    QObject::connect( dialog, &AllProductsDialog::finished, [=]{
         if( ui->actionList_all_products ){
             ui->actionList_all_products->setEnabled( true );
         }
+        parent_window->close();
     });
 }
 
@@ -170,6 +201,8 @@ void CentralWindow::LogUserIn( QString const & username,
                                       "You're successfully logged in" );
             auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
             utilities::NetworkManager::SetNetworkCookie( session_cookie, reply );
+        } else {
+            ui->actionLogin->setEnabled( true );
         }
     });
 }
@@ -202,18 +235,14 @@ void CentralWindow::OnLogoutButtonClicked()
     SetEnableActionButtons( false );
     ui->actionLogin->setEnabled( true );
     auto const & endpoints = utilities::Endpoint::GetEndpoints();
-    auto& network_manager{ utilities::NetworkManager::GetNetwork() };
-    auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
-    network_manager.setCookieJar( &session_cookie );
-    // QNAM takes owner of its cookie jar, so let's snatch it from it
-    session_cookie.setParent( nullptr );
+    auto& network_manager{ utilities::NetworkManager::GetNetworkWithCookie() };
     QNetworkRequest const request{
         utilities::GetRequestInterface( endpoints.LogoutFrom() )
     };
     network_manager.get( request );
     // let's clear the cookies
-    session_cookie.setCookiesFromUrl( QList<QNetworkCookie>{},
-                                      endpoints.LoginTo() );
+    utilities::NetworkManager::GetSessionCookie().setCookiesFromUrl(
+                QList<QNetworkCookie>{}, endpoints.LoginTo() );
 
     foreach( QMdiSubWindow* const sub_window, workspace->subWindowList() ){
         sub_window->close();
@@ -240,6 +269,7 @@ void CentralWindow::SetEnableActionButtons( bool const enable )
     ui->actionLogin->setEnabled( enable );
     ui->actionLogout->setEnabled( enable );
     ui->actionOrders->setEnabled( enable );
+    ui->actionReports->setEnabled( enable );
     ui->actionSettings->setEnabled( enable );
     ui->actionShow_all_users->setEnabled( enable );
     ui->actionShow_all_orders->setEnabled( enable );
@@ -280,7 +310,7 @@ void CentralWindow::LoadSettingsFile()
     QByteArray const endpoint_obj_settings{ url_map.toByteArray() };
     // is everything already set up?
     if( url_map.isValid() && !endpoint_obj_settings.isEmpty() ){
-        auto &endpoints = utilities::Endpoint::GetEndpoints();
+        auto& endpoints = utilities::Endpoint::GetEndpoints();
         QJsonObject const settings{
             QJsonDocument::fromJson( endpoint_obj_settings ).object()
         };

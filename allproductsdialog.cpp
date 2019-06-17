@@ -13,6 +13,7 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QAction>
+#include <QJsonDocument>
 
 AllProductsDialog::AllProductsDialog( QWidget *parent ) :
     QDialog( parent ),
@@ -48,60 +49,39 @@ void AllProductsDialog::OnEditItemButtonClicked()
     QModelIndex const index{ ui->tableView->currentIndex() };
     if( !index.isValid() ) return;
 
-    ProductModel* model{ qobject_cast<ProductModel*>( ui->tableView->model() )};
-    utilities::ProductData& data{ model->DataAtIndex( index.row() ) };
-    EditProductDialog* edit_dialog{ new EditProductDialog( this) };
-    edit_dialog->setAttribute( Qt::WA_DeleteOnClose );
+    utilities::ProductData& data{ products_[ index.row() ] };
+    EditProductDialog* edit_dialog{ new EditProductDialog( this ) };
     edit_dialog->SetName( data.name );
     edit_dialog->SetPrice( data.price );
-    if( edit_dialog->exec() != QDialog::Accepted ) return;
-
-    utilities::ProductData new_data{ edit_dialog->GetValue() };
-    data.constant_url = "1"; // temporarily used to mark dirty cache
-    data.name = new_data.name;
-    data.price = new_data.price;
-    if( !new_data.thumbnail_location.isEmpty() ){
-        data.thumbnail_location = new_data.thumbnail_location;
-    }
-    if( !ui->update_button->isEnabled() ){
-        ui->update_button->setDisabled( false);
-    }
-}
-
-void AllProductsDialog::OnImageUploadCompleted( bool const has_error )
-{
-    if( !has_error ){
-        QJsonArray product_list {};
-        for( auto const & product: products_ ){
-            product_list.append( product.ToJson() );
+    if( edit_dialog->exec() == QDialog::Accepted ){
+        utilities::ProductData const new_data{ edit_dialog->GetValue() };
+        if( data == new_data ) return; // no changes? OK!
+        data.name = new_data.name;
+        data.price = new_data.price;
+        data.constant_url = "1"; // temporarily used to mark dirty cache
+        if( !new_data.thumbnail_location.isEmpty() ){
+            data.thumbnail_location = new_data.thumbnail_location;
         }
-        UploadProducts( product_list );
-        return;
+        if( !ui->update_button->isEnabled() ){
+            ui->update_button->setDisabled( false );
+        }
     }
-    QMessageBox::critical( this, "Upload",
-                           "There were errors uploading some of the pictures" );
+    edit_dialog->setAttribute( Qt::WA_DeleteOnClose );
 }
+
 
 void AllProductsDialog::OnUpdateButtonClicked()
 {
-    QVector<utilities::ProductData> products {};
-    ProductModel* model{ qobject_cast<ProductModel*>( ui->tableView->model() )};
-    for( int i = 0; i != model->rowCount(); ++i ){
-        products.push_back( model->DataAtIndex( i ) );
-    }
-
-    ProductUploadDialog* upload_dialog{
-        new ProductUploadDialog( products, this )
+    ProductUploadDialog *upload_dialog{
+        new ProductUploadDialog( products_, this )
     };
-    QObject::connect( upload_dialog,
-                      &ProductUploadDialog::image_upload_completed,
-                      this, &AllProductsDialog::OnImageUploadCompleted );
+    upload_dialog->setAttribute( Qt::WA_DeleteOnClose );
     QObject::connect( upload_dialog, &ProductUploadDialog::uploads_completed,
                       [=]( bool const has_error )
     {
         if( !has_error ){
             QMessageBox::information( this, "Uploads",
-                                      "Products successfully updated" );
+                                      "Products successfully submitted" );
             upload_dialog->accept();
             this->accept();
         }
@@ -110,32 +90,27 @@ void AllProductsDialog::OnUpdateButtonClicked()
     upload_dialog->StartUpload();
 }
 
-void AllProductsDialog::OnRemoveItemButtonClicked()
-{
-
-}
-
 void AllProductsDialog::OnFirstPageButtonClicked()
 {
-    QUrl const first_page_address{ product_query_data.first_url };
+    QUrl const first_page_address{ product_query_data_.first_url };
     DownloadProducts( first_page_address );
 }
 
 void AllProductsDialog::OnLastPageButtonClicked()
 {
-    QUrl const last_page_address{ product_query_data.last_url };
+    QUrl const last_page_address{ product_query_data_.last_url };
     DownloadProducts( last_page_address );
 }
 
 void AllProductsDialog::OnNextPageButtonClicked()
 {
-    QUrl const& next_page_address{ product_query_data.other_url.next_url };
+    QUrl const& next_page_address{ product_query_data_.other_url.next_url };
     DownloadProducts( next_page_address );
 }
 
 void AllProductsDialog::OnPreviousPageButtonClicked()
 {
-    QUrl const& next_page_address{ product_query_data.other_url.previous_url };
+    QUrl const& next_page_address{ product_query_data_.other_url.previous_url };
     DownloadProducts( next_page_address );
 }
 
@@ -148,13 +123,9 @@ void AllProductsDialog::OnCustomContextMenuRequested( QPoint const &point )
     custom_menu.setWindowTitle( "Menu" );
     if( !index.parent().isValid() ){
         QAction* action_edit{ new QAction( "Edit" ) };
-        QAction* action_remove{ new QAction( "Remove" ) };
         QObject::connect( action_edit, &QAction::triggered, this,
                           &AllProductsDialog::OnEditItemButtonClicked );
-        QObject::connect( action_remove, &QAction::triggered, this,
-                          &AllProductsDialog::OnRemoveItemButtonClicked );
         custom_menu.addAction( action_edit );
-        custom_menu.addAction( action_remove );
     }
     custom_menu.exec( ui->tableView->mapToGlobal( point ) );
 }
@@ -166,40 +137,12 @@ void AllProductsDialog::DownloadProducts( QUrl const & address )
     ui->prev_button->setDisabled( true );
     ui->next_button->setDisabled( true );
 
-    QProgressDialog* progress_dialog{
-        new QProgressDialog( "Please wait", "Cancel", 1, 100, this )
-    };
-    progress_dialog->show();
-    QNetworkAccessManager& network_manager{
-        utilities::NetworkManager::GetNetwork()
-    };
-    QNetworkCookieJar& session_cookie{
-        utilities::NetworkManager::GetSessionCookie()
-    };
-    network_manager.setCookieJar( &session_cookie );
-    // network manager doesn't own the session cookie
-    session_cookie.setParent( nullptr );
-    QNetworkRequest request{ utilities::GetRequestInterface( address ) };
-    QNetworkReply* reply{ network_manager.get( request ) };
-
-    QObject::connect( reply, &QNetworkReply::downloadProgress,
-                      [=]( qint64 const received, qint64 const total )
-    {
-        progress_dialog->setMaximum( total + ( total * 0.25 ));
-        progress_dialog->setValue( received );
-    });
-    QObject::connect( progress_dialog, &QProgressDialog::canceled, reply,
-                      &QNetworkReply::abort );
-    QObject::connect( reply, &QNetworkReply::finished, progress_dialog,
-                      &QProgressDialog::close );
-    QObject::connect( reply, &QNetworkReply::finished, [=]
-    {
-        QJsonObject const result{
-            utilities::GetJsonNetworkData( reply, true )
-        };
-        if( result.isEmpty() ) return;
-        OnDownloadResultObtained( result );
-    });
+    auto on_success = std::bind( &AllProductsDialog::OnDownloadResultObtained,
+                                 this, std::placeholders::_1 );
+    auto on_error = []{};
+    auto const show_error{ true };
+    utilities::SendNetworkRequest( address, on_success, on_error, this,
+                                   show_error );
 }
 
 void AllProductsDialog::DownloadProducts()
@@ -210,16 +153,18 @@ void AllProductsDialog::DownloadProducts()
 
 void AllProductsDialog::UpdatePageData()
 {
-    utilities::UrlData const& url_data{ product_query_data.other_url };
-    ui->page_label->setText( QString( "Page %1 of %2" ).arg(
-                                 url_data.page_number ).arg(
-                                 product_query_data.number_of_pages ));
-    auto& page_number = url_data.page_number;
-    if( page_number < product_query_data.number_of_pages ){
+    utilities::UrlData const& url_data{ product_query_data_.other_url };
+    ui->page_label->setText( QString( "Page %1 of %2 (Total : %3 items)" )
+                             .arg( url_data.page_number )
+                             .arg( product_query_data_.number_of_pages )
+                             .arg( product_query_data_.total_result ));
+    auto const page_number = url_data.page_number;
+    if( page_number < product_query_data_.number_of_pages ){
         ui->next_button->setEnabled( true );
         ui->last_page_button->setEnabled( true );
-    } else if( page_number > 1 ){
-        if( page_number == product_query_data.number_of_pages ){
+    }
+    if( page_number > 1 ){
+        if( page_number == product_query_data_.number_of_pages ){
             ui->prev_button->setEnabled( true );
             ui->first_page_button->setEnabled( true );
         } else {
@@ -233,13 +178,13 @@ void AllProductsDialog::UpdatePageData()
 
 void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
 {
-    bool const suceeds = utilities::ParsePageUrls( result, product_query_data );
+    bool const suceeds = utilities::ParsePageUrls( result, product_query_data_ );
     if( !suceeds ){
         QMessageBox::information( this, "Products", "No products found" );
         return;
     }
+    products_.clear();
     QJsonArray product_array{ result.value( "products" ).toArray() };
-    QVector<utilities::ProductData> products {};
     while( !product_array.isEmpty() ){
         QJsonValue const value{ product_array[0] };
         if( value.isArray() ){
@@ -251,16 +196,19 @@ void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
                 QString const thumbnail_url{
                     object.value( "thumbnail" ).toString()
                 };
+                qint64 const product_id{ object.value( "id" ).toInt() };
                 double const price{ object.value( "price" ).toDouble() };
-                products.push_back( utilities::ProductData{
-                                        name, thumbnail_url, "", price });
+                utilities::ProductData product {
+                    name, thumbnail_url, "", price, product_id
+                };
+                products_.push_back( std::move( product ) );
             }
             break;
         }
     }
     UpdatePageData();
     ProductModel *new_product_model {
-        new ProductModel( std::move( products ), ui->tableView )
+        new ProductModel( products_, ui->tableView )
     };
     QObject::connect( new_product_model, &ProductModel::destroyed,
                       new_product_model, &ProductModel::deleteLater );

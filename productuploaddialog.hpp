@@ -22,7 +22,6 @@ public:
                                   QWidget *parent = nullptr );
     ~ProductUploadDialog();
     void StartUpload();
-    void OnUploadCompleted( bool const has_error );
 private:
     enum class UploadStatus: unsigned char
     {
@@ -31,6 +30,7 @@ private:
         ErrorEncountered = 0x20
     };
 
+    void OnUploadCompleted( bool const has_error );
     void UploadProductImagesByIndex( int const index );
     void SendUploadCompleteSignalWhenDone();
     void UploadProducts( QJsonArray const & product_list );

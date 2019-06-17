@@ -1,6 +1,7 @@
 #include "ordermodel.hpp"
 
-OrderModel::OrderModel( QVector<utilities::OrderData> &&orders, QObject *parent )
+OrderModel::OrderModel( QVector<utilities::OrderData> &&orders,
+                        QObject *parent )
     : QAbstractTableModel( parent ), orders_{ std::move( orders ) }
 {
 }
@@ -58,12 +59,14 @@ qint64 OrderModel::OrderIdAtIndex( int const row ) const
     return orders_[row].order_id;
 }
 
-QVector<utilities::OrderData::Item> const & OrderModel::ItemDataAt( int const row ) const
+QVector<utilities::OrderData::Item> const & OrderModel::ItemDataAt(
+        int const row ) const
 {
     return orders_[row].items;
 }
 
-QVariant OrderModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant OrderModel::headerData( int section, Qt::Orientation orientation,
+                                 int role) const
 {
     if( role != Qt::DisplayRole ) return QVariant{};
     if( orientation == Qt::Horizontal ){
@@ -84,10 +87,10 @@ QVariant OrderModel::headerData(int section, Qt::Orientation orientation, int ro
 }
 
 
-OrderDetailModel::OrderDetailModel( QVector<utilities::OrderData::Item> const &order_items,
-                                    QObject *parent )
-    : QAbstractTableModel( parent ),
-      order_items_{ order_items }
+OrderDetailModel::OrderDetailModel(
+        QVector<utilities::OrderData::Item> const &order_items,
+        QObject *parent ) : QAbstractTableModel( parent ),
+    order_items_{ order_items }
 {
 }
 
@@ -127,7 +130,8 @@ int OrderDetailModel::columnCount( QModelIndex const &) const
     return 4;
 }
 
-QVariant OrderDetailModel::headerData( int section, Qt::Orientation orientation, int role )const
+QVariant OrderDetailModel::headerData( int section, Qt::Orientation orientation,
+                                       int role )const
 {
     if( role != Qt::DisplayRole ) return QVariant{};
     if( orientation == Qt::Horizontal ){
