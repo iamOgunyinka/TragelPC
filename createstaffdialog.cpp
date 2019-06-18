@@ -82,30 +82,19 @@ QJsonObject CreateStaffDialog::GetStaffData() const
 void CreateStaffDialog::SendStaffRegistrationUserData()
 {
     ui->add_button->setEnabled( false );
-    QProgressDialog *progress_dialog{ new QProgressDialog( "Sending information to server",
-                                                           "Cancel", 1, 100, this )};
-    QUrl const address{ utilities::Endpoint::GetEndpoints().CreateUser() };
-    QNetworkRequest const request{ utilities::PostRequestInterface( address ) };
-    auto& network_manager = utilities::NetworkManager::GetNetworkWithCookie();
-
-    QByteArray const payload{ QJsonDocument( GetStaffData() ).toJson() };
-    progress_dialog->show();
-    QNetworkReply *reply{ network_manager.post( request, payload ) };
-    connect( reply, &QNetworkReply::downloadProgress, [=]( qint64 received, qint64 total )
-    {
-        progress_dialog->setMaximum( total + ( total * 0.25 ) );
-        progress_dialog->setValue( received );
-    });
-    connect( progress_dialog, &QProgressDialog::canceled, reply, &QNetworkReply::abort );
-    connect( reply, &QNetworkReply::finished, progress_dialog, &QProgressDialog::close );
-    connect( reply, &QNetworkReply::finished, [=]{
+    auto success_callback = [=]( QJsonObject const &, QNetworkReply* ){
         ui->add_button->setEnabled( true );
-        QJsonObject const response { utilities::GetJsonNetworkData( reply, true ) };
-        if( response.isEmpty() ) return;
-        QMessageBox::information( this, "Registration", "User added successfully" );
+        QMessageBox::information( this, "Registration",
+                                  "User added successfully" );
         ClearDataColumn();
-    });
-    QObject::connect( reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater );
+    };
+    QUrl const address{ utilities::Endpoint::GetEndpoints().CreateUser() };
+    auto error_callback = [=]{
+        ui->add_button->setEnabled( true );
+    };
+    QByteArray const payload{ QJsonDocument( GetStaffData() ).toJson() };
+    utilities::SendPostNetworkRequest( address, success_callback,
+                                       error_callback, this, payload );
 }
 
 void CreateStaffDialog::ClearDataColumn()

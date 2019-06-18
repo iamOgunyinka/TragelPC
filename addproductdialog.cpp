@@ -17,20 +17,27 @@ AddProductDialog::AddProductDialog(QWidget *parent) : QDialog(parent),
     ui->upload_checkbox->setChecked( false );
     ui->name_edit->setFocus();
 
-    data_model->setHorizontalHeaderItem( 0, new QStandardItem( "Product name" ) );
-    data_model->setHorizontalHeaderItem( 1, new QStandardItem( "Product price" ) );
-    data_model->setHorizontalHeaderItem( 2, new QStandardItem( "Picture" ) );
+    data_model->setHorizontalHeaderItem( 0,
+                                         new QStandardItem( "Product name" ) );
+    data_model->setHorizontalHeaderItem( 1,
+                                         new QStandardItem( "Product price" ) );
+    data_model->setHorizontalHeaderItem( 2,
+                                         new QStandardItem( "Picture" ) );
 
     ui->product_view->setDragDropMode( QAbstractItemView::NoDragDrop );
     ui->product_view->setContextMenuPolicy( Qt::CustomContextMenu );
     ui->product_view->setSelectionBehavior( QAbstractItemView::SelectRows );
     ui->product_view->setSelectionMode( QAbstractItemView::SingleSelection );
-    ui->product_view->setItemDelegateForColumn( 2, new LocalProductUploadDelegate );
+    ui->product_view->setItemDelegateForColumn( 2, new
+                                                LocalProductUploadDelegate );
     ui->product_view->resizeColumnsToContents();
-    ui->product_view->horizontalHeader()->setSectionResizeMode( QHeaderView::Stretch );
+    ui->product_view->horizontalHeader()->setSectionResizeMode(
+                QHeaderView::Stretch );
     ui->upload_data_button->setEnabled( false );
 
-    QObject::connect( ui->upload_checkbox, &QCheckBox::toggled, [=]( bool const checked ){
+    QObject::connect( ui->upload_checkbox, &QCheckBox::toggled,
+                      [=]( bool const checked )
+    {
         ui->choose_image_button->setEnabled( checked );
         if( checked ) ui->image_preview->clear();
         temp_file.clear();
@@ -47,7 +54,7 @@ AddProductDialog::AddProductDialog(QWidget *parent) : QDialog(parent),
     QObject::connect( data_model,
                       SIGNAL( dataChanged( QModelIndex,QModelIndex,QVector<int>)),
                       ui->product_view,
-                      SLOT(dataChanged(QModelIndex,QModelIndex,QVector<int>)));
+                      SLOT( dataChanged(QModelIndex,QModelIndex,QVector<int>)));
     QObject::connect( ui->edit_item_button, &QPushButton::clicked, this,
                       &AddProductDialog::OnEditItemButtonClicked );
     QObject::connect( ui->remove_item_button, &QPushButton::clicked, this,

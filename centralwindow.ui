@@ -113,7 +113,7 @@
    <addaction name="actionShow_all_orders"/>
    <addaction name="separator"/>
    <addaction name="actionAdd_user"/>
-   <addaction name="actionAdd_administrator"/>
+   <addaction name="actionUpdate_Change"/>
    <addaction name="separator"/>
    <addaction name="actionSettings"/>
    <addaction name="separator"/>

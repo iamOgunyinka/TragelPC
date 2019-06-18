@@ -139,10 +139,8 @@ void AllProductsDialog::DownloadProducts( QUrl const & address )
 
     auto on_success = std::bind( &AllProductsDialog::OnDownloadResultObtained,
                                  this, std::placeholders::_1 );
-    auto on_error = []{};
-    auto const show_error{ true };
-    utilities::SendNetworkRequest( address, on_success, on_error, this,
-                                   show_error );
+    // on error do nothing. on success, call this->OnDownloadResultObtained()
+    utilities::SendNetworkRequest( address, on_success, []{}, this );
 }
 
 void AllProductsDialog::DownloadProducts()

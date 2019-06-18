@@ -4,6 +4,8 @@
 #include <QJsonArray>
 #include <QMessageBox>
 #include <QByteArray>
+#include <QSsl>
+#include <QSslCertificate>
 
 namespace utilities {
 
@@ -38,6 +40,11 @@ bool ParsePageUrls( QJsonObject const &result, PageQuery & page_query )
 QNetworkRequest GetRequestInterface( QUrl const &address )
 {
     QNetworkRequest request { address };
+    if( address.scheme() == "https" ){
+        auto ssl_config{ QSslConfiguration::defaultConfiguration() };
+        ssl_config.setProtocol( QSsl::TlsV1_0OrLater );
+        request.setSslConfiguration( ssl_config );
+    }
     request.setHeader( QNetworkRequest::UserAgentHeader, USER_AGENT );
     return request;
 }
@@ -45,6 +52,11 @@ QNetworkRequest GetRequestInterface( QUrl const &address )
 QNetworkRequest PostRequestInterface( QUrl const &address )
 {
     QNetworkRequest request{ address };
+    if( address.scheme() == "https" ){
+        auto ssl_config{ QSslConfiguration::defaultConfiguration() };
+        ssl_config.setProtocol( QSsl::TlsV1_0OrLater );
+        request.setSslConfiguration( ssl_config );
+    }
     request.setHeader( QNetworkRequest::ContentTypeHeader, "application/json" );
     request.setHeader( QNetworkRequest::UserAgentHeader, USER_AGENT );
     return request;

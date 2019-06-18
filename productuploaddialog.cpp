@@ -66,6 +66,9 @@ void ProductUploadDialog::UploadProducts( QJsonArray const & product_list )
         progress_dialog->setMaximum( total + ( total * 0.25 ) );
         progress_dialog->setValue( received );
     });
+    this->connect( reply, &QNetworkReply::sslErrors, reply,
+                   qOverload<QList<QSslError> const &>(
+                       &QNetworkReply::ignoreSslErrors ) );
     this->connect( reply, &QNetworkReply::finished, progress_dialog,
                    &QProgressDialog::close );
     this->connect( reply, &QNetworkReply::finished, [=]{

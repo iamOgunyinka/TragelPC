@@ -86,13 +86,14 @@ void UpdateUserDialog::OnRemoveUserTriggered()
         admin_password = remove_dialog->GetAdminPassword();
     } else return;
 
+    QString const query_payload {
+        confirm_username + ":" + admin_password + ":" + reason
+    };
     QUrlQuery query{};
-    query.addQueryItem( "username", confirm_username );
-    query.addQueryItem( "reason", reason );
-    query.addQueryItem( "password", admin_password );
-
+    query.addQueryItem( "payload", query_payload.toLocal8Bit().toBase64() );
     QUrl address{ utilities::Endpoint::GetEndpoints().DeleteUser() };
     address.setQuery( query );
+
     auto on_success = [=]( QJsonObject const & result ){
         UserModel* model = qobject_cast<UserModel*>( ui->tableView->model() );
         model->removeRows( index.row(), 1, index );
@@ -102,7 +103,8 @@ void UpdateUserDialog::OnRemoveUserTriggered()
     auto on_error = []{};
     auto report_error = true;
     utilities::SendNetworkRequest( address, on_success, on_error, this,
-                                   report_error);
+                                   report_error,
+                                   utilities::SimpleRequestType::Delete );
 }
 
 void UpdateUserDialog::OnChangeUserRoleTriggered()
@@ -118,13 +120,11 @@ void UpdateUserDialog::OnChangeUserPasswordTriggered()
 void UpdateUserDialog::FetchUserData( QUrl const &address )
 {
     auto on_error = []{};
-    bool const report_error = true;
     auto on_success{
         std::bind( &UpdateUserDialog::OnGetUsersData, this,
                    std::placeholders::_1 )
     };
-    utilities::SendNetworkRequest( address, on_success, on_error, this,
-                                   report_error );
+    utilities::SendNetworkRequest( address, on_success, on_error, this );
 }
 
 void UpdateUserDialog::OnFirstPageButtonClicked()
@@ -207,11 +207,19 @@ void UpdateUserDialog::ParseUserList( QJsonArray const &list )
     users_.clear();
     for( QJsonValue const & value: list ){
         QJsonObject const user_data_object{ value.toObject() };
+        QString username { user_data_object.value( "username" ).toString() };
+        // usernames usually come like so: username@company_id,
+        // and sometimes `username` could be josh20@yahoo.com, so the
+        // real username is everything but the last part separated by @
+        QStringList const sep{ username.split( '@', QString::SkipEmptyParts ) };
+        username = sep[0];
+        for( int x = 1; x < sep.size() - 1; ++x ){
+            username += sep[x];
+        }
         utilities::UserData user_data {
             user_data_object.value( "id" ).toInt(),
             user_data_object.value( "role" ).toInt(),
-            user_data_object.value( "name" ).toString(),
-            user_data_object.value( "username" ).toString()
+            user_data_object.value( "name" ).toString(), username
         };
         users_.push_back( std::move( user_data ) );
     }
@@ -234,7 +242,7 @@ QVariant UserModel::data( QModelIndex const &index, int role ) const
     if( role == Qt::DisplayRole ){
         switch( index.column() ){
         case 0:
-            return row_data.username;
+            return row_data.username.split( '@' )[0];
         case 1:
             return row_data.fullname;
         case 2:

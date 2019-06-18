@@ -232,6 +232,12 @@ namespace utilities {
         QVector<Item> items;
     };
 
+    enum class SimpleRequestType
+    {
+        Get,
+        Delete,
+    };
+
     bool ParsePageUrls( QJsonObject const & page_url,
                         PageQuery& page_information );
 
@@ -239,12 +245,15 @@ namespace utilities {
     QNetworkRequest PostRequestInterface( QUrl const &address );
     QJsonObject     GetJsonNetworkData( QNetworkReply *data,
                                         bool show_error_message = false );
+
     QPair<QNetworkRequest, QByteArray> PostImageRequestInterface(
             QUrl const &address, QVector<QString> const &data );
+
     template<typename FuncOnSuccess, typename FuncOnError>
     void SendNetworkRequest( QUrl const & address, FuncOnSuccess && on_success,
                              FuncOnError && on_error, QWidget *parent,
-                             bool report_error )
+                             bool report_error = true,
+                             SimpleRequestType type = SimpleRequestType::Get )
     {
         QNetworkRequest const request{ GetRequestInterface( address ) };
         auto& network_manager{ NetworkManager::GetNetworkWithCookie() };
@@ -252,13 +261,22 @@ namespace utilities {
             new QProgressDialog( "Please wait", "Cancel", 1, 100, parent )
         };
         progress_dialog->show();
-        QNetworkReply* const reply{ network_manager.get( request ) };
+        QNetworkReply* reply{};
+        if( type == SimpleRequestType::Get ){
+            reply = network_manager.get( request );
+        } else {
+            reply = network_manager.deleteResource( request );
+        }
         QObject::connect( reply, &QNetworkReply::downloadProgress,
                           [=]( qint64 const received, qint64 const total )
         {
             progress_dialog->setMaximum( total + ( total * 0.25 ));
             progress_dialog->setValue( received );
         });
+
+        QObject::connect( reply, &QNetworkReply::sslErrors, reply,
+                          qOverload<QList<QSslError> const &>(
+                              &QNetworkReply::ignoreSslErrors ) );
         QObject::connect( progress_dialog, &QProgressDialog::canceled, reply,
                           &QNetworkReply::abort );
         QObject::connect( reply, &QNetworkReply::finished, progress_dialog,
@@ -270,6 +288,44 @@ namespace utilities {
             };
             if( result.isEmpty() ) on_error();
             else on_success( result );
+        });
+    }
+
+    template<typename FuncOnSuccess, typename FuncOnError>
+    void SendPostNetworkRequest( QUrl const & address,
+                                 FuncOnSuccess && on_success,
+                                 FuncOnError && on_error, QWidget *parent,
+                                 QByteArray const &payload,
+                                 bool report_error = true )
+    {
+        QNetworkRequest const request{ PostRequestInterface( address ) };
+        auto& network_manager{ NetworkManager::GetNetworkWithCookie() };
+        QProgressDialog* progress_dialog {
+            new QProgressDialog( "Please wait", "Cancel", 1, 100, parent )
+        };
+        progress_dialog->show();
+        QNetworkReply* reply{ network_manager.post( request, payload )};
+        QObject::connect( reply, &QNetworkReply::downloadProgress,
+                          [=]( qint64 const received, qint64 const total )
+        {
+            progress_dialog->setMaximum( total + ( total * 0.25 ));
+            progress_dialog->setValue( received );
+        });
+
+        QObject::connect( reply, &QNetworkReply::sslErrors, reply,
+                          qOverload<QList<QSslError> const &>(
+                              &QNetworkReply::ignoreSslErrors ) );
+        QObject::connect( progress_dialog, &QProgressDialog::canceled, reply,
+                          &QNetworkReply::abort );
+        QObject::connect( reply, &QNetworkReply::finished, progress_dialog,
+                          &QProgressDialog::close );
+        QObject::connect( reply, &QNetworkReply::finished, [=]
+        {
+            QJsonObject const result {
+                utilities::GetJsonNetworkData( reply, report_error )
+            };
+            if( result.isEmpty() ) on_error();
+            else on_success( result, reply );
         });
     }
 }

@@ -45,7 +45,8 @@ SOURCES += \
     ordermodel.cpp \
     orderitemdetaildialog.cpp \
     updateuserdialog.cpp \
-    removeuserconfirmationdialog.cpp
+    removeuserconfirmationdialog.cpp \
+    popupnotifier.cpp
 
 HEADERS += \
     DarkStyle.h \
@@ -68,7 +69,8 @@ HEADERS += \
     ordermodel.hpp \
     orderitemdetaildialog.hpp \
     updateuserdialog.hpp \
-    removeuserconfirmationdialog.hpp
+    removeuserconfirmationdialog.hpp \
+    popupnotifier.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \

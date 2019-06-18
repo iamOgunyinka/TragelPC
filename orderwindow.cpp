@@ -121,38 +121,21 @@ void OrderWindow::OnRemoveItemActionClicked()
         ui->tableView->setEnabled( true );
         return;
     }
-    auto& network_manager{ utilities::NetworkManager::GetNetwork() };
-    auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
-    network_manager.setCookieJar( &session_cookie );
-    session_cookie.setParent( nullptr );
     QUrl address{ utilities::Endpoint::GetEndpoints().RemoveOrder() };
     QUrlQuery query{};
     query.addQueryItem( "order_id", order_id );
     query.addQueryItem( "reason", reason );
     address.setQuery( query );
-    QNetworkRequest const request{ utilities::GetRequestInterface( address ) };
-    QNetworkReply* reply{ network_manager.deleteResource( request ) };
-    auto progress_dialog{ new QProgressDialog( "Sending request to server",
-                                               "Cancel", 1, 100 ) };
-    progress_dialog->setAttribute( Qt::WA_DeleteOnClose );
-    progress_dialog->show();
-    connect( progress_dialog, &QProgressDialog::canceled, reply,
-             &QNetworkReply::abort );
-    connect( reply, &QNetworkReply::downloadProgress,
-                      [=]( qint64 const received, qint64 const total )
-    {
-        progress_dialog->setMaximum( total + ( total * 0.25 ) );
-        progress_dialog->setValue( received );
-    } );
-    QObject::connect( reply, &QNetworkReply::finished, [=]{
+    auto on_success = [=]( QJsonObject const & ){
         ui->tableView->setEnabled( true );
-        progress_dialog->close();
-        QJsonObject const response{
-            utilities::GetJsonNetworkData( reply, true )
-        };
-        if( response.isEmpty() ) return;
         model->removeRows( index.row(), 1, index.parent() );
-    });
+    };
+    auto on_error = [=]{
+        ui->tableView->setEnabled( true );
+    };
+
+    utilities::SendNetworkRequest( address, on_success, on_error, this, true,
+                                   utilities::SimpleRequestType::Delete );
 }
 
 QUrl OrderWindow::GetUrlNewMetaFromUrl( QString const & old_url )
@@ -237,36 +220,15 @@ void OrderWindow::SendNetworkRequest( QUrl const &address )
     ui->prev_button->setDisabled( true );
     ui->next_button->setDisabled( true );
 
-    auto& network_manager{ utilities::NetworkManager::GetNetwork() };
-    auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
-    network_manager.setCookieJar( &session_cookie );
-    session_cookie.setParent( nullptr );
-    request_ = utilities::GetRequestInterface( address );
-    QNetworkReply* const reply{ network_manager.get( request_ ) };
-
-    auto progress_dialog{ new QProgressDialog( "Sending request to server",
-                                               "Cancel", 1, 100 ) };
-    progress_dialog->setAttribute( Qt::WA_DeleteOnClose );
-    progress_dialog->show();
-    QObject::connect( progress_dialog, &QProgressDialog::canceled, reply,
-                      &QNetworkReply::abort );
-    QObject::connect( reply, &QNetworkReply::downloadProgress,
-                      [=]( qint64 const received, qint64 const total)
-    {
-        progress_dialog->setMaximum( total + ( total * 0.25 ) );
-        progress_dialog->setValue( received );
-    });
-    QObject::connect( reply, &QNetworkReply::finished, [=]{
-        progress_dialog->close();
+    auto on_success = [=]( QJsonObject const & result ){
         ui->find_guest_button->setEnabled( true );
-        QJsonObject const response{
-            utilities::GetJsonNetworkData( reply, true )
-        };
-        if( response.isEmpty() ){
-            return;
-        }
-        DisplayOrderData( response );
-    });
+        DisplayOrderData( result );
+    };
+    auto on_error = [=]{
+        ui->find_guest_button->setEnabled( true );
+    };
+    request_ = utilities::GetRequestInterface( address );
+    utilities::SendNetworkRequest( address, on_success, on_error, this );
 }
 
 void OrderWindow::UpdatePageData()

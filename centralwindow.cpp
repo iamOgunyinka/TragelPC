@@ -164,47 +164,27 @@ void CentralWindow::OnListAllProductsTriggered()
 void CentralWindow::LogUserIn( QString const & username,
                                QString const & password )
 {
-    QProgressDialog* progress_dialog{
-        new QProgressDialog( "Logging you in", "Cancel", 1, 100, this )
+    auto on_success = [=]( QJsonObject const &, QNetworkReply* reply ){
+        SetEnableActionButtons( true );
+        ui->actionLogin->setEnabled( false );
+        ui->actionLogout->setEnabled( true );
+        QMessageBox::information( this, "Login",
+                                  "You're successfully logged in" );
+        auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
+        utilities::NetworkManager::SetNetworkCookie( session_cookie, reply );
     };
-    progress_dialog->show();
-
+    auto on_error = [=]{
+        ui->actionLogin->setEnabled( true );
+    };
     auto const & endpoints = utilities::Endpoint::GetEndpoints();
-    QString const token = endpoints.CompanyToken();
     QUrl const login_url { QUrl::fromUserInput( endpoints.LoginTo() ) };
+    QString const token = endpoints.CompanyToken();
     QJsonObject const login_object{
         { "username", username }, { "password", password },{ "token", token }
     };
     QJsonDocument const document{ login_object };
-    auto const request = utilities::PostRequestInterface( login_url );
-    auto& network_manager = utilities::NetworkManager::GetNetwork();
-    QNetworkReply* reply = network_manager.post( request, document.toJson() );
-    QObject::connect( reply, &QNetworkReply::downloadProgress,
-                      [=]( qint64 const received, qint64 const total )
-    {
-        progress_dialog->setMaximum( total + ( total * 0.25 ) );
-        progress_dialog->setValue( received );
-    });
-    QObject::connect( reply, &QNetworkReply::finished, progress_dialog,
-                      &QProgressDialog::close );
-    QObject::connect( progress_dialog, &QProgressDialog::canceled, reply,
-                      &QNetworkReply::abort );
-    QObject::connect( reply, &QNetworkReply::finished, [=]{
-        // get the response from the server and show the error message if any
-        QJsonObject const resp{ utilities::GetJsonNetworkData( reply, true ) };
-        bool const logged_in = !resp.isEmpty();
-        if( logged_in ){
-            SetEnableActionButtons( true );
-            ui->actionLogin->setEnabled( !logged_in );
-            ui->actionLogout->setEnabled( logged_in );
-            QMessageBox::information( this, "Login",
-                                      "You're successfully logged in" );
-            auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
-            utilities::NetworkManager::SetNetworkCookie( session_cookie, reply );
-        } else {
-            ui->actionLogin->setEnabled( true );
-        }
-    });
+    utilities::SendPostNetworkRequest( login_url, on_success, on_error, this,
+                                       document.toJson() );
 }
 
 void CentralWindow::OnLoginButtonClicked()
@@ -294,6 +274,9 @@ void CentralWindow::PingServerNetwork()
     auto const request = utilities::GetRequestInterface( QUrl( ping_url ) );
     auto& network_manager = utilities::NetworkManager::GetNetwork();
     QNetworkReply* const reply = network_manager.get( request );
+    QObject::connect( reply, &QNetworkReply::sslErrors, reply,
+                      qOverload<QList<QSslError> const &>(
+                                    &QNetworkReply::ignoreSslErrors ));
     QObject::connect( reply, &QNetworkReply::finished, [=]{
         // we're pinging, we don't need the response, don't show error message
         auto const response = utilities::GetJsonNetworkData( reply, false );
@@ -373,6 +356,9 @@ void CentralWindow::GetEndpointsFromServer( QString const &url,
         progress_dialog->setMaximum( total + ( total * 0.25 ) );
         progress_dialog->setValue( received );
     });
+    QObject::connect( reply, &QNetworkReply::sslErrors, reply,
+                      qOverload<QList<QSslError> const &>(
+                          &QNetworkReply::ignoreSslErrors ) );
     QObject::connect( reply, &QNetworkReply::finished, progress_dialog,
                       &QProgressDialog::close );
     QObject::connect( reply, &QNetworkReply::finished, [=]{
@@ -385,7 +371,7 @@ void CentralWindow::GetEndpointsFromServer( QString const &url,
         utilities::Endpoint::ParseEndpointsFromJson( endpoints, response );
         WriteEndpointsToPersistenceStorage( endpoints );
         PingServerNetwork();
-        SetEnableCentralWindowBars( true );
+        ui->actionLogin->setEnabled( true );
         ui->actionSettings->setEnabled( true );
         ui->actionLogout->setDisabled( true );
     });
