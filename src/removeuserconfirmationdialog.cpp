@@ -20,13 +20,11 @@ RemoveUserConfirmationDialog::~RemoveUserConfirmationDialog()
 
 void RemoveUserConfirmationDialog::OnDeleteButtonClicked()
 {
-    if( ui->confirm_password_line->text().isEmpty() ){
-        QMessageBox::critical( this, "Error",
-                               "Enter your own password for confirmation" );
-        ui->confirm_password_line->setFocus();
+    if( ui->recipient_username_line->text() != username_ ){
+        QMessageBox::critical( this, "Error", "Username does not match" );
+        ui->recipient_username_line->setFocus();
         return;
     }
-
     if( ui->deletion_reason_line->text().trimmed().isEmpty() ){
         QMessageBox::critical( this, "Error",
                                "State the reason for wanting to delete this "
@@ -34,9 +32,10 @@ void RemoveUserConfirmationDialog::OnDeleteButtonClicked()
         ui->deletion_reason_line->setFocus();
         return;
     }
-    if( ui->recipient_username_line->text() != username_ ){
-        QMessageBox::critical( this, "Error", "Username does not match" );
-        ui->recipient_username_line->setFocus();
+    if( ui->confirm_password_line->text().isEmpty() ){
+        QMessageBox::critical( this, "Error",
+                               "Enter your own password for confirmation" );
+        ui->confirm_password_line->setFocus();
         return;
     }
     this->accept();
@@ -54,10 +53,10 @@ QString RemoveUserConfirmationDialog::GetAdminPassword() const
 
 QString RemoveUserConfirmationDialog::GetDeletionReason() const
 {
-    return ui->deletion_reason_line->text().trimmed();
+    return ui->deletion_reason_line->text();
 }
 
 QString RemoveUserConfirmationDialog::GetUsername() const
 {
-    return ui->recipient_username_line->text().trimmed();
+    return ui->recipient_username_line->text();
 }

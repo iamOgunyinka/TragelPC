@@ -20,6 +20,7 @@
 #include "userlogindialog.hpp"
 #include "ui_centralwindow.h"
 #include "updateuserdialog.hpp"
+#include "popupnotifier.hpp"
 
 
 CentralWindow::CentralWindow( QWidget *parent ) :
@@ -168,8 +169,10 @@ void CentralWindow::LogUserIn( QString const & username,
         SetEnableActionButtons( true );
         ui->actionLogin->setEnabled( false );
         ui->actionLogout->setEnabled( true );
-        QMessageBox::information( this, "Login",
-                                  "You're successfully logged in" );
+        PopUpNotifier* notifier{ new PopUpNotifier( this ) };
+        notifier->setAttribute( Qt::WA_DeleteOnClose );
+        notifier->SetPopUpText( "You're logged in" );
+        notifier->show();
         auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
         utilities::NetworkManager::SetNetworkCookie( session_cookie, reply );
     };
@@ -262,6 +265,18 @@ void CentralWindow::StartApplication()
 {
     SetEnableCentralWindowBars( false );
     LoadSettingsFile();
+    ActivateTimer();
+}
+
+void CentralWindow::ActivateTimer()
+{
+    if( !server_ping_timer ) {
+        server_ping_timer = new QTimer( this );
+    }
+    QObject::connect( server_ping_timer, &QTimer::timeout, this,
+                      &CentralWindow::PingServerNetwork );
+    server_ping_timer->setInterval( 1000 * 60 ); // every minute
+    server_ping_timer->start();
 }
 
 void CentralWindow::PingServerNetwork()
@@ -280,8 +295,17 @@ void CentralWindow::PingServerNetwork()
     QObject::connect( reply, &QNetworkReply::finished, [=]{
         // we're pinging, we don't need the response, don't show error message
         auto const response = utilities::GetJsonNetworkData( reply, false );
-        if( response.isEmpty() ){
-            ui->statusBar->showMessage( "Unable to ping server" );
+        if( !response.isEmpty() ) return;
+        QTime const current_time{ QTime::currentTime() };
+        if( time_interval.isNull() || // is this the first time?
+                // has it been up to an hour since we were last warned?
+                time_interval.secsTo( current_time ) >= CentralWindow::an_hour )
+        {
+            time_interval = current_time;
+            PopUpNotifier* notifier{ new PopUpNotifier( this ) };
+            notifier->setAttribute( Qt::WA_DeleteOnClose );
+            notifier->SetPopUpText( "Unable to ping server" );
+            notifier->show();
         }
     });
 }
@@ -298,7 +322,6 @@ void CentralWindow::LoadSettingsFile()
             QJsonDocument::fromJson( endpoint_obj_settings ).object()
         };
         utilities::Endpoint::ParseEndpointsFromJson( endpoints, settings );
-        PingServerNetwork();
         SetEnableCentralWindowBars( true );
         SetEnableActionButtons( false );
         ui->actionLogin->setEnabled( true );

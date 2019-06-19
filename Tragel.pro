@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += core gui network websockets charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,72 +21,74 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-INCLUDEPATH += "framelesswindow/"
+
+INCLUDEPATH += "framelesswindow/"\
+                "include/"
 
 SOURCES += \
-        main.cpp \
+        src/main.cpp \
     framelesswindow/framelesswindow.cpp \
     framelesswindow/windowdragger.cpp \
-    DarkStyle.cpp \
-    splashscreen.cpp \
-    resources.cpp \
-    adminsetupdialog.cpp \
-    createstaffdialog.cpp \
-    centralwindow.cpp \
-    userlogindialog.cpp \
-    orderwindow.cpp \
-    addproductdialog.cpp \
-    editproductdialog.cpp \
-    allproductsdialog.cpp \
-    productmodel.cpp \
-    productthumbnaildelegate.cpp \
-    productuploaddialog.cpp \
-    uploadwidget.cpp \
-    ordermodel.cpp \
-    orderitemdetaildialog.cpp \
-    updateuserdialog.cpp \
-    removeuserconfirmationdialog.cpp \
-    popupnotifier.cpp
+    src/DarkStyle.cpp \
+    src/splashscreen.cpp \
+    src/resources.cpp \
+    src/adminsetupdialog.cpp \
+    src/createstaffdialog.cpp \
+    src/centralwindow.cpp \
+    src/userlogindialog.cpp \
+    src/orderwindow.cpp \
+    src/addproductdialog.cpp \
+    src/editproductdialog.cpp \
+    src/allproductsdialog.cpp \
+    src/productmodel.cpp \
+    src/productthumbnaildelegate.cpp \
+    src/productuploaddialog.cpp \
+    src/uploadwidget.cpp \
+    src/ordermodel.cpp \
+    src/orderitemdetaildialog.cpp \
+    src/updateuserdialog.cpp \
+    src/removeuserconfirmationdialog.cpp \
+    src/popupnotifier.cpp
 
 HEADERS += \
-    DarkStyle.h \
+    include/DarkStyle.h \
     framelesswindow/framelesswindow.h \
     framelesswindow/windowdragger.h \
-    splashscreen.hpp \
-    resources.hpp \
-    adminsetupdialog.hpp \
-    createstaffdialog.hpp \
-    centralwindow.hpp \
-    userlogindialog.hpp \
-    orderwindow.hpp \
-    addproductdialog.hpp \
-    editproductdialog.hpp \
-    allproductsdialog.hpp \
-    productmodel.hpp \
-    productthumbnaildelegate.hpp \
-    productuploaddialog.hpp \
-    uploadwidget.hpp \
-    ordermodel.hpp \
-    orderitemdetaildialog.hpp \
-    updateuserdialog.hpp \
-    removeuserconfirmationdialog.hpp \
-    popupnotifier.hpp
+    include/splashscreen.hpp \
+    include/resources.hpp \
+    include/adminsetupdialog.hpp \
+    include/createstaffdialog.hpp \
+    include/centralwindow.hpp \
+    include/userlogindialog.hpp \
+    include/orderwindow.hpp \
+    include/addproductdialog.hpp \
+    include/editproductdialog.hpp \
+    include/allproductsdialog.hpp \
+    include/productmodel.hpp \
+    include/productthumbnaildelegate.hpp \
+    include/productuploaddialog.hpp \
+    include/uploadwidget.hpp \
+    include/ordermodel.hpp \
+    include/orderitemdetaildialog.hpp \
+    include/updateuserdialog.hpp \
+    include/removeuserconfirmationdialog.hpp \
+    include/popupnotifier.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
-    adminsetupdialog.ui \
-    createstaffdialog.ui \
-    centralwindow.ui \
-    userlogindialog.ui \
-    orderwindow.ui \
-    addproductdialog.ui \
-    editproductdialog.ui \
-    allproductsdialog.ui \
-    productuploaddialog.ui \
-    uploadwidget.ui \
-    orderitemdetaildialog.ui \
-    updateuserdialog.ui \
-    removeuserconfirmationdialog.ui
+    forms/adminsetupdialog.ui \
+    forms/createstaffdialog.ui \
+    forms/centralwindow.ui \
+    forms/userlogindialog.ui \
+    forms/orderwindow.ui \
+    forms/addproductdialog.ui \
+    forms/editproductdialog.ui \
+    forms/allproductsdialog.ui \
+    forms/productuploaddialog.ui \
+    forms/uploadwidget.ui \
+    forms/orderitemdetaildialog.ui \
+    forms/updateuserdialog.ui \
+    forms/removeuserconfirmationdialog.ui
 
 RESOURCES += \
     darkstyle.qrc \

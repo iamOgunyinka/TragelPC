@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QMdiArea>
 #include <QCloseEvent>
+#include <QTime>
+#include <QTimer>
+#include <QWebSocket>
 
 namespace Ui {
 class CentralWindow;
@@ -28,6 +31,7 @@ private:
     void CentralizeDisplayWidget( QWidget * const widget, QSize const & size);
     void LogUserIn( QString const & username, QString const & password );
     void PingServerNetwork();
+    void ActivateTimer();
     void LoadSettingsFile();
     void OnLoginButtonClicked();
     void OnLogoutButtonClicked();
@@ -38,13 +42,19 @@ private:
     void OnListUsersTriggered();
     void OnReportsActionTriggered();
     void GetEndpointsFromServer( QString const & url, QString const & username,
-                                 QString const & password, QString const & company_id );
+                                 QString const & password,
+                                 QString const & company_id );
     void WriteEndpointsToPersistenceStorage( utilities::Endpoint const & );
     void SetEnableCentralWindowBars( bool const enabled );
     void SetEnableActionButtons( bool const enable = true );
+
+    static int const an_hour = 60 * 60; // 60 seconds x 60 minutes
 private:
     Ui::CentralWindow *ui;
     QMdiArea *workspace;
+    QTimer*   server_ping_timer;
+    QTime     time_interval{};
+    QWebSocket websocket;
 };
 
 #endif // CENTRALWINDOW_HPP

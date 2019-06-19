@@ -203,7 +203,8 @@ void OrderWindow::OnFindButtonClicked()
             QDate const last_seven_days{ today.addDays( -7 ) };
             query.addQueryItem( "from", DateToString( last_seven_days ) );
         } else {
-            QDate const first_of_this_month{ today.addDays( today.day() - 1 ) };
+            QDate const first_of_this_month{
+                today.addDays( ( -1 * today.day() ) + 1 ) };
             query.addQueryItem( "from", DateToString( first_of_this_month ) );
         }
         query.addQueryItem( "to", DateToString( today ) );

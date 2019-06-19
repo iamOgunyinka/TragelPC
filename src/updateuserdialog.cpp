@@ -14,8 +14,8 @@
 #include <QMessageBox>
 #include <QUrlQuery>
 #include <QJsonArray>
-
 #include <functional>
+
 
 UpdateUserDialog::UpdateUserDialog(QWidget *parent) :
     QDialog(parent),
@@ -77,17 +77,20 @@ void UpdateUserDialog::OnRemoveUserTriggered()
     RemoveUserConfirmationDialog *remove_dialog {
         new RemoveUserConfirmationDialog( this )
     };
-    remove_dialog->SetUsername( users_[index.row()].username );
+    auto const &user_data{ users_[index.row()] };
+    int const last_index{ user_data.username.lastIndexOf( '@') };
+    remove_dialog->SetUsername( user_data.username.left( last_index ) );
     QString confirm_username {}, reason{}, admin_password {};
 
     if( remove_dialog->exec() == QDialog::Accepted ){
         confirm_username = remove_dialog->GetUsername();
         reason = remove_dialog->GetDeletionReason();
         admin_password = remove_dialog->GetAdminPassword();
+        remove_dialog->setAttribute( Qt::WA_DeleteOnClose );
     } else return;
 
     QString const query_payload {
-        confirm_username + ":" + admin_password + ":" + reason
+        users_[index.row()].username + ":" + admin_password + ":" + reason
     };
     QUrlQuery query{};
     query.addQueryItem( "payload", query_payload.toLocal8Bit().toBase64() );
@@ -208,14 +211,6 @@ void UpdateUserDialog::ParseUserList( QJsonArray const &list )
     for( QJsonValue const & value: list ){
         QJsonObject const user_data_object{ value.toObject() };
         QString username { user_data_object.value( "username" ).toString() };
-        // usernames usually come like so: username@company_id,
-        // and sometimes `username` could be josh20@yahoo.com, so the
-        // real username is everything but the last part separated by @
-        QStringList const sep{ username.split( '@', QString::SkipEmptyParts ) };
-        username = sep[0];
-        for( int x = 1; x < sep.size() - 1; ++x ){
-            username += sep[x];
-        }
         utilities::UserData user_data {
             user_data_object.value( "id" ).toInt(),
             user_data_object.value( "role" ).toInt(),
@@ -242,7 +237,13 @@ QVariant UserModel::data( QModelIndex const &index, int role ) const
     if( role == Qt::DisplayRole ){
         switch( index.column() ){
         case 0:
-            return row_data.username.split( '@' )[0];
+        {
+            // usernames usually come like so: username@company_id,
+            // and sometimes `username` could be josh20@yahoo.com, so the
+            // real username is everything but the last part separated by @
+            int const last_index{ row_data.username.lastIndexOf( '@') };
+            return row_data.username.left( last_index );
+        }
         case 1:
             return row_data.fullname;
         case 2:
