@@ -2,6 +2,8 @@
 #include "ui_updateuserdialog.h"
 #include "resources.hpp"
 #include "removeuserconfirmationdialog.hpp"
+#include "changepassworddialog.hpp"
+#include "changeuserroledialog.hpp"
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -15,6 +17,7 @@
 #include <QUrlQuery>
 #include <QJsonArray>
 #include <functional>
+#include <QJsonDocument>
 
 
 UpdateUserDialog::UpdateUserDialog(QWidget *parent) :
@@ -112,12 +115,65 @@ void UpdateUserDialog::OnRemoveUserTriggered()
 
 void UpdateUserDialog::OnChangeUserRoleTriggered()
 {
+    QModelIndex const index{ ui->tableView->currentIndex() };
+    if( !index.isValid() ) return;
+    ChangeUserRoleDialog* role_dialog{ new ChangeUserRoleDialog( this )};
+    utilities::UserData const &user_data{ users_[index.row()] };
+    int const last_index{ user_data.username.lastIndexOf( '@') };
+    role_dialog->SetUsername( user_data.username.left( last_index ) );
+    role_dialog->SetCurrentUserRole( user_data.user_role );
 
+    QUrl address{ utilities::Endpoint::GetEndpoints().ChangeRole() };
+    auto on_success = [role_dialog]( QJsonObject const &, QNetworkReply* ){
+        role_dialog->accept();
+    };
+
+    QObject::connect( role_dialog, &ChangeUserRoleDialog::data_validated,
+                      [=]() mutable
+    {
+        QString const a{ QString::number( user_data.user_id ) + ":" +
+                            QString::number( role_dialog->GetNewRole() ) };
+        QByteArray const payload{ a.toLocal8Bit().toBase64() };
+        QUrlQuery url_query {};
+        url_query.addQueryItem( "payload", payload );
+        address.setQuery( url_query );
+        utilities::SendPostNetworkRequest( address, on_success, []{},
+                                            role_dialog, payload );
+    });
+    role_dialog->setAttribute( Qt::WA_DeleteOnClose );
+    QObject::connect( role_dialog, &ChangeUserRoleDialog::finished, role_dialog,
+                      &ChangeUserRoleDialog::deleteLater );
+    role_dialog->exec();
 }
 
 void UpdateUserDialog::OnChangeUserPasswordTriggered()
 {
+    QModelIndex const index{ ui->tableView->currentIndex() };
+    if( !index.isValid() ) return;
 
+    auto const &user_data{ users_[index.row()] };
+    int const last_index{ user_data.username.lastIndexOf( '@') };
+
+    ChangePasswordDialog* password_dialog { new ChangePasswordDialog( this ) };
+    password_dialog->SetUsername( user_data.username.left( last_index ) );
+    QUrl const address{ utilities::Endpoint::GetEndpoints().ResetPassword() };
+    auto on_sucess = [=]( QJsonObject const &, QNetworkReply* ){
+        password_dialog->close();
+        QMessageBox::information( this, "Password", "Password reset OK" );
+    };
+    QObject::connect( password_dialog, &ChangePasswordDialog::data_validated,[=]
+    {
+        QJsonObject const object {
+            { "username", user_data.username },
+            { "new_password", password_dialog->GetPassword() }
+        };
+        QByteArray const payload{ QJsonDocument{ object }.toJson() };
+        utilities::SendPostNetworkRequest( address, on_sucess, []{},
+                                            password_dialog, payload );
+    });
+    QObject::connect( password_dialog, &ChangePasswordDialog::finished,
+                      password_dialog, &ChangePasswordDialog::deleteLater );
+    password_dialog->exec();
 }
 
 void UpdateUserDialog::FetchUserData( QUrl const &address )

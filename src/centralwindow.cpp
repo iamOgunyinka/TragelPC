@@ -324,6 +324,7 @@ void CentralWindow::LoadSettingsFile()
         utilities::Endpoint::ParseEndpointsFromJson( endpoints, settings );
         SetEnableCentralWindowBars( true );
         SetEnableActionButtons( false );
+        PingServerNetwork();
         ui->actionLogin->setEnabled( true );
         return;
     }

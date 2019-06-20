@@ -48,7 +48,9 @@ SOURCES += \
     src/orderitemdetaildialog.cpp \
     src/updateuserdialog.cpp \
     src/removeuserconfirmationdialog.cpp \
-    src/popupnotifier.cpp
+    src/popupnotifier.cpp \
+    src/changepassworddialog.cpp \
+    src/changeuserroledialog.cpp
 
 HEADERS += \
     include/DarkStyle.h \
@@ -72,7 +74,9 @@ HEADERS += \
     include/orderitemdetaildialog.hpp \
     include/updateuserdialog.hpp \
     include/removeuserconfirmationdialog.hpp \
-    include/popupnotifier.hpp
+    include/popupnotifier.hpp \
+    include/changepassworddialog.hpp \
+    include/changeuserroledialog.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
@@ -88,7 +92,9 @@ FORMS += \
     forms/uploadwidget.ui \
     forms/orderitemdetaildialog.ui \
     forms/updateuserdialog.ui \
-    forms/removeuserconfirmationdialog.ui
+    forms/removeuserconfirmationdialog.ui \
+    forms/changepassworddialog.ui \
+    forms/changeuserroledialog.ui
 
 RESOURCES += \
     darkstyle.qrc \
