@@ -20,8 +20,8 @@
 #include <QJsonDocument>
 
 
-UpdateUserDialog::UpdateUserDialog(QWidget *parent) :
-    QDialog(parent),
+UpdateUserDialog::UpdateUserDialog( QWidget *parent ):
+    QDialog( parent ),
     ui( new Ui::UpdateUserDialog ), page_query{ new utilities::PageQuery }
 {
     ui->setupUi( this );
@@ -29,6 +29,7 @@ UpdateUserDialog::UpdateUserDialog(QWidget *parent) :
     ui->prev_page_button->setDisabled( true );
     ui->next_page_button->setDisabled( true );
     ui->last_page_button->setDisabled( true );
+    this->setWindowTitle( "Update users' information" );
 
     ui->tableView->setContextMenuPolicy( Qt::CustomContextMenu );
     QObject::connect( ui->tableView, &QTableView::customContextMenuRequested,
@@ -131,9 +132,9 @@ void UpdateUserDialog::OnChangeUserRoleTriggered()
     QObject::connect( role_dialog, &ChangeUserRoleDialog::data_validated,
                       [=]() mutable
     {
-        QString const a{ QString::number( user_data.user_id ) + ":" +
+        QString const payload_str{ QString::number( user_data.user_id ) + ":" +
                             QString::number( role_dialog->GetNewRole() ) };
-        QByteArray const payload{ a.toLocal8Bit().toBase64() };
+        QByteArray const payload{ payload_str.toLocal8Bit().toBase64() };
         QUrlQuery url_query {};
         url_query.addQueryItem( "payload", payload );
         address.setQuery( url_query );
