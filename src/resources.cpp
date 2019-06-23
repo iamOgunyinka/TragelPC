@@ -96,8 +96,21 @@ QJsonObject GetJsonNetworkData( QNetworkReply* network_reply,
     if( !network_reply ) return {};
     if( network_reply->error() != QNetworkReply::NoError ){
         if( show_error_message ){
-            QMessageBox::critical( nullptr, "Server's response",
-                                   network_reply->errorString() );
+            QByteArray const network_response = network_reply->readAll();
+            QJsonDocument const json_document{
+                QJsonDocument::fromJson( network_response )
+            };
+            if( json_document.isNull() ){
+                QMessageBox::critical( nullptr, "Server's response",
+                                       network_reply->errorString() );
+            } else {
+                QJsonObject const server_error{ json_document.object() };
+                QString error_message { server_error.contains( "status" ) ?
+                                server_error.value( "status").toString():
+                                server_error.value( "message" ).toString()
+                                      };
+                QMessageBox::critical( nullptr, "Server says", error_message );
+            }
         }
         return {};
     }
