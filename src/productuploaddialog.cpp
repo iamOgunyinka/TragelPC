@@ -59,19 +59,19 @@ void ProductUploadDialog::UploadProducts( QJsonArray const & product_list )
         new QProgressDialog( "Uploading", "Cancel", 1, 100, this )
     };
     progress_dialog->setAttribute( Qt::WA_DeleteOnClose );
-    this->connect( progress_dialog, &QProgressDialog::canceled, reply,
+    ProductUploadDialog::connect( progress_dialog, &QProgressDialog::canceled, reply,
                    &QNetworkReply::abort );
-    this->connect( reply, &QNetworkReply::uploadProgress,
+    ProductUploadDialog::connect( reply, &QNetworkReply::uploadProgress,
                    [=]( qint64 received, qint64 total ){
-        progress_dialog->setMaximum( total + ( total * 0.25 ) );
-        progress_dialog->setValue( received );
+        progress_dialog->setMaximum( static_cast<int>( total + ( total * 0.25 )) );
+        progress_dialog->setValue( static_cast<int>( received ) );
     });
-    this->connect( reply, &QNetworkReply::sslErrors, reply,
-                   qOverload<QList<QSslError> const &>(
+    ProductUploadDialog::connect( reply, &QNetworkReply::sslErrors, reply,
+                   QOverload<QList<QSslError> const &>::of(
                        &QNetworkReply::ignoreSslErrors ) );
-    this->connect( reply, &QNetworkReply::finished, progress_dialog,
+    ProductUploadDialog::connect( reply, &QNetworkReply::finished, progress_dialog,
                    &QProgressDialog::close );
-    this->connect( reply, &QNetworkReply::finished, [=]{
+    ProductUploadDialog::connect( reply, &QNetworkReply::finished, [=]{
         QJsonObject const response{
             utilities::GetJsonNetworkData( reply, true )
         };
@@ -145,7 +145,7 @@ void ProductUploadDialog::SendUploadCompleteSignalWhenDone()
     bool has_error{ false };
     for( auto const & status: product_upload_status_ ){
         if( status == UploadStatus::PendingUpload ) return;
-        else if( status == UploadStatus::ErrorEncountered ) has_error = true;
+        if( status == UploadStatus::ErrorEncountered ) has_error = true;
     }
     emit image_upload_completed( has_error );
 }

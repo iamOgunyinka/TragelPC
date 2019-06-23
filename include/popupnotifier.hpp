@@ -32,7 +32,7 @@ private:
     QLabel* label;
     QGridLayout* layout;
     QTimer* timer;
-    float popup_opacity;
+    float popup_opacity{};
     QPropertyAnimation animation;
 };
 

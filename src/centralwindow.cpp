@@ -108,7 +108,7 @@ void CentralWindow::OnAddUserTriggered()
     CreateStaffDialog *staff_dialog{ new CreateStaffDialog( this ) };
     QMdiSubWindow *sub_window{ workspace->addSubWindow( staff_dialog ) };
     sub_window->setAttribute( Qt::WA_DeleteOnClose );
-    QAction *const object_sender = qobject_cast<QAction*>( sender() );
+    auto *const object_sender = qobject_cast<QAction*>( sender() );
     object_sender->setDisabled( true );
     if( object_sender == ui->actionAdd_administrator ){
         sub_window->setWindowTitle( "Create administrator" );
@@ -129,7 +129,7 @@ void CentralWindow::OnAddUserTriggered()
 
 void CentralWindow::OnOrderActionTriggered()
 {
-    QAction *const object_sender = qobject_cast<QAction*>( sender() );
+    auto *const object_sender = qobject_cast<QAction*>( sender() );
     object_sender->setDisabled( true );
     ui->menuOrders->setEnabled( false );
     OrderWindow* order_window{ new OrderWindow };
@@ -193,7 +193,7 @@ void CentralWindow::LogUserIn( QString const & username,
 void CentralWindow::OnLoginButtonClicked()
 {
     ui->actionLogin->setEnabled( false );
-    UserLoginDialog *user_dialog = new UserLoginDialog;
+    auto *user_dialog = new UserLoginDialog;
     user_dialog->SetCompanyID( utilities::Endpoint::GetEndpoints().CompanyID() );
     QMdiSubWindow* subwindow = workspace->addSubWindow( user_dialog );
     subwindow->setAttribute( Qt::WA_DeleteOnClose );
@@ -290,7 +290,7 @@ void CentralWindow::PingServerNetwork()
     auto& network_manager = utilities::NetworkManager::GetNetwork();
     QNetworkReply* const reply = network_manager.get( request );
     QObject::connect( reply, &QNetworkReply::sslErrors, reply,
-                      qOverload<QList<QSslError> const &>(
+                      QOverload<QList<QSslError> const &>::of(
                                     &QNetworkReply::ignoreSslErrors ));
     QObject::connect( reply, &QNetworkReply::finished, [=]{
         // we're pinging, we don't need the response, don't show error message
@@ -333,7 +333,7 @@ void CentralWindow::LoadSettingsFile()
         "be useful, please contact your administrator for help"
     };
     QMessageBox::information( this, "SU Setup", message );
-    AdminSetupDialog *admin_setup = new AdminSetupDialog;
+    auto *admin_setup = new AdminSetupDialog;
     QMdiSubWindow* sub_window = workspace->addSubWindow( admin_setup );
     sub_window->setAttribute( Qt::WA_DeleteOnClose );
     QObject::connect( admin_setup, &AdminSetupDialog::accepted, [=]{
@@ -377,11 +377,11 @@ void CentralWindow::GetEndpointsFromServer( QString const &url,
     QObject::connect( reply, &QNetworkReply::downloadProgress,
                       [=]( qint64 const received, qint64 const total )
     {
-        progress_dialog->setMaximum( total + ( total * 0.25 ) );
-        progress_dialog->setValue( received );
+        progress_dialog->setMaximum( static_cast<int>( total + ( total * 0.25 ) ) );
+        progress_dialog->setValue( static_cast<int>( received ) );
     });
     QObject::connect( reply, &QNetworkReply::sslErrors, reply,
-                      qOverload<QList<QSslError> const &>(
+                      QOverload<QList<QSslError> const &>::of(
                           &QNetworkReply::ignoreSslErrors ) );
     QObject::connect( reply, &QNetworkReply::finished, progress_dialog,
                       &QProgressDialog::close );

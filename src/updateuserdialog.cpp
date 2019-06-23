@@ -102,7 +102,7 @@ void UpdateUserDialog::OnRemoveUserTriggered()
     address.setQuery( query );
 
     auto on_success = [=]( QJsonObject const & result ){
-        UserModel* model = qobject_cast<UserModel*>( ui->tableView->model() );
+        auto* model = qobject_cast<UserModel*>( ui->tableView->model() );
         model->removeRows( index.row(), 1, index );
         QMessageBox::information( this, "Delete user",
                                   result.value( "status" ).toString() );

@@ -76,7 +76,7 @@ utilities::ProductData EditProductDialog::GetValue() const
     double const price{ ui->price_line->text().trimmed().toDouble() };
     QString const product_name{ ui->name_edit->text().trimmed() };
 
-    return utilities::ProductData{ product_name, temp_file, "", price };
+    return utilities::ProductData{ product_name, temp_file, "", price, 0 };
 }
 
 void EditProductDialog::SetName( QString const & name )

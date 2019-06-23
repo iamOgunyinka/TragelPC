@@ -52,7 +52,7 @@ private:
 private:
     Ui::CentralWindow *ui;
     QMdiArea *workspace;
-    QTimer*   server_ping_timer;
+    QTimer*   server_ping_timer{};
     QTime     time_interval{};
     QWebSocket websocket;
 };

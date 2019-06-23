@@ -60,7 +60,7 @@ void DarkStyle::polish(QApplication *app) {
   // font is larger than intended for some reason
   QFont defaultFont = QApplication::font();
   defaultFont.setPointSize(defaultFont.pointSize() + 1);
-  app->setFont(defaultFont);
+  QApplication::setFont(defaultFont);
 
   // loadstylesheet
   QFile qfDarkstyle(QStringLiteral(":/darkstyle/darkstyle.qss"));

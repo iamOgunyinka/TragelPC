@@ -109,7 +109,7 @@ void OrderWindow::OnRemoveItemActionClicked()
     if( !index.isValid() ) return;
 
     ui->tableView->setEnabled( false );
-    OrderModel* model = qobject_cast<OrderModel*>( ui->tableView->model() );
+    auto* model = qobject_cast<OrderModel*>( ui->tableView->model() );
     QString const order_id{
         QString::number( model->OrderIdAtIndex( index.row() ) )
     };

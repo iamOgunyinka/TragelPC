@@ -7,15 +7,19 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    a.setStyle(new DarkStyle);
+    QApplication::setStyle(new DarkStyle);
 
     FramelessWindow frameless_window {};
-    CentralWindow* w = new CentralWindow {};
-    w->setWindowIcon( a.style()->standardIcon( QStyle::SP_DesktopIcon ) );
+    auto* w = new CentralWindow {};
+    w->setWindowIcon( QApplication::style()->standardIcon( QStyle::SP_DesktopIcon ) );
     frameless_window.setContent( w );
     frameless_window.setWindowTitle( "Tragel" );
+<<<<<<< HEAD
     frameless_window.setWindowIcon(
                 a.style()->standardIcon( QStyle::SP_DesktopIcon ) );
+=======
+    frameless_window.setWindowIcon( QApplication::style()->standardIcon( QStyle::SP_DesktopIcon ) );
+>>>>>>> 6df88185466402885d34c3b4ba1d1e87c13fa4f6
     frameless_window.setWindowTitle( "Tragel" );
 
     SplashScreen splash_screen {a};
@@ -29,5 +33,5 @@ int main(int argc, char *argv[])
     QObject::connect( w, &CentralWindow::closed, &frameless_window,
                       &FramelessWindow::close );
     splash_screen.DisplaySplash();
-    return a.exec();
+    return QApplication::exec();
 }

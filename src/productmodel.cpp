@@ -41,8 +41,8 @@ QVariant ProductModel::headerData( int section, Qt::Orientation orientation,
     if( role != Qt::DisplayRole ) return QVariant{};
     if( orientation == Qt::Horizontal ){
         if( section == 0 ) return QString( "Product name" );
-        else if( section == 1) return QString( "Product price" );
-        else return QString( "Thumbnail" );
+        if( section == 1) return QString( "Product price" );
+        return QString( "Thumbnail" );
     }
     return section + 1;
 }
