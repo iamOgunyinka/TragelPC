@@ -14,7 +14,7 @@ ChangeUserRoleDialog::ChangeUserRoleDialog(QWidget *parent) :
     ui->new_role_combo->addItems( roles );
     ui->old_role_combo->setEnabled( false );
     QObject::connect( ui->new_role_combo,
-                      qOverload<int>( &QComboBox::currentIndexChanged ),
+                      QOverload<int>::of( &QComboBox::currentIndexChanged ),
                       [=]( int const index )
     {
         if( index == 0 ) user_role_ = Administrator;

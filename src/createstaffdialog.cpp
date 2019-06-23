@@ -10,7 +10,7 @@
 
 CreateStaffDialog::CreateStaffDialog(QWidget *parent) :
     QDialog(parent),
-    ui( new Ui::CreateStaffDialog )
+    ui( new Ui::CreateStaffDialog ), user_role{ UserRole::BasicUser }
 {
     ui->setupUi( this );
     ui->role_combo->addItems( { "Administrator", "Basic" } );

@@ -190,9 +190,9 @@ namespace utilities {
 
     struct UrlData
     {
-        QString next_url {};
-        QString previous_url {};
-        uint    page_number {};
+        QString next_url;
+        QString previous_url;
+        uint    page_number;
     };
 
     struct PageQuery
@@ -211,7 +211,7 @@ namespace utilities {
         QString thumbnail_location;
         QString constant_url;
         double  price;
-        qint64  product_id{ 0 };
+        qint64  product_id;
 
         QJsonObject ToJson() const;
     };
@@ -275,7 +275,7 @@ namespace utilities {
         });
 
         QObject::connect( reply, &QNetworkReply::sslErrors, reply,
-                          qOverload<QList<QSslError> const &>(
+                          QOverload<QList<QSslError> const &>::of(
                               &QNetworkReply::ignoreSslErrors ) );
         QObject::connect( progress_dialog, &QProgressDialog::canceled, reply,
                           &QNetworkReply::abort );
@@ -313,7 +313,7 @@ namespace utilities {
         });
 
         QObject::connect( reply, &QNetworkReply::sslErrors, reply,
-                          qOverload<QList<QSslError> const &>(
+                          QOverload<QList<QSslError> const &>::of(
                               &QNetworkReply::ignoreSslErrors ) );
         QObject::connect( progress_dialog, &QProgressDialog::canceled, reply,
                           &QNetworkReply::abort );

@@ -15,8 +15,8 @@ struct UserData
 {
     qint64   user_id;
     qint64   user_role;
-    QString  fullname{};
-    QString  username{};
+    QString  fullname;
+    QString  username;
 
     QJsonObject ToJson() const;
 };
@@ -67,7 +67,7 @@ public:
     QVariant headerData( int section, Qt::Orientation orientation, int role )
         const override;
     Qt::ItemFlags flags( QModelIndex const &index ) const override;
-    bool removeRows( int row, int count, QModelIndex const & );
+    bool removeRows( int row, int count, QModelIndex const & ) override;
 private:
     QVector<utilities::UserData> &users_;
 };

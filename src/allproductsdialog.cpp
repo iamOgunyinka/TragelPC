@@ -188,7 +188,7 @@ void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
         if( value.isArray() ){
             product_array = value.toArray();
         } else {
-            for( auto const &value: product_array ){
+            for( auto const value: product_array ){
                 QJsonObject const object = value.toObject();
                 QString const name{ object.value( "name" ).toString() };
                 QString const thumbnail_url{
@@ -197,7 +197,7 @@ void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
                 qint64 const product_id{ object.value( "id" ).toInt() };
                 double const price{ object.value( "price" ).toDouble() };
                 utilities::ProductData product {
-                    name, thumbnail_url, "", price, product_id
+                    name, thumbnail_url, "", price, product_id,
                 };
                 products_.push_back( std::move( product ) );
             }

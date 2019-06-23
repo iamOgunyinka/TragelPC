@@ -107,7 +107,7 @@ void AddProductDialog::OnAddItemButtonClicked()
         ui->price_line->setFocus();
         return;
     }
-    utilities::ProductData const value{ product_name, temp_file, "", price };
+    utilities::ProductData const value{ product_name, temp_file, "", price, 0 };
     product_item_list.append( value );
     ui->upload_data_button->setEnabled( true );
     UpdateModel( value, product_item_list.size() );
