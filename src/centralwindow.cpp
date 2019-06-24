@@ -21,6 +21,7 @@
 #include "ui_centralwindow.h"
 #include "updateuserdialog.hpp"
 #include "popupnotifier.hpp"
+#include "reportwindow.hpp"
 
 
 CentralWindow::CentralWindow( QWidget *parent ) :
@@ -84,7 +85,14 @@ void CentralWindow::OnAddProductTriggered()
 
 void CentralWindow::OnReportsActionTriggered()
 {
-
+    auto report_window{ new ReportWindow( this ) };
+    auto sub_window = workspace->addSubWindow( report_window );
+    sub_window->setAttribute( Qt::WA_DeleteOnClose );
+    sub_window->setWindowTitle( "Reports" );
+    sub_window->setFixedHeight( workspace->height() );
+    QObject::connect( report_window, &ReportWindow::destroyed, sub_window,
+             &QMdiSubWindow::close );
+    report_window->show();
 }
 
 void CentralWindow::OnListUsersTriggered()
@@ -395,9 +403,7 @@ void CentralWindow::GetEndpointsFromServer( QString const &url,
         utilities::Endpoint::ParseEndpointsFromJson( endpoints, response );
         WriteEndpointsToPersistenceStorage( endpoints );
         PingServerNetwork();
-        ui->actionLogin->setEnabled( true );
-        ui->actionSettings->setEnabled( true );
-        ui->actionLogout->setDisabled( true );
+        QMessageBox::information( this, "Restart", "Please restart application");
     });
 }
 

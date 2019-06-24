@@ -84,7 +84,8 @@ namespace utilities {
 
         QString CompanyID() const
         {
-            return endpoint_object.value( "company_id" ).toString();
+            return QString::number( endpoint_object.value( "company_id" )
+                                    .toInt() );
         }
 
         QString LoginTo() const
@@ -127,6 +128,10 @@ namespace utilities {
 
         QString GetProductByID () const {
             return endpoint_object.value( "get_product" ).toString();
+        }
+
+        QString RemoveProduct() const {
+            return endpoint_object.value( "remove_product" ).toString();
         }
 
         QString ListStaffs() const {

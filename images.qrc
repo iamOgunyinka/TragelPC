@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/all_images">
-        <file>images/tragel.png</file>
         <file>images/logo.png</file>
         <file>images/27-512.png</file>
         <file>images/261073.png</file>
@@ -31,5 +30,6 @@
         <file>images/waitresses.jpg</file>
         <file>images/Woman_service_delivery_customer_employee_waitress_restaurant_kitchen_menu-512.png</file>
         <file>images/x-12-512.png</file>
+        <file>images/tragel.png</file>
     </qresource>
 </RCC>

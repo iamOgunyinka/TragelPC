@@ -15,8 +15,10 @@ class AddProductDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AddProductDialog(QWidget *parent = 0);
+    explicit AddProductDialog( QWidget *parent = nullptr );
     ~AddProductDialog();
+protected:
+    void closeEvent( QCloseEvent * );
 private:
     void OnContextMenuItemRequested( QPoint const & point );
     void OnShowImageButtonClicked();

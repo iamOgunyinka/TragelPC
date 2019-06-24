@@ -56,3 +56,9 @@ int ProductModel::columnCount( QModelIndex const & ) const
 {
     return 3;
 }
+
+bool ProductModel::removeRows( int row, int count, QModelIndex const & )
+{
+    products_.remove( row, count );
+    return true;
+}

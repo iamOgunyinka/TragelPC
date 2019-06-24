@@ -109,6 +109,9 @@ QJsonObject GetJsonNetworkData( QNetworkReply* network_reply,
                                 server_error.value( "status").toString():
                                 server_error.value( "message" ).toString()
                                       };
+                if( error_message.isEmpty() ){
+                    error_message = network_reply->errorString();
+                }
                 QMessageBox::critical( nullptr, "Server says", error_message );
             }
         }

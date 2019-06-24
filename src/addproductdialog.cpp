@@ -68,6 +68,20 @@ AddProductDialog::~AddProductDialog()
     delete ui;
 }
 
+void AddProductDialog::closeEvent( QCloseEvent *close_event )
+{
+    if( !isWindowModified() ) close_event->accept();
+    else {
+        if( QMessageBox::question( this, "Close",
+                                   "You have products not yet saved, continue "
+                                   "with closing?" ) == QMessageBox::Yes ){
+            close_event->accept();
+        } else {
+            close_event->ignore();
+        }
+    }
+}
+
 void AddProductDialog::OnContextMenuItemRequested( QPoint const & point )
 {
     QModelIndex const index{ ui->product_view->indexAt( point )};
@@ -114,6 +128,7 @@ void AddProductDialog::OnAddItemButtonClicked()
     ui->product_view->setVisible( false );
     ui->product_view->setModel( data_model );
     ui->product_view->setVisible( true );
+    setWindowModified( true );
     ui->price_line->clear();
     ui->name_edit->clear();
     ui->name_edit->setFocus();
@@ -160,6 +175,7 @@ void AddProductDialog::OnRemoveItemButtonClicked()
         this->product_item_list.removeAt( row );
         this->data_model->removeRow( row );
         ui->upload_data_button->setEnabled( !product_item_list.isEmpty() );
+        if( product_item_list.isEmpty() ) setWindowModified( false );
     }
 }
 

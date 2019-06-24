@@ -19,6 +19,8 @@ public:
                          int role ) const override;
     int rowCount( QModelIndex const& parent = QModelIndex{} ) const override;
     int columnCount( QModelIndex const& parent) const override;
+    bool removeRows( int row, int count,
+                     QModelIndex const &parent = QModelIndex() ) override;
 signals:
 
 public slots:

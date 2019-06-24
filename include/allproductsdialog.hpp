@@ -2,6 +2,7 @@
 #define ALLPRODUCTSDIALOG_HPP
 
 #include <QDialog>
+#include <QCloseEvent>
 #include "resources.hpp"
 
 namespace Ui {
@@ -16,11 +17,14 @@ public:
     explicit AllProductsDialog(QWidget *parent = 0);
     ~AllProductsDialog();
     void DownloadProducts();
+protected:
+    void closeEvent( QCloseEvent * )override;
 private:
     void DownloadProducts( QUrl const & address );
     void OnCustomContextMenuRequested( QPoint const & point );
     void OnDownloadResultObtained( QJsonObject const & result );
     void OnEditItemButtonClicked();
+    void OnRemoveItemButtonClicked();
     void OnUpdateButtonClicked();
     void UpdatePageData();
     void OnNextPageButtonClicked();

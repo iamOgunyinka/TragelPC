@@ -7,12 +7,14 @@
 #include "editproductdialog.hpp"
 
 #include <QStandardItemModel>
+#include <QInputDialog>
 #include <QProgressDialog>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QMessageBox>
 #include <QMenu>
 #include <QAction>
+#include <QUrlQuery>
 #include <QJsonDocument>
 
 AllProductsDialog::AllProductsDialog( QWidget *parent ) :
@@ -44,6 +46,61 @@ AllProductsDialog::~AllProductsDialog()
     delete ui;
 }
 
+void AllProductsDialog::closeEvent(QCloseEvent *event)
+{
+    if( isWindowModified() ){
+        if( QMessageBox::question( this, "Close",
+                                   "You have unsaved changes, continue with "
+                                   "closing?" ) == QMessageBox::Yes ){
+            event->accept();
+        } else {
+            event->ignore();
+        }
+    } else {
+        event->accept();
+    }
+}
+
+void AllProductsDialog::OnRemoveItemButtonClicked()
+{
+    QModelIndex const index{ ui->tableView->currentIndex() };
+    if( !index.isValid() ) return;
+
+    int response = QMessageBox::question( this, "Remove item",
+                                          "Removing this item deletes it "
+                                          "completely, are you sure you want to "
+                                          "continue with the removal?" );
+    if( response == QMessageBox::No ) return;
+    QString const reason {
+        QInputDialog::getText( this, "Reason",
+                               "We would like to know the reason for deletion"
+                               ).trimmed() };
+    if( reason.isEmpty() ) {
+        QMessageBox::information( this, "Deletion",
+                                  "Cannot remove an item without a reason" );
+        return;
+    }
+    utilities::ProductData& data{ products_[ index.row() ] };
+    QUrlQuery query{};
+    query.addQueryItem( "product_id", QString::number( data.product_id ) );
+    query.addQueryItem( "reason", reason );
+    QUrl product_removal_url{
+        utilities::Endpoint::GetEndpoints().RemoveProduct()
+    };
+    product_removal_url.setQuery( query );
+    auto on_removal_succeeded = [=]( QJsonObject const & ){
+        ProductModel* const model{
+            qobject_cast<ProductModel*>( ui->tableView->model() )
+        };
+        model->removeRows( index.row(), 1 );
+        QMessageBox::information( this, "Removal", "Removal successful" );
+    };
+    using utilities::SimpleRequestType;
+
+    utilities::SendNetworkRequest( product_removal_url, on_removal_succeeded,
+                                   []{}, this, true, SimpleRequestType::Delete);
+}
+
 void AllProductsDialog::OnEditItemButtonClicked()
 {
     QModelIndex const index{ ui->tableView->currentIndex() };
@@ -59,6 +116,7 @@ void AllProductsDialog::OnEditItemButtonClicked()
         data.name = new_data.name;
         data.price = new_data.price;
         data.constant_url = "1"; // temporarily used to mark dirty cache
+        setWindowModified( true );
         if( !new_data.thumbnail_location.isEmpty() ){
             data.thumbnail_location = new_data.thumbnail_location;
         }
@@ -80,10 +138,18 @@ void AllProductsDialog::OnUpdateButtonClicked()
                       [=]( bool const has_error )
     {
         if( !has_error ){
+            setWindowModified( false );
             QMessageBox::information( this, "Uploads",
                                       "Products successfully submitted" );
             upload_dialog->accept();
-            this->accept();
+            ui->update_button->setEnabled( false );
+            if ( QMessageBox::question( this, "Products", "Refresh list?" ) ==
+                 QMessageBox::Yes )
+            {
+                DownloadProducts();
+            } else {
+                this->accept();
+            }
         }
     });
     upload_dialog->show();
@@ -123,9 +189,13 @@ void AllProductsDialog::OnCustomContextMenuRequested( QPoint const &point )
     custom_menu.setWindowTitle( "Menu" );
     if( !index.parent().isValid() ){
         QAction* action_edit{ new QAction( "Edit" ) };
+        QAction* action_remove{ new QAction( "Remove" ) };
         QObject::connect( action_edit, &QAction::triggered, this,
                           &AllProductsDialog::OnEditItemButtonClicked );
+        QObject::connect( action_remove, &QAction::triggered, this,
+                          &AllProductsDialog::OnRemoveItemButtonClicked );
         custom_menu.addAction( action_edit );
+        custom_menu.addAction( action_remove );
     }
     custom_menu.exec( ui->tableView->mapToGlobal( point ) );
 }
