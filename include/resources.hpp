@@ -223,12 +223,18 @@ namespace utilities {
 
     bool operator==( ProductData const & a, ProductData const & b );
 
+    enum PaymentType
+    {
+        Cash,
+        E_Banking
+    };
     struct OrderData
     {
-        qint64 order_id;
-        QString reference_id;
-        QString staff_username;
-        QDateTime order_date;
+        qint64      order_id;
+        int         payment_type;
+        QString     reference_id;
+        QString     staff_username;
+        QDateTime   order_date;
         struct Item {
             QString product_name;
             qint64  quantity;

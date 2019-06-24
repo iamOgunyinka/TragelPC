@@ -51,7 +51,7 @@ SOURCES += \
     src/popupnotifier.cpp \
     src/changepassworddialog.cpp \
     src/changeuserroledialog.cpp \
-    reportwindow.cpp
+    src/reportwindow.cpp
 
 HEADERS += \
     include/DarkStyle.h \
@@ -78,7 +78,7 @@ HEADERS += \
     include/popupnotifier.hpp \
     include/changepassworddialog.hpp \
     include/changeuserroledialog.hpp \
-    reportwindow.hpp
+    include/reportwindow.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
@@ -97,7 +97,7 @@ FORMS += \
     forms/removeuserconfirmationdialog.ui \
     forms/changepassworddialog.ui \
     forms/changeuserroledialog.ui \
-    reportwindow.ui
+    forms/reportwindow.ui
 
 RESOURCES += \
     darkstyle.qrc \

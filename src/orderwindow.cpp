@@ -28,16 +28,16 @@ OrderWindow::OrderWindow( QWidget *parent ): QMainWindow( parent ),
     ui->prev_button->setDisabled( true );
     ui->next_button->setDisabled( true );
 
-    QObject::connect( ui->search_limit_checkbox, &QCheckBox::toggled,
-                      [=]( bool const is_checked )
-    {
-        ui->search_date_from->setEnabled( is_checked );
-        ui->search_date_to->setEnabled( is_checked );
-        ui->order_by_combo->setDisabled( is_checked );
-    });
+    QStringList const search_criteria {
+        "Cash payments", "Order reference number", "Our staff", "Other users"
+    };
+    ui->order_by_combo->addItems( search_criteria );
+    ui->search_date_from->setDate( QDate::currentDate().addDays( -7 ) );
+    ui->search_date_to->setDate( QDate::currentDate() );
+
     QObject::connect( ui->tableView, &QTableView::customContextMenuRequested,
                       this, &OrderWindow::OnCustomContextMenuRequested );
-    QObject::connect( ui->find_guest_button, &QPushButton::clicked, this,
+    QObject::connect( ui->find_order_button, &QPushButton::clicked, this,
                       &OrderWindow::OnFindButtonClicked );
     QObject::connect( ui->next_button, &QToolButton::clicked, this,
                       &OrderWindow::OnNextPageButtonClicked );
@@ -47,12 +47,26 @@ OrderWindow::OrderWindow( QWidget *parent ): QMainWindow( parent ),
                       &OrderWindow::OnLastPageButtonClicked );
     QObject::connect( ui->first_page_button, &QToolButton::clicked, this,
                       &OrderWindow::OnFirstPageButtonClicked );
-    QStringList const search_criteria{
-        "All orders", "Show today's orders",
-        "From last 7 days", "This month's" };
-    ui->order_by_combo->addItems( search_criteria );
-    ui->search_date_from->setDate( QDate::currentDate() );
-    ui->search_date_to->setDate( QDate::currentDate() );
+    QObject::connect( ui->action_all_orders, &QAction::triggered, this,
+                      &OrderWindow::OnFindAllOrdersTriggered );
+    QObject::connect( ui->action_last_seven_days, &QAction::triggered, this,
+                      &OrderWindow::OnFindOrdersFromLastSevenDays );
+    QObject::connect( ui->action_this_month, &QAction::triggered, this,
+                      &OrderWindow::OnFindThisMonthsOrderTriggered );
+    QObject::connect( ui->action_today, &QAction::triggered, this,
+                      &OrderWindow::OnFindTodaysOrderTriggered );
+    QObject::connect( ui->search_limit_checkbox, &QCheckBox::toggled,
+                      [=]( bool const checked )
+    {
+        ui->search_date_from->setEnabled( checked );
+        ui->search_date_to->setEnabled( checked );
+    });
+    QObject::connect( ui->order_by_combo,
+                      QOverload<int>::of( &QComboBox::currentIndexChanged ),
+                      [=]( int const index )
+    {
+        ui->criteria_line->setEnabled( index != 0 );
+    });
 }
 
 OrderWindow::~OrderWindow()
@@ -184,31 +198,90 @@ void OrderWindow::OnPreviousPageButtonClicked()
     SendNetworkRequest( next_page_address );
 }
 
+void OrderWindow::OnFindAllOrdersTriggered()
+{
+    QUrlQuery query{};
+    query.addQueryItem( "all", QString::number( 1 ) );
+    QUrl address{ utilities::Endpoint::GetEndpoints().GetOrders() };
+    address.setQuery( query );
+    SendNetworkRequest( address );
+}
+
+void OrderWindow::OnFindTodaysOrderTriggered()
+{
+    QDate const today{ QDate::currentDate() };
+    QUrlQuery query{};
+    query.addQueryItem( "from", DateToString( today ) );
+    query.addQueryItem( "to", DateToString( today ) );
+    QUrl address{ utilities::Endpoint::GetEndpoints().GetOrders() };
+    address.setQuery( query );
+    SendNetworkRequest( address );
+}
+
+void OrderWindow::OnFindOrdersFromLastSevenDays()
+{
+    QDate const today{ QDate::currentDate() };
+    QDate const last_seven_days{ today.addDays( -7 ) };
+    QUrlQuery query{};
+    query.addQueryItem( "from", DateToString( last_seven_days ) );
+    query.addQueryItem( "to", DateToString( today ) );
+    QUrl address{ utilities::Endpoint::GetEndpoints().GetOrders() };
+    address.setQuery( query );
+    SendNetworkRequest( address );
+}
+
+void OrderWindow::OnFindThisMonthsOrderTriggered()
+{
+    QDate const today{ QDate::currentDate() };
+    QDate const first_of_this_month{today.addDays( ( -1 * today.day() ) + 1 ) };
+
+    QUrlQuery query{};
+    query.addQueryItem( "from", DateToString( first_of_this_month ) );
+    query.addQueryItem( "to", DateToString( today ) );
+    QUrl address{ utilities::Endpoint::GetEndpoints().GetOrders() };
+    address.setQuery( query );
+    SendNetworkRequest( address );
+}
+
 void OrderWindow::OnFindButtonClicked()
 {
-    ui->find_guest_button->setDisabled( true );
-    QUrlQuery query {};
+    ui->find_order_button->setDisabled( true );
 
-    if( ui->search_limit_checkbox->isChecked() ){
-        query.addQueryItem( "from", DateToString( ui->search_date_from->date() ) );
-        query.addQueryItem( "to", DateToString( ui->search_date_to->date() ) );
-    } else {
-        int const search_term_index = ui->order_by_combo->currentIndex();
-        QDate const today{ QDate::currentDate() };
-        if( search_term_index == 0 ){ // all orders from the beginning
-            query.addQueryItem( "all", "" );
-        } else if( search_term_index == 1 ){
-            query.addQueryItem( "from", DateToString( today ) );
-        } else if( search_term_index == 2 ){
-            QDate const last_seven_days{ today.addDays( -7 ) };
-            query.addQueryItem( "from", DateToString( last_seven_days ) );
-        } else {
-            QDate const first_of_this_month{
-                today.addDays( ( -1 * today.day() ) + 1 ) };
-            query.addQueryItem( "from", DateToString( first_of_this_month ) );
-        }
-        query.addQueryItem( "to", DateToString( today ) );
+    if( !ui->search_limit_checkbox->isChecked() ){
+        QMessageBox::information( this, "Limit",
+                                  "You might want to limit your search between"
+                                  " dates." );
+        ui->search_limit_checkbox->setChecked( true );
+        ui->find_order_button->setEnabled( true );
+        return;
     }
+    int const search_type { ui->order_by_combo->currentIndex() };
+    QString const criteria{ ui->criteria_line->text().trimmed() };
+    if( search_type != 0 && criteria.isEmpty() ){
+        QMessageBox::information( this, "Search", "Enter a valid search term" );
+        ui->criteria_line->setFocus();
+        ui->find_order_button->setEnabled( true );
+        return;
+    }
+    QUrlQuery query {};
+    query.addQueryItem( "search_type", QString::number( search_type ));
+    if( search_type == 0 ){ // all cash payments
+        query.addQueryItem( "ref_id", "cash" );
+    } else if( search_type == 1 ){ //search by payment reference
+        query.addQueryItem( "ref_id", criteria );
+    } else if( search_type == 2 || search_type == 3 ){//by username
+        QString const company_id = search_type == 2 ?
+                    utilities::Endpoint::GetEndpoints().CompanyID(): "0";
+        QString const username{ criteria + "@" + company_id };
+        query.addQueryItem( "username", username );
+    }
+    if( ui->search_limit_checkbox->isChecked() ){
+        auto const date_from { ui->search_date_from->date() };
+        auto const date_to{ ui->search_date_to->date() };
+        query.addQueryItem( "from", DateToString(  date_from ) );
+        query.addQueryItem( "to", DateToString( date_to ) );
+    }
+
     QUrl address{ utilities::Endpoint::GetEndpoints().GetOrders() };
     address.setQuery( query );
     SendNetworkRequest( address );
@@ -222,11 +295,11 @@ void OrderWindow::SendNetworkRequest( QUrl const &address )
     ui->next_button->setDisabled( true );
 
     auto on_success = [=]( QJsonObject const & result ){
-        ui->find_guest_button->setEnabled( true );
+        ui->find_order_button->setEnabled( true );
         DisplayOrderData( result );
     };
     auto on_error = [=]{
-        ui->find_guest_button->setEnabled( true );
+        ui->find_order_button->setEnabled( true );
     };
     request_ = utilities::GetRequestInterface( address );
     utilities::SendNetworkRequest( address, on_success, on_error, this );
@@ -322,6 +395,7 @@ void OrderWindow::ParseOrderResult( QJsonArray const & order_object_list,
         order.order_id = order_id;
         order.reference_id = object.value( "payment_reference" ).toString();
         order.staff_username = object.value( "staff" ).toString();
+        order.payment_type = object.value( "payment_type" ).toInt();
         orders.push_back( order );
     }
 }

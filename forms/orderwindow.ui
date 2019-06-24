@@ -14,25 +14,10 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="QSplitter" name="splitter">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Sunken</enum>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <widget class="QWidget" name="layoutWidget">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QLabel" name="label_2">
@@ -43,16 +28,19 @@
            </size>
           </property>
           <property name="text">
-           <string>Show orders</string>
+           <string>Search orders by</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QComboBox" name="order_by_combo"/>
         </item>
+        <item>
+         <widget class="QLineEdit" name="criteria_line"/>
+        </item>
        </layout>
-      </widget>
-      <widget class="QWidget" name="layoutWidget">
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QCheckBox" name="search_limit_checkbox">
@@ -86,15 +74,15 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="find_guest_button">
+         <widget class="QPushButton" name="find_order_button">
           <property name="text">
            <string>Find</string>
           </property>
          </widget>
         </item>
        </layout>
-      </widget>
-     </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QTableView" name="tableView"/>
@@ -163,6 +151,44 @@
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_all_orders"/>
+   <addaction name="separator"/>
+   <addaction name="action_today"/>
+   <addaction name="separator"/>
+   <addaction name="action_last_seven_days"/>
+   <addaction name="separator"/>
+   <addaction name="action_this_month"/>
+  </widget>
+  <action name="action_today">
+   <property name="text">
+    <string>Today</string>
+   </property>
+  </action>
+  <action name="action_last_seven_days">
+   <property name="text">
+    <string>Last seven days</string>
+   </property>
+  </action>
+  <action name="action_this_month">
+   <property name="text">
+    <string>This Month</string>
+   </property>
+  </action>
+  <action name="action_all_orders">
+   <property name="text">
+    <string>All orders</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

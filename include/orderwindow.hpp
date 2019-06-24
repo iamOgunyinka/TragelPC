@@ -20,7 +20,6 @@ public:
     explicit OrderWindow(QWidget *parent = 0);
     ~OrderWindow();
 private:
-    void    OnFindButtonClicked();
     void    SendNetworkRequest( QUrl const & address );
     void    DisplayOrderData( QJsonObject const & data );
     QString DateToString( QDate const & date );
@@ -34,6 +33,13 @@ private:
     void    OnPreviousPageButtonClicked();
     void    OnFirstPageButtonClicked();
     void    OnLastPageButtonClicked();
+
+    void    OnFindButtonClicked();
+    void    OnFindAllOrdersTriggered();
+    void    OnFindOrdersFromLastSevenDays();
+    void    OnFindThisMonthsOrderTriggered();
+    void    OnFindTodaysOrderTriggered();
+
     QUrl    GetUrlNewMetaFromUrl( QString const &new_url );
 private:
     utilities::PageQuery orders_page_query{};

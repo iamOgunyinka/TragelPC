@@ -23,6 +23,9 @@ QVariant OrderModel::data( QModelIndex const &index, int role ) const
         case 2:
             return row_data.staff_username;
         case 3:
+            return row_data.payment_type == utilities::Cash ?
+                        "Cash": "E-Banking";
+        case 4:
             return QString( "%1 items" ).arg( row_data.items.length() );
         default:
             return QVariant{};
@@ -40,7 +43,7 @@ int OrderModel::rowCount( QModelIndex const & ) const
 
 int OrderModel::columnCount( QModelIndex const &) const
 {
-    return 4;
+    return 5;
 }
 
 bool OrderModel::removeRows( int row, int count, QModelIndex const & )
@@ -78,7 +81,9 @@ QVariant OrderModel::headerData( int section, Qt::Orientation orientation,
         case 2:
             return QString( "Staff" );
         case 3:
-            return QString( "Number of items purchased" );
+            return QString( "Payment type" );
+        case 4:
+            return QString( "Items purchased" );
         default:
             return QVariant{};
         }
