@@ -17,7 +17,7 @@ public:
     explicit OrderItemDetailDialog( QVector<utilities::OrderData::Item> const &items,
                                     QWidget *parent = nullptr );
     ~OrderItemDetailDialog();
-
+    void SetConfirmationStatus( QString const & by, QDateTime const &on );
 private:
     Ui::OrderItemDetailDialog *ui;
 };

@@ -1,14 +1,49 @@
 #include "ordermodel.hpp"
 
-OrderModel::OrderModel( QVector<utilities::OrderData> &&orders,
+OrderModel::OrderModel( QVector<utilities::OrderData> &orders,
                         QObject *parent )
-    : QAbstractTableModel( parent ), orders_{ std::move( orders ) }
+    : QAbstractTableModel( parent ), orders_{ orders }
 {
 }
 
 Qt::ItemFlags OrderModel::flags( QModelIndex const & ) const
 {
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+}
+
+bool OrderModel::setData( QModelIndex const &index, QVariant const &value,
+                         int role )
+{
+    if( role != Qt::EditRole ) return false;
+    utilities::OrderData& order{ orders_[index.row()] };
+    switch( index.column() )
+    {
+    case 0:
+        order.order_date = value.toDateTime();
+        emit dataChanged( QModelIndex(), QModelIndex() );
+        return true;
+    case 1:
+        order.reference_id = value.toString();
+        emit dataChanged( QModelIndex(), QModelIndex() );
+        return true;
+    case 2:
+        order.staff_username = value.toString();
+        emit dataChanged( QModelIndex(), QModelIndex() );
+        return true;
+    case 3:{
+        int payment_type = value.toInt();
+        order.payment_type = payment_type == utilities::Cash ?
+                    utilities::Cash: utilities::E_Banking;
+        emit dataChanged( QModelIndex(), QModelIndex() );
+        return true;
+    }
+    case 4:
+        order.confirmation_data.confirmed = value.toBool();
+        emit dataChanged( QModelIndex(), QModelIndex() );
+        return true;
+    default:
+        return false;
+    }
 }
 
 QVariant OrderModel::data( QModelIndex const &index, int role ) const
@@ -24,8 +59,11 @@ QVariant OrderModel::data( QModelIndex const &index, int role ) const
             return row_data.staff_username;
         case 3:
             return row_data.payment_type == utilities::Cash ?
-                        "Cash": "E-Banking";
+                        QString( "Cash" ): QString( "E-Banking" );
         case 4:
+            return row_data.confirmation_data.confirmed ? QString( "Confirmed" )
+                                                        : tr( "Unconfirmed" );
+        case 5:
             return QString( "%1 items" ).arg( row_data.items.length() );
         default:
             return QVariant{};
@@ -43,29 +81,13 @@ int OrderModel::rowCount( QModelIndex const & ) const
 
 int OrderModel::columnCount( QModelIndex const &) const
 {
-    return 5;
+    return 6;
 }
 
 bool OrderModel::removeRows( int row, int count, QModelIndex const & )
 {
     orders_.remove( row, count );
     return true;
-}
-
-QString OrderModel::ReferenceIdAtIndex( int const row ) const
-{
-    return orders_[row].reference_id;
-}
-
-qint64 OrderModel::OrderIdAtIndex( int const row ) const
-{
-    return orders_[row].order_id;
-}
-
-QVector<utilities::OrderData::Item> const & OrderModel::ItemDataAt(
-        int const row ) const
-{
-    return orders_[row].items;
 }
 
 QVariant OrderModel::headerData( int section, Qt::Orientation orientation,
@@ -83,6 +105,8 @@ QVariant OrderModel::headerData( int section, Qt::Orientation orientation,
         case 3:
             return QString( "Payment type" );
         case 4:
+            return QString( "Confirmation" );
+        case 5:
             return QString( "Items purchased" );
         default:
             return QVariant{};

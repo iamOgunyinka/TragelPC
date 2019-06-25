@@ -143,9 +143,8 @@ void CentralWindow::OnOrderActionTriggered()
     OrderWindow* order_window{ new OrderWindow };
     QMdiSubWindow *sub_window = workspace->addSubWindow( order_window );
     sub_window->setAttribute( Qt::WA_DeleteOnClose );
-    sub_window->setFixedHeight( workspace->height() );
     sub_window->setWindowTitle( "Orders" );
-    order_window->show();
+    order_window->showMaximized();
     QObject::connect( order_window, &OrderWindow::destroyed, [=]{
         if( ui->menuOrders ) ui->menuOrders->setEnabled( true );
         object_sender->setEnabled( true );

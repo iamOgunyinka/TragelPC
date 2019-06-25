@@ -28,6 +28,7 @@ private:
     void    OnCustomContextMenuRequested( QPoint const & point );
     void    OnOrderDetailsRequested();
     void    OnRemoveItemActionClicked();
+    void    OnConfirmOrderPaymentTriggered();
     void    UpdatePageData();
     void    OnNextPageButtonClicked();
     void    OnPreviousPageButtonClicked();
@@ -42,6 +43,7 @@ private:
 
     QUrl    GetUrlNewMetaFromUrl( QString const &new_url );
 private:
+    QVector<utilities::OrderData> orders_;
     utilities::PageQuery orders_page_query{};
     Ui::OrderWindow *ui;
     QNetworkRequest request_;

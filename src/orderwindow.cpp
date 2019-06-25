@@ -79,6 +79,56 @@ QString OrderWindow::DateToString( QDate const & date )
     return date.toString( "yyyy-MM-dd" );
 }
 
+void OrderWindow::OnConfirmOrderPaymentTriggered()
+{
+    QModelIndex const index{ ui->tableView->currentIndex() };
+    utilities::OrderData const & order{ orders_[ index.row() ]};
+
+    int reply = QMessageBox::warning( this, "Confirm order",
+                                      "This is an irreversible operation! Are "
+                                      "you absolutely sure that the payment "
+                                      "has been received?", QMessageBox::Yes |
+                                      QMessageBox::No );
+    if( reply == QMessageBox::No ) return;
+    ui->tableView->setEnabled( false );
+
+    QString const order_id { QString::number( order.order_id ) };
+    QString const date_time {
+        QDateTime::currentDateTime().toString( Qt::ISODateWithMs )
+    };
+    QByteArray const payload {
+        QString( order_id + "@" + date_time ).toLocal8Bit().toBase64()
+    };
+    QUrlQuery query{};
+    query.addQueryItem( "payload", payload );
+    QUrl address { utilities::Endpoint::GetEndpoints().ConfirmPayment() };
+    address.setQuery( query );
+
+    auto on_success = [=]( QJsonObject const & result )
+    {
+        QJsonObject const confirmation_detail{
+            result.value( "status" ).toObject()
+        };
+        utilities::OrderData &order{ orders_[index.row()] };
+        order.confirmation_data.confirmed = true;
+        order.confirmation_data.confirmed_by =
+                confirmation_detail.value( "by" ).toString();
+        order.confirmation_data.date_of_confirmation = QDateTime::fromString(
+                    confirmation_detail.value( "date" ).toString(),
+                    Qt::ISODateWithMs );
+        ui->tableView->setEnabled( true );
+        OrderModel* model{ qobject_cast<OrderModel*>( ui->tableView->model() ) };
+        model->setData( model->index( index.row(), 4 ), 1 );
+    };
+
+    auto on_error = [=]
+    {
+        ui->tableView->setEnabled( true );
+    };
+
+    utilities::SendNetworkRequest( address, on_success, on_error, this );
+}
+
 void OrderWindow::OnCustomContextMenuRequested( QPoint const & point )
 {
     QModelIndex const index{ ui->tableView->indexAt( point )};
@@ -86,9 +136,19 @@ void OrderWindow::OnCustomContextMenuRequested( QPoint const & point )
 
     QMenu custom_menu( this );
     custom_menu.setTitle( "Orders" );
+
     if( !index.parent().isValid() ){
         QAction* action_details{ new QAction( "Details" ) };
         QAction* action_remove{ new QAction( "Remove" ) };
+
+        utilities::OrderData const & order{ orders_[index.row()] };
+        if( !order.confirmation_data.confirmed ){
+            QAction* action_confirm{ new QAction( "Confirm" ) };
+            QObject::connect( action_confirm, &QAction::triggered, this,
+                              &OrderWindow::OnConfirmOrderPaymentTriggered );
+            custom_menu.addAction( action_confirm );
+        }
+
         QObject::connect( action_details, &QAction::triggered, this,
                           &OrderWindow::OnOrderDetailsRequested );
         QObject::connect( action_remove, &QAction::triggered, this,
@@ -103,16 +163,15 @@ void OrderWindow::OnOrderDetailsRequested()
 {
     QModelIndex const index{ ui->tableView->currentIndex() };
     if( !index.isValid() ) return;
-    OrderModel* model{ qobject_cast<OrderModel*>( ui->tableView->model() ) };
-    auto const & order_items{ model->ItemDataAt( index.row() )};
-    auto order_detail_dialog{ new OrderItemDetailDialog( order_items ) };
-
-    auto window_title{
-        QString( "Order: %1" ).arg( model->ReferenceIdAtIndex( index.row() ) )
-    };
+    utilities::OrderData const &order{ orders_[index.row() ] };
+    auto order_detail_dialog{ new OrderItemDetailDialog( order.items, this ) };
+    if( order.confirmation_data.confirmed ){
+        order_detail_dialog->SetConfirmationStatus(
+                    order.confirmation_data.confirmed_by,
+                    order.confirmation_data.date_of_confirmation );
+    }
+    auto window_title{ QString( "Order: %1" ).arg( order.reference_id ) };
     order_detail_dialog->setWindowTitle( window_title );
-
-    order_detail_dialog->setWindowModality( Qt::WindowModal );
     order_detail_dialog->setAttribute( Qt::WA_DeleteOnClose );
     order_detail_dialog->show();
 }
@@ -124,9 +183,7 @@ void OrderWindow::OnRemoveItemActionClicked()
 
     ui->tableView->setEnabled( false );
     auto* model = qobject_cast<OrderModel*>( ui->tableView->model() );
-    QString const order_id{
-        QString::number( model->OrderIdAtIndex( index.row() ) )
-    };
+    QString const order_id{ QString::number( orders_[index.row()].order_id ) };
 
     auto reason = QInputDialog::getText( this, "Delete order",
                                          "Why are you deleting this order?" )
@@ -342,22 +399,18 @@ void OrderWindow::DisplayOrderData( QJsonObject const & data )
         return;
     }
     QJsonArray order_list{ data.value( "orders" ).toArray() };
-    QVector<utilities::OrderData> orders {};
     while( !order_list.isEmpty() ){
         QJsonValue const value{ order_list[0] };
-        if( value.isArray() ){
-            order_list = value.toArray();
-        } else {
-            break;
-        }
+        if( value.isArray() ) order_list = value.toArray();
+        else break;
     }
-    ParseOrderResult( order_list, orders );
-    if( orders.isEmpty() ){
+    ParseOrderResult( order_list, orders_ );
+    if( orders_.isEmpty() ){
         QMessageBox::information( this, "Orders", "No result found" );
         return;
     }
     UpdatePageData();
-    OrderModel *model{ new OrderModel( std::move( orders ), ui->tableView ) };
+    OrderModel *model{ new OrderModel( orders_, ui->tableView ) };
     ui->tableView->setVisible( false );
     QObject::connect( model,
                       SIGNAL(dataChanged(QModelIndex,QModelIndex,QVector<int>)),
@@ -373,6 +426,7 @@ void OrderWindow::DisplayOrderData( QJsonObject const & data )
 void OrderWindow::ParseOrderResult( QJsonArray const & order_object_list,
                                     QVector<utilities::OrderData> &orders )
 {
+    orders.clear();
     for( auto const &value: order_object_list ){
         QJsonObject const & object = value.toObject();
         utilities::OrderData order {};
@@ -396,6 +450,19 @@ void OrderWindow::ParseOrderResult( QJsonArray const & order_object_list,
         order.reference_id = object.value( "payment_reference" ).toString();
         order.staff_username = object.value( "staff" ).toString();
         order.payment_type = object.value( "payment_type" ).toInt();
+        QJsonObject const confirmation_details{
+            object.value( "confirmation" ).toObject()
+        };
+        order.confirmation_data.confirmed = confirmation_details.value(
+                    "confirmed" ).toBool();
+        if( order.confirmation_data.confirmed ){
+            order.confirmation_data.confirmed_by = confirmation_details.
+                    value( "by").toString();
+            order.confirmation_data.date_of_confirmation =
+                    QDateTime::fromString(
+                        confirmation_details.value( "date").toString(),
+                        Qt::ISODateWithMs );
+        }
         orders.push_back( order );
     }
 }

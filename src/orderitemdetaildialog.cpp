@@ -14,6 +14,16 @@ OrderItemDetailDialog::OrderItemDetailDialog(
     ui->tableView->horizontalHeader()->setSectionResizeMode(
                 QHeaderView::Stretch );
     ui->tableView->setVisible( true );
+    this->adjustSize();
+    ui->confirmation_label->setText( "Payment status: <b>Unconfirmed</b>");
+}
+
+void OrderItemDetailDialog::SetConfirmationStatus( QString const & by,
+                                                   QDateTime const &on )
+{
+    ui->confirmation_label->setText( "Confirmed by: <b>"
+                                     + by + "</b>.<br>On: <b>"
+                                     + on.toString() + "</b>." );
 }
 
 OrderItemDetailDialog::~OrderItemDetailDialog()

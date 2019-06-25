@@ -114,6 +114,10 @@ namespace utilities {
             return endpoint_object.value( "change_role" ).toString();
         }
 
+        QString ConfirmPayment() const {
+            return endpoint_object.value( "confirm_order" ).toString();
+        }
+
         QString GetSubscriptions() const {
             return endpoint_object.value( "get_subscriptions" ).toString();
         }
@@ -228,10 +232,19 @@ namespace utilities {
         Cash,
         E_Banking
     };
+
+    struct PaymentConfirmationData
+    {
+        bool confirmed;
+        QDateTime date_of_confirmation;
+        QString   confirmed_by;
+    };
+
     struct OrderData
     {
         qint64      order_id;
         int         payment_type;
+        QString     confirmed_by;//empty by default, unless payment is confirmed
         QString     reference_id;
         QString     staff_username;
         QDateTime   order_date;
@@ -241,6 +254,7 @@ namespace utilities {
             double  price;
         };
         QVector<Item> items;
+        PaymentConfirmationData confirmation_data;
     };
 
     enum class SimpleRequestType

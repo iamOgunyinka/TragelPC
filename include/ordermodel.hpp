@@ -9,22 +9,23 @@ class OrderModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit OrderModel( QVector<utilities::OrderData> &&orders,
+    explicit OrderModel( QVector<utilities::OrderData> &orders,
                          QObject *parent = nullptr );
     Qt::ItemFlags flags( QModelIndex const &index ) const override;
     QVariant data( QModelIndex const& index, int role) const override;
-    QVariant headerData( int section, Qt::Orientation orientation, int role ) const override;
+    QVariant headerData( int section, Qt::Orientation orientation, int role )
+            const override;
     int rowCount( QModelIndex const& parent) const override;
     int columnCount( QModelIndex const& parent) const override;
+    bool setData( QModelIndex const &index, QVariant const &value,
+                  int role = Qt::EditRole ) override;
     bool removeRows( int row, int count, QModelIndex const &parent ) override;
-    QVector<utilities::OrderData::Item> const & ItemDataAt( int const row ) const;
-    QString ReferenceIdAtIndex( int const row ) const;
-    qint64  OrderIdAtIndex( int const row ) const;
+    QVector<utilities::OrderData::Item> const & ItemDataAt( int const row )const;
 signals:
 
 public slots:
 private:
-    QVector<utilities::OrderData> orders_;
+    QVector<utilities::OrderData>& orders_;
 };
 
 class OrderDetailModel : public QAbstractTableModel
