@@ -19,9 +19,9 @@ ChangePasswordDialog::~ChangePasswordDialog()
     delete ui;
 }
 
-void ChangePasswordDialog::SetUsername( QString const &username )
+void ChangePasswordDialog::SetEmail( QString const &email_address )
 {
-    username_ = username;
+    email_address_ = email_address;
 }
 
 QString ChangePasswordDialog::GetPassword() const
@@ -31,10 +31,10 @@ QString ChangePasswordDialog::GetPassword() const
 
 void ChangePasswordDialog::OnChangeButtonClicked()
 {
-    QString const username{ ui->username_line->text().trimmed() };
-    if( username.isEmpty() || username != username_ ){
-        QMessageBox::warning( this, "Error", "Username does not match" );
-        ui->username_line->setFocus();
+    QString const email{ ui->email_line->text().trimmed() };
+    if( email.isEmpty() || email != email_address_ ){
+        QMessageBox::warning( this, "Error", "Email address do not match" );
+        ui->email_line->setFocus();
         return;
     }
     QString const password{ ui->password_line->text() };

@@ -21,15 +21,15 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Confirm recipient's username</string>
+          <string>Confirm recipient's email address</string>
          </property>
          <property name="buddy">
-          <cstring>recipient_username_line</cstring>
+          <cstring>recipient_email_line</cstring>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="recipient_username_line"/>
+        <widget class="QLineEdit" name="recipient_email_line"/>
        </item>
        <item>
         <widget class="QLabel" name="label_3">
@@ -88,7 +88,7 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>recipient_username_line</tabstop>
+  <tabstop>recipient_email_line</tabstop>
   <tabstop>deletion_reason_line</tabstop>
   <tabstop>confirm_password_line</tabstop>
  </tabstops>

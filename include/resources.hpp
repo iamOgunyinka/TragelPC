@@ -158,6 +158,10 @@ namespace utilities {
             return endpoint_object.value( "get_customer_order" ).toString();
         }
 
+        QString GetOrderCount() const {
+            return endpoint_object.value( "count_orders" ).toString();
+        }
+
         QString AddOrder() const {
             return endpoint_object.value( "add_order" ).toString();
         }

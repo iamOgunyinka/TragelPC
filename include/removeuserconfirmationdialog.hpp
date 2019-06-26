@@ -13,8 +13,8 @@ class RemoveUserConfirmationDialog : public QDialog
 
 public:
     explicit RemoveUserConfirmationDialog( QWidget *parent = nullptr );
-    void SetUsername( QString const & username );
-    QString GetUsername() const;
+    void SetEmail( QString const & email_address );
+    QString GetEmail() const;
     QString GetDeletionReason() const;
     QString GetAdminPassword() const;
     ~RemoveUserConfirmationDialog();
@@ -22,7 +22,7 @@ private:
     void OnDeleteButtonClicked();
 private:
     Ui::RemoveUserConfirmationDialog *ui;
-    QString username_;
+    QString email_address_;
 };
 
 #endif // REMOVEUSERCONFIRMATIONDIALOG_HPP

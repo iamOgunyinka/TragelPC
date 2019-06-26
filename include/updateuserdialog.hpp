@@ -17,7 +17,7 @@ struct UserData
     qint64   user_role;
     QString  fullname;
     QString  username;
-
+    QString  email;
     QJsonObject ToJson() const;
 };
 
@@ -68,6 +68,8 @@ public:
         const override;
     Qt::ItemFlags flags( QModelIndex const &index ) const override;
     bool removeRows( int row, int count, QModelIndex const & ) override;
+    bool setData( QModelIndex const &index, QVariant const &value,
+                 int role = Qt::EditRole ) override;
 private:
     QVector<utilities::UserData> &users_;
 };

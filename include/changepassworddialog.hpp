@@ -16,13 +16,13 @@ signals:
 public:
     explicit ChangePasswordDialog(QWidget *parent = 0);
     ~ChangePasswordDialog();
-    void SetUsername( QString const & username );
+    void SetEmail( QString const & email_address );
     QString GetPassword() const;
 private:
     void OnChangeButtonClicked();
 private:
     Ui::ChangePasswordDialog *ui;
-    QString username_;
+    QString email_address_;
 };
 
 #endif // CHANGEPASSWORDDIALOG_HPP

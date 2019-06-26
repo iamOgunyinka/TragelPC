@@ -56,9 +56,11 @@ void ChangeUserRoleDialog::SetCurrentUserRole( int const user_role )
 {
     if( user_role == UserRole::Administrator ){
         ui->old_role_combo->setCurrentIndex( 0 );
+        ui->new_role_combo->setCurrentIndex( 0 );
         user_role_ = UserRole::Administrator;
     } else {
         ui->old_role_combo->setCurrentIndex( 1 );
+        ui->new_role_combo->setCurrentIndex( 1 );
         user_role_ = UserRole::BasicUser;
     }
 }

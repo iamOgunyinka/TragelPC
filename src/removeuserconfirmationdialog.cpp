@@ -20,9 +20,9 @@ RemoveUserConfirmationDialog::~RemoveUserConfirmationDialog()
 
 void RemoveUserConfirmationDialog::OnDeleteButtonClicked()
 {
-    if( ui->recipient_username_line->text() != username_ ){
-        QMessageBox::critical( this, "Error", "Username does not match" );
-        ui->recipient_username_line->setFocus();
+    if( ui->recipient_email_line->text().trimmed() != email_address_ ){
+        QMessageBox::critical( this, "Error", "Email address do not match" );
+        ui->recipient_email_line->setFocus();
         return;
     }
     if( ui->deletion_reason_line->text().trimmed().isEmpty() ){
@@ -41,9 +41,9 @@ void RemoveUserConfirmationDialog::OnDeleteButtonClicked()
     this->accept();
 }
 
-void RemoveUserConfirmationDialog::SetUsername( QString const & username )
+void RemoveUserConfirmationDialog::SetEmail( QString const & email_address )
 {
-    username_ = username;
+    email_address_ = email_address;
 }
 
 QString RemoveUserConfirmationDialog::GetAdminPassword() const
@@ -56,7 +56,7 @@ QString RemoveUserConfirmationDialog::GetDeletionReason() const
     return ui->deletion_reason_line->text();
 }
 
-QString RemoveUserConfirmationDialog::GetUsername() const
+QString RemoveUserConfirmationDialog::GetEmail() const
 {
-    return ui->recipient_username_line->text();
+    return ui->recipient_email_line->text().trimmed();
 }

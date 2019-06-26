@@ -81,20 +81,19 @@ void UpdateUserDialog::OnRemoveUserTriggered()
     RemoveUserConfirmationDialog *remove_dialog {
         new RemoveUserConfirmationDialog( this )
     };
-    auto const &user_data{ users_[index.row()] };
-    int const last_index{ user_data.username.lastIndexOf( '@') };
-    remove_dialog->SetUsername( user_data.username.left( last_index ) );
-    QString confirm_username {}, reason{}, admin_password {};
+    utilities::UserData const &user_data{ users_[index.row()] };
+    remove_dialog->SetEmail( user_data.email );
+    QString confirm_email {}, reason{}, admin_password {};
 
     if( remove_dialog->exec() == QDialog::Accepted ){
-        confirm_username = remove_dialog->GetUsername();
+        confirm_email = remove_dialog->GetEmail();
         reason = remove_dialog->GetDeletionReason();
         admin_password = remove_dialog->GetAdminPassword();
         remove_dialog->setAttribute( Qt::WA_DeleteOnClose );
     } else return;
 
     QString const query_payload {
-        users_[index.row()].username + ":" + admin_password + ":" + reason
+        users_[index.row()].email + ":" + admin_password + ":" + reason
     };
     QUrlQuery query{};
     query.addQueryItem( "payload", query_payload.toLocal8Bit().toBase64() );
@@ -125,7 +124,13 @@ void UpdateUserDialog::OnChangeUserRoleTriggered()
     role_dialog->SetCurrentUserRole( user_data.user_role );
 
     QUrl address{ utilities::Endpoint::GetEndpoints().ChangeRole() };
-    auto on_success = [role_dialog]( QJsonObject const &, QNetworkReply* ){
+    auto on_success = [=]( QJsonObject const &result ){
+        QMessageBox::information( this, "Role", "Change applied successfully.");
+        utilities::UserData& user_data{ users_[index.row()] };
+        int role = result.value( "status" ).toObject().value( "role" ).toInt();
+        user_data.user_role = role;
+        UserModel* model{ qobject_cast<UserModel*>( ui->tableView->model() ) };
+        model->setData( model->index( index.row(), 2 ), role );
         role_dialog->accept();
     };
 
@@ -138,8 +143,7 @@ void UpdateUserDialog::OnChangeUserRoleTriggered()
         QUrlQuery url_query {};
         url_query.addQueryItem( "payload", payload );
         address.setQuery( url_query );
-        utilities::SendPostNetworkRequest( address, on_success, []{},
-                                            role_dialog, payload );
+        utilities::SendNetworkRequest( address, on_success, []{}, role_dialog );
     });
     role_dialog->setAttribute( Qt::WA_DeleteOnClose );
     QObject::connect( role_dialog, &ChangeUserRoleDialog::finished, role_dialog,
@@ -153,10 +157,9 @@ void UpdateUserDialog::OnChangeUserPasswordTriggered()
     if( !index.isValid() ) return;
 
     auto const &user_data{ users_[index.row()] };
-    int const last_index{ user_data.username.lastIndexOf( '@') };
 
     ChangePasswordDialog* password_dialog { new ChangePasswordDialog( this ) };
-    password_dialog->SetUsername( user_data.username.left( last_index ) );
+    password_dialog->SetEmail( user_data.email );
     QUrl const address{ utilities::Endpoint::GetEndpoints().ResetPassword() };
     auto on_sucess = [=]( QJsonObject const &, QNetworkReply* ){
         password_dialog->close();
@@ -165,7 +168,7 @@ void UpdateUserDialog::OnChangeUserPasswordTriggered()
     QObject::connect( password_dialog, &ChangePasswordDialog::data_validated,[=]
     {
         QJsonObject const object {
-            { "username", user_data.username },
+            { "email", user_data.email },
             { "new_password", password_dialog->GetPassword() }
         };
         QByteArray const payload{ QJsonDocument{ object }.toJson() };
@@ -267,11 +270,12 @@ void UpdateUserDialog::ParseUserList( QJsonArray const &list )
     users_.clear();
     for( QJsonValue const & value: list ){
         QJsonObject const user_data_object{ value.toObject() };
-        QString username { user_data_object.value( "username" ).toString() };
         utilities::UserData user_data {
             user_data_object.value( "id" ).toInt(),
             user_data_object.value( "role" ).toInt(),
-            user_data_object.value( "name" ).toString(), username
+            user_data_object.value( "name" ).toString(),
+            user_data_object.value( "username" ).toString(),
+            user_data_object.value( "email" ).toString()
         };
         users_.push_back( std::move( user_data ) );
     }
@@ -327,6 +331,25 @@ int UserModel::columnCount( QModelIndex const &) const
 bool UserModel::removeRows( int row, int count, QModelIndex const & )
 {
     users_.remove( row, count );
+    return true;
+}
+
+bool UserModel::setData( QModelIndex const &index, QVariant const &value,
+                         int role )
+{
+    if( role != Qt::EditRole ) return false;
+    utilities::UserData& user_data{ users_[index.row()] };
+    int const column{ index.column() };
+    if( column == 0 ){
+        user_data.username = value.toString();
+    } else if( column == 1 ){
+        user_data.fullname = value.toString();
+    } else if( column == 2 ){
+        user_data.user_role = value.toInt();
+    } else {
+        return false;
+    }
+    emit dataChanged( QModelIndex(), QModelIndex() );
     return true;
 }
 

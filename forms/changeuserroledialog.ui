@@ -30,7 +30,7 @@
    <item row="1" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Old role</string>
+      <string>Current role</string>
      </property>
      <property name="buddy">
       <cstring>old_role_combo</cstring>
@@ -53,6 +53,13 @@
    <item row="2" column="1" colspan="2">
     <widget class="QComboBox" name="new_role_combo"/>
    </item>
+   <item row="4" column="2">
+    <widget class="QPushButton" name="change_button">
+     <property name="text">
+      <string>&amp;Change</string>
+     </property>
+    </widget>
+   </item>
    <item row="3" column="1">
     <spacer name="verticalSpacer">
      <property name="orientation">
@@ -65,13 +72,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="4" column="2">
-    <widget class="QPushButton" name="change_button">
-     <property name="text">
-      <string>&amp;Change</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

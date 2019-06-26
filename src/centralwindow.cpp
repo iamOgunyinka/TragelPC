@@ -26,7 +26,7 @@
 
 CentralWindow::CentralWindow( QWidget *parent ) :
     QMainWindow( parent ), ui( new Ui::CentralWindow ),
-    workspace{ new QMdiArea }
+    workspace{ new QMdiArea }, last_order_count{ 0 }
 {
     ui->setupUi( this );
     setCentralWidget( workspace );
@@ -52,10 +52,18 @@ CentralWindow::CentralWindow( QWidget *parent ) :
                       &CentralWindow::OnListUsersTriggered );
     QObject::connect( ui->actionReports, &QAction::triggered, this,
                       &CentralWindow::OnReportsActionTriggered );
+    QObject::connect( ui->actionShow_all_users, &QAction::triggered, this,
+                      &CentralWindow::OnListUsersTriggered );
 }
 
 CentralWindow::~CentralWindow()
 {
+    QSettings& settings{ utilities::ApplicationSettings::GetAppSettings() };
+    settings.setValue( "order_count", last_order_count );
+    settings.sync();
+
+    delete server_ping_timer;
+    delete server_order_poll_timer;
     delete ui;
 }
 
@@ -182,6 +190,7 @@ void CentralWindow::LogUserIn( QString const & username,
         notifier->show();
         auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
         utilities::NetworkManager::SetNetworkCookie( session_cookie, reply );
+        StartOrderPolling();
     };
     auto on_error = [=]{
         ui->actionLogin->setEnabled( true );
@@ -239,6 +248,11 @@ void CentralWindow::OnLogoutButtonClicked()
     }
     SetEnableActionButtons( false );
     ui->actionLogin->setEnabled( true );
+
+    server_order_poll_timer->stop();
+    delete server_order_poll_timer;
+    server_order_poll_timer = nullptr;
+
     QMessageBox::information( this, "Logout",
                               "You've been logged out successfully" );
 }
@@ -272,10 +286,10 @@ void CentralWindow::StartApplication()
 {
     SetEnableCentralWindowBars( false );
     LoadSettingsFile();
-    ActivateTimer();
+    ActivatePingTimer();
 }
 
-void CentralWindow::ActivateTimer()
+void CentralWindow::ActivatePingTimer()
 {
     if( !server_ping_timer ) {
         server_ping_timer = new QTimer( this );
@@ -412,6 +426,8 @@ void CentralWindow::WriteEndpointsToPersistenceStorage(
     auto& app_settings = utilities::ApplicationSettings::GetAppSettings();
     QByteArray const url_map { QJsonDocument( endpoint.ToJson() ).toJson() };
     app_settings.setValue( "url_map", url_map );
+    app_settings.setValue( "order_count", 0 );
+    app_settings.sync();
 }
 
 void CentralWindow::CentralizeDisplayWidget( QWidget * const widget,
@@ -426,4 +442,59 @@ void CentralWindow::CentralizeDisplayWidget( QWidget * const widget,
                                               widget->size(),
                                               QApplication::desktop()
                                               ->availableGeometry()));
+}
+
+void CentralWindow::OnOrderPollResultObtained( QJsonObject const & result )
+{
+    qint64 const order_count = result.value( "status" ).toObject()
+            .value( "count" ).toInt();
+    if( order_count > last_order_count ){
+        QString const text {
+            tr( "You have %1 new orders" ).arg( order_count - last_order_count )
+        };
+        PopUpNotifier* notifier{ new PopUpNotifier( this ) };
+        notifier->setAttribute( Qt::WA_DeleteOnClose );
+        notifier->SetPopUpText( text );
+        notifier->show();
+        QMessageBox::information( this, "Orders", text );
+    }
+    last_order_count = order_count;
+}
+
+void CentralWindow::StartOrderPolling()
+{
+    if( !server_order_poll_timer ){
+        server_order_poll_timer = new QTimer( this );
+        auto& app_settings = utilities::ApplicationSettings::GetAppSettings();
+        QVariant const order_count{ app_settings.value( "order_count", 0 ) };
+        last_order_count = order_count.toInt();
+
+        QUrl const address{
+            utilities::Endpoint::GetEndpoints().GetOrderCount()
+        };
+        QObject::connect( server_order_poll_timer, &QTimer::timeout, [=]
+        {
+            // we cannot use `utilities::SendNetworkRequest` here as it shows a
+            // progress dialog for all requests && we have to be in stealth mode
+            QNetworkRequest const request{
+                utilities::GetRequestInterface( address )
+            };
+            auto& network_manager{
+                utilities::NetworkManager::GetNetworkWithCookie()
+            };
+            QNetworkReply* reply{ network_manager.get( request ) };
+            QObject::connect( reply, &QNetworkReply::sslErrors, reply,
+                              QOverload<QList<QSslError> const &>::of(
+                                  &QNetworkReply::ignoreSslErrors ) );
+            QObject::connect( reply, &QNetworkReply::finished, [=]
+            {
+                QJsonObject const result {
+                    utilities::GetJsonNetworkData( reply, false )
+                };
+                if( result.isEmpty() ) return;
+                else OnOrderPollResultObtained( result );
+            });
+        });
+        server_order_poll_timer->start( 25 * 1000 ); // poll every 25seconnds
+    }
 }

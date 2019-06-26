@@ -6,7 +6,7 @@
 #include <QCloseEvent>
 #include <QTime>
 #include <QTimer>
-#include <QWebSocket>
+
 
 namespace Ui {
 class CentralWindow;
@@ -31,7 +31,9 @@ private:
     void CentralizeDisplayWidget( QWidget * const widget, QSize const & size);
     void LogUserIn( QString const & username, QString const & password );
     void PingServerNetwork();
-    void ActivateTimer();
+    void StartOrderPolling();
+    void OnOrderPollResultObtained( QJsonObject const &result );
+    void ActivatePingTimer();
     void LoadSettingsFile();
     void OnLoginButtonClicked();
     void OnLogoutButtonClicked();
@@ -53,8 +55,9 @@ private:
     Ui::CentralWindow *ui;
     QMdiArea *workspace;
     QTimer*   server_ping_timer{};
+    QTimer*   server_order_poll_timer{};
     QTime     time_interval{};
-    QWebSocket websocket;
+    qint64    last_order_count;
 };
 
 #endif // CENTRALWINDOW_HPP

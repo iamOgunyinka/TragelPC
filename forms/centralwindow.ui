@@ -121,7 +121,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLogin">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/login.png</normaloff>:/all_images/images/login.png</iconset>
    </property>
    <property name="text">
@@ -130,7 +130,7 @@
   </action>
   <action name="actionLogout">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/logout.png</normaloff>:/all_images/images/logout.png</iconset>
    </property>
    <property name="text">
@@ -144,7 +144,7 @@
   </action>
   <action name="actionAdd_products">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/add_order-512.png</normaloff>:/all_images/images/add_order-512.png</iconset>
    </property>
    <property name="text">
@@ -153,7 +153,7 @@
   </action>
   <action name="actionList_all_products">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/Oxygen480-places-mail-folder-inbox.svg.png</normaloff>:/all_images/images/Oxygen480-places-mail-folder-inbox.svg.png</iconset>
    </property>
    <property name="text">
@@ -162,7 +162,7 @@
   </action>
   <action name="actionAdd_user">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/27-512.png</normaloff>:/all_images/images/27-512.png</iconset>
    </property>
    <property name="text">
@@ -171,7 +171,7 @@
   </action>
   <action name="actionAdd_administrator">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/Admin-icon.png</normaloff>:/all_images/images/Admin-icon.png</iconset>
    </property>
    <property name="text">
@@ -180,16 +180,16 @@
   </action>
   <action name="actionUpdate_Change">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/refresh_user_man-512.png</normaloff>:/all_images/images/refresh_user_man-512.png</iconset>
    </property>
    <property name="text">
-    <string>Update/Change</string>
+    <string>Update</string>
    </property>
   </action>
   <action name="actionShow_all_users">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/waitresses.jpg</normaloff>:/all_images/images/waitresses.jpg</iconset>
    </property>
    <property name="text">
@@ -198,7 +198,7 @@
   </action>
   <action name="actionList_our_subscriptions">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/subscribe_subscription_button_online-512.png</normaloff>:/all_images/images/subscribe_subscription_button_online-512.png</iconset>
    </property>
    <property name="text">
@@ -212,7 +212,7 @@
   </action>
   <action name="actionSubscribe">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/pay-icon-blue.png</normaloff>:/all_images/images/pay-icon-blue.png</iconset>
    </property>
    <property name="text">
@@ -231,7 +231,7 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/maintenance.png</normaloff>:/all_images/images/maintenance.png</iconset>
    </property>
    <property name="text">
@@ -240,7 +240,7 @@
   </action>
   <action name="actionOrders">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</iconset>
    </property>
    <property name="text">
@@ -249,7 +249,7 @@
   </action>
   <action name="actionShow_all_orders">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/410392.png</normaloff>:/all_images/images/410392.png</iconset>
    </property>
    <property name="text">
@@ -258,7 +258,7 @@
   </action>
   <action name="actionReports">
    <property name="icon">
-    <iconset resource="images.qrc">
+    <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/x-12-512.png</normaloff>:/all_images/images/x-12-512.png</iconset>
    </property>
    <property name="text">
@@ -268,7 +268,7 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="images.qrc"/>
+  <include location="../images.qrc"/>
  </resources>
  <connections/>
 </ui>
