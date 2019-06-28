@@ -39,7 +39,7 @@
     <property name="title">
      <string>Orders</string>
     </property>
-    <addaction name="actionOrders"/>
+    <addaction name="actionMakeOrders"/>
     <addaction name="actionShow_all_orders"/>
    </widget>
    <widget class="QMenu" name="menuTools">
@@ -80,7 +80,6 @@
     </widget>
     <addaction name="menuMaintenance"/>
     <addaction name="menuSubscription"/>
-    <addaction name="actionReports"/>
     <addaction name="actionSettings"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -109,14 +108,16 @@
    <addaction name="actionAdd_products"/>
    <addaction name="actionList_all_products"/>
    <addaction name="separator"/>
-   <addaction name="actionOrders"/>
+   <addaction name="actionMakeOrders"/>
    <addaction name="actionShow_all_orders"/>
    <addaction name="separator"/>
    <addaction name="actionAdd_user"/>
+   <addaction name="actionAdd_administrator"/>
    <addaction name="actionUpdate_Change"/>
    <addaction name="separator"/>
    <addaction name="actionSettings"/>
    <addaction name="separator"/>
+   <addaction name="actionExit"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLogin">
@@ -238,7 +239,7 @@
     <string>Settings</string>
    </property>
   </action>
-  <action name="actionOrders">
+  <action name="actionMakeOrders">
    <property name="icon">
     <iconset resource="../images.qrc">
      <normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</normaloff>:/all_images/images/restaurant-waiter-icon-64769.png</iconset>
@@ -254,15 +255,6 @@
    </property>
    <property name="text">
     <string>Show all orders</string>
-   </property>
-  </action>
-  <action name="actionReports">
-   <property name="icon">
-    <iconset resource="../images.qrc">
-     <normaloff>:/all_images/images/x-12-512.png</normaloff>:/all_images/images/x-12-512.png</iconset>
-   </property>
-   <property name="text">
-    <string>Reports</string>
    </property>
   </action>
  </widget>

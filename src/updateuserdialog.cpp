@@ -328,9 +328,11 @@ int UserModel::columnCount( QModelIndex const &) const
     return 3;
 }
 
-bool UserModel::removeRows( int row, int count, QModelIndex const & )
+bool UserModel::removeRows( int row, int count, QModelIndex const &parent )
 {
+    beginRemoveRows( parent, row, row );
     users_.remove( row, count );
+    endRemoveRows();
     return true;
 }
 

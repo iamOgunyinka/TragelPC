@@ -19,12 +19,12 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Filter</string>
+        <string>All users</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="filter_combo"/>
      </item>
     </layout>
    </item>

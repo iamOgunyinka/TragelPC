@@ -42,7 +42,7 @@ private:
     void OnAddUserTriggered();
     void OnListAllProductsTriggered();
     void OnListUsersTriggered();
-    void OnReportsActionTriggered();
+    void OnMakeOrderTriggered();
     void GetEndpointsFromServer( QString const & url, QString const & username,
                                  QString const & password,
                                  QString const & company_id );
@@ -58,6 +58,7 @@ private:
     QTimer*   server_order_poll_timer{};
     QTime     time_interval{};
     qint64    last_order_count;
+    bool      logged_in;
 };
 
 #endif // CENTRALWINDOW_HPP

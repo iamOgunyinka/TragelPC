@@ -18,17 +18,18 @@
 #include "orderwindow.hpp"
 #include "resources.hpp"
 #include "userlogindialog.hpp"
-#include "ui_centralwindow.h"
 #include "updateuserdialog.hpp"
 #include "popupnotifier.hpp"
-#include "reportwindow.hpp"
+#include "makeorderdialog.hpp"
 
+#include "ui_centralwindow.h"
 
 CentralWindow::CentralWindow( QWidget *parent ) :
     QMainWindow( parent ), ui( new Ui::CentralWindow ),
     workspace{ new QMdiArea }, last_order_count{ 0 }
 {
     ui->setupUi( this );
+    ui->actionExit->setIcon( QIcon( ":/darkstyle/icon_close.png" ) );
     setCentralWidget( workspace );
     ui->mainToolBar->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
 
@@ -50,10 +51,10 @@ CentralWindow::CentralWindow( QWidget *parent ) :
                       &CentralWindow::OnListAllProductsTriggered );
     QObject::connect( ui->actionUpdate_Change, &QAction::triggered, this,
                       &CentralWindow::OnListUsersTriggered );
-    QObject::connect( ui->actionReports, &QAction::triggered, this,
-                      &CentralWindow::OnReportsActionTriggered );
     QObject::connect( ui->actionShow_all_users, &QAction::triggered, this,
                       &CentralWindow::OnListUsersTriggered );
+    QObject::connect( ui->actionMakeOrders, &QAction::triggered, this,
+                      &CentralWindow::OnMakeOrderTriggered );
 }
 
 CentralWindow::~CentralWindow()
@@ -81,27 +82,23 @@ void CentralWindow::closeEvent( QCloseEvent* event )
 
 void CentralWindow::OnAddProductTriggered()
 {
+    ui->actionAdd_products->setEnabled( false );
     AddProductDialog *product_dialog{ new AddProductDialog };
     auto sub_window = workspace->addSubWindow( product_dialog );
     sub_window->setAttribute( Qt::WA_DeleteOnClose );
     sub_window->setWindowTitle( "Add new product(s)" );
-    QObject::connect( product_dialog, &AddProductDialog::finished, sub_window,
-             &QMdiSubWindow::close );
+    auto on_finished = [=]{
+        sub_window->close();
+        if( logged_in ) ui->actionAdd_products->setEnabled( true );
+    };
+    QObject::connect( product_dialog, &AddProductDialog::finished, on_finished );
+    QObject::connect( sub_window, &QMdiSubWindow::destroyed, [=]{
+        if( logged_in ) ui->actionAdd_products->setEnabled( true );
+    });
     sub_window->setFixedHeight( workspace->height() );
     product_dialog->show();
 }
 
-void CentralWindow::OnReportsActionTriggered()
-{
-    auto report_window{ new ReportWindow( this ) };
-    auto sub_window = workspace->addSubWindow( report_window );
-    sub_window->setAttribute( Qt::WA_DeleteOnClose );
-    sub_window->setWindowTitle( "Reports" );
-    sub_window->setFixedHeight( workspace->height() );
-    QObject::connect( report_window, &ReportWindow::destroyed, sub_window,
-             &QMdiSubWindow::close );
-    report_window->show();
-}
 
 void CentralWindow::OnListUsersTriggered()
 {
@@ -111,9 +108,8 @@ void CentralWindow::OnListUsersTriggered()
     sub_window->setAttribute( Qt::WA_DeleteOnClose );
     sub_window->setFixedHeight( workspace->height() );
     QObject::connect( update_dialog, &UpdateUserDialog::finished, [=]{
-        if( ui->actionUpdate_Change )
-            ui->actionUpdate_Change->setEnabled( true );
         sub_window->close();
+        if( logged_in ) ui->actionUpdate_Change->setEnabled( true );
     });
     update_dialog->show();
     update_dialog->GetAllUsers();
@@ -135,7 +131,7 @@ void CentralWindow::OnAddUserTriggered()
     }
     QObject::connect( staff_dialog, &CreateStaffDialog::finished, [=]{
         sub_window->close();
-        object_sender->setEnabled( true );
+        if( logged_in ) object_sender->setEnabled( true );
     });
     QSize const min_max_size{ 516, 370 };
     sub_window->setMinimumSize( min_max_size );
@@ -155,8 +151,27 @@ void CentralWindow::OnOrderActionTriggered()
     order_window->showMaximized();
     QObject::connect( order_window, &OrderWindow::destroyed, [=]{
         if( ui->menuOrders ) ui->menuOrders->setEnabled( true );
-        object_sender->setEnabled( true );
+        if( logged_in ) object_sender->setEnabled( true );
     });
+}
+
+void CentralWindow::OnMakeOrderTriggered()
+{
+    ui->actionMakeOrders->setDisabled( true );
+    MakeOrderDialog* order_dialog{ new MakeOrderDialog( this ) };
+    QMdiSubWindow *parent_window{ workspace->addSubWindow( order_dialog ) };
+    parent_window->setFixedHeight( workspace->height() );
+    parent_window->setAttribute( Qt::WA_DeleteOnClose );
+    parent_window->setWindowTitle( "Make order" );
+    QObject::connect( order_dialog, &MakeOrderDialog::finished, [=]{
+        if( logged_in ) ui->actionMakeOrders->setEnabled( true );
+        parent_window->close();
+    });
+    QObject::connect( parent_window, &QMdiSubWindow::destroyed, [=]{
+        if( logged_in ) ui->actionMakeOrders->setEnabled( true );
+    });
+    order_dialog->show();
+    order_dialog->DownloadProducts();
 }
 
 void CentralWindow::OnListAllProductsTriggered()
@@ -167,14 +182,15 @@ void CentralWindow::OnListAllProductsTriggered()
     parent_window->setFixedHeight( workspace->height() );
     parent_window->setAttribute( Qt::WA_DeleteOnClose );
     parent_window->setWindowTitle( "Our items" );
-    dialog->show();
-    dialog->DownloadProducts();
     QObject::connect( dialog, &AllProductsDialog::finished, [=]{
-        if( ui->actionList_all_products ){
-            ui->actionList_all_products->setEnabled( true );
-        }
+        if( logged_in ) ui->actionList_all_products->setEnabled( true );
         parent_window->close();
     });
+    QObject::connect( parent_window, &QMdiSubWindow::destroyed, [=]{
+        if( logged_in ) ui->actionList_all_products->setEnabled( true );
+    });
+    dialog->show();
+    dialog->DownloadProducts();
 }
 
 void CentralWindow::LogUserIn( QString const & username,
@@ -191,6 +207,7 @@ void CentralWindow::LogUserIn( QString const & username,
         auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
         utilities::NetworkManager::SetNetworkCookie( session_cookie, reply );
         StartOrderPolling();
+        logged_in = true;
     };
     auto on_error = [=]{
         ui->actionLogin->setEnabled( true );
@@ -242,7 +259,7 @@ void CentralWindow::OnLogoutButtonClicked()
     // let's clear the cookies
     utilities::NetworkManager::GetSessionCookie().setCookiesFromUrl(
                 QList<QNetworkCookie>{}, endpoints.LoginTo() );
-
+    logged_in = false;
     foreach( QMdiSubWindow* const sub_window, workspace->subWindowList() ){
         sub_window->close();
     }
@@ -272,8 +289,7 @@ void CentralWindow::SetEnableActionButtons( bool const enable )
     ui->actionList_our_subscriptions->setEnabled( enable );
     ui->actionLogin->setEnabled( enable );
     ui->actionLogout->setEnabled( enable );
-    ui->actionOrders->setEnabled( enable );
-    ui->actionReports->setEnabled( enable );
+    ui->actionMakeOrders->setEnabled( enable );
     ui->actionSettings->setEnabled( enable );
     ui->actionShow_all_users->setEnabled( enable );
     ui->actionShow_all_orders->setEnabled( enable );

@@ -1,17 +1,7 @@
 #include <QPixmap>
-#include <QSettings>
-#include <QString>
-#include <QByteArray>
-#include <QNetworkReply>
-#include <QIcon>
-#include <QPair>
-#include <QWidget>
 #include <QThread>
 
 #include "splashscreen.hpp"
-#include "adminsetupdialog.hpp"
-#include "resources.hpp"
-#include "framelesswindow.h"
 
 SplashScreen::SplashScreen( QApplication& app, QObject *parent ) :
     QObject( parent ), main_app{ app }, splash_screen{ nullptr }

@@ -236,6 +236,7 @@ void AddProductDialog::OnUploadDataToServerButtonClicked()
         if( !has_error ){
             QMessageBox::information( this, "Uploads",
                                       "Products successfully submitted" );
+            this->setWindowModified( false );
             upload_dialog->accept();
             this->accept();
         }
