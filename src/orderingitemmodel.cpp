@@ -1,8 +1,22 @@
 #include "orderingitemmodel.hpp"
 
+#include <QJsonValue>
+
+namespace utilities {
+QJsonObject ItemData::ToJson() const
+{
+    return QJsonObject{ { "quantity", (int)quantity },
+        { "product_id", product.product_id }};
+}
+}
 OrderingItemModel::OrderingItemModel( QObject *parent )
     : QAbstractTableModel( parent ), items_{}
 {
+}
+
+QVector<utilities::ItemData> const& OrderingItemModel::Items() const
+{
+    return items_;
 }
 
 Qt::ItemFlags OrderingItemModel::flags( QModelIndex const & ) const
@@ -10,7 +24,7 @@ Qt::ItemFlags OrderingItemModel::flags( QModelIndex const & ) const
     return Qt::ItemIsDropEnabled | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 }
 
-QVariant OrderingItemModel::headerData( int section, Qt::Orientation orientation,
+QVariant OrderingItemModel::headerData( int section,Qt::Orientation orientation,
                                         int role ) const
 {
     if( role != Qt::DisplayRole ) return QVariant{};
@@ -53,7 +67,8 @@ QVariant OrderingItemModel::data( QModelIndex const &index, int role ) const
     return QVariant{};
 }
 
-bool OrderingItemModel::removeRows( int row, int count, QModelIndex const &index )
+bool OrderingItemModel::removeRows( int row, int count,
+                                    QModelIndex const &index )
 {
     beginRemoveRows( index, row, row );
     items_.remove( row, count );
@@ -90,14 +105,15 @@ bool OrderingItemModel::dropMimeData( QMimeData const *data,
     }
     if( new_items.empty() ) return false;
     auto found = std::find_if( items_.cbegin(), items_.cend(),
-                               [&]( utilities::ItemData const & item ){
-        return item.product.product_id == new_items[0].product.product_id;
+                               [&]( utilities::ItemData const & item )
+    {
+            return item.product.product_id == new_items[0].product.product_id;
     });
     if( found != items_.cend() ) return false;
     bool ok = true;
     int const quantity {
         QInputDialog::getInt( nullptr, "Quantity", "What's the quantity?",
-                              1, 1, 2147483647, 1, &ok )
+                          1, 1, 2147483647, 1, &ok )
     };
     if( !ok ) return false;
     new_items[0].quantity = quantity;

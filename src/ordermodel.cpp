@@ -84,9 +84,11 @@ int OrderModel::columnCount( QModelIndex const &) const
     return 6;
 }
 
-bool OrderModel::removeRows( int row, int count, QModelIndex const & )
+bool OrderModel::removeRows( int row, int count, QModelIndex const & parent )
 {
+    beginRemoveRows( parent, row, row );
     orders_.remove( row, count );
+    endRemoveRows();
     return true;
 }
 

@@ -20,6 +20,8 @@ private:
     void OnDownloadResultObtained( QJsonObject const & result );
     void OnRemoveItemActionClicked();
     void OnItemCustomContextMenuRequested( QPoint const &p );
+    void OnAddItemButtonClicked();
+    void OnMakeOrderButtonClicked();
 private:
     Ui::MakeOrderDialog *ui;
     QVector<utilities::ProductData> products_;

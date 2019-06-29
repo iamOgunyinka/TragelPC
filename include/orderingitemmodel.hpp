@@ -13,6 +13,8 @@ struct ItemData
 {
     utilities::ProductData product;
     uint32_t quantity;
+
+    QJsonObject ToJson() const;
 };
 }
 
@@ -22,6 +24,7 @@ class OrderingItemModel : public QAbstractTableModel
 
 public:
     explicit OrderingItemModel( QObject *parent = nullptr );
+    QVector<utilities::ItemData> const & Items() const;
     Qt::ItemFlags flags( QModelIndex const & index ) const override;
     QVariant data( QModelIndex const &, int role = Qt::EditRole )const override;
     QVariant headerData( int, Qt::Orientation, int )const override;

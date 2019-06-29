@@ -6,6 +6,7 @@
 #include "orderingitemmodel.hpp"
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QJsonDocument>
 #include <QMessageBox>
 #include <QMenu>
 
@@ -14,8 +15,24 @@ MakeOrderDialog::MakeOrderDialog( QWidget *parent ) : QDialog( parent ),
 {
     ui->setupUi( this );
     ui->item_view->setContextMenuPolicy( Qt::CustomContextMenu );
+    QObject::connect( ui->cash_radio, &QRadioButton::toggled,[=]( bool checked )
+    {
+        ui->ebank_radio->setChecked( !checked );
+    });
+    QObject::connect( ui->ebank_radio, &QRadioButton::toggled,
+                      [=]( bool checked )
+    {
+        ui->cash_radio->setChecked( !checked );
+        ui->lineEdit->setEnabled( checked );
+        if( checked ) ui->lineEdit->setFocus();
+    });
+    ui->cash_radio->setChecked( true );
     QObject::connect( ui->item_view, &QTableView::customContextMenuRequested,
                      this, &MakeOrderDialog::OnItemCustomContextMenuRequested );
+    QObject::connect( ui->add_button, &QPushButton::clicked, this,
+                      &MakeOrderDialog::OnAddItemButtonClicked );
+    QObject::connect( ui->make_order_button, &QPushButton::clicked, this,
+                      &MakeOrderDialog::OnMakeOrderButtonClicked );
 }
 
 MakeOrderDialog::~MakeOrderDialog()
@@ -53,12 +70,59 @@ void MakeOrderDialog::OnRemoveItemActionClicked()
     model->removeRows( index.row(), 1 );
 }
 
+void MakeOrderDialog::OnAddItemButtonClicked()
+{
+    QModelIndex const index = ui->product_view->currentIndex();
+    if( !index.isValid() ) return;
+
+}
+
+void MakeOrderDialog::OnMakeOrderButtonClicked()
+{
+    OrderingItemModel* const model {
+        qobject_cast<OrderingItemModel*>( ui->item_view->model() )
+    };
+    if( model->rowCount( QModelIndex{} ) == 0 ){
+        QMessageBox::information( this, "Make order",
+                                  "You can't make an order with an empty cart");
+        return;
+    }
+    QString ref_id{ ui->lineEdit->text().trimmed() };
+    if( ui->ebank_radio->isChecked() && ref_id.isEmpty() ){
+        QMessageBox::information( this, "Ordering",
+                                  "Enter the reference ID" );
+        ui->lineEdit->setFocus();
+        return;
+    } else if( ui->cash_radio->isChecked() ){
+        ref_id = "cash";
+    }
+    auto const &cart{ model->Items() };
+    QJsonArray items {};
+    for( auto const & item: cart ){
+        items.append( item.ToJson() );
+    }
+    QJsonObject const order_payload {
+        { "payment_reference_id", ref_id }, { "items", items }
+    };
+    QByteArray const payload{ QJsonDocument( order_payload ).toJson() };
+    auto on_success = [=]( QJsonObject const &, QNetworkReply * ){
+        QMessageBox::information( this, "Order", "Order made successfully" );
+        this->accept();
+    };
+
+    QUrl const address{ utilities::Endpoint::GetEndpoints().AddOrder() };
+    utilities::SendPostNetworkRequest( address, on_success, []{}, this,
+                                       payload );
+
+}
+
 void MakeOrderDialog::OnDownloadResultObtained( QJsonObject const & result )
 {
     utilities::PageQuery page_query{};
     bool const succeeds = utilities::ParsePageUrls( result, page_query );
     if( !succeeds ){
         QMessageBox::information( this, "Products", "No products found" );
+        this->accept();
         return;
     }
     products_.clear();
@@ -103,6 +167,8 @@ void MakeOrderDialog::OnDownloadResultObtained( QJsonObject const & result )
     ui->item_view->resizeColumnsToContents();
     ui->item_view->horizontalHeader()->setSectionResizeMode(
                 QHeaderView::Stretch );
+    QMessageBox::information( this, "D&D", "Drag an item from the left to the "
+                                           "right to add to the cart.");
 }
 
 void MakeOrderDialog::DownloadProducts()
