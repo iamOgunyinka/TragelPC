@@ -40,6 +40,7 @@ private:
     void OnOrderActionTriggered();
     void OnAddProductTriggered();
     void OnAddUserTriggered();
+    void OnSettingsTriggered();
     void OnListAllProductsTriggered();
     void OnListUsersTriggered();
     void OnMakeOrderTriggered();
@@ -49,8 +50,6 @@ private:
     void WriteEndpointsToPersistenceStorage( utilities::Endpoint const & );
     void SetEnableCentralWindowBars( bool const enabled );
     void SetEnableActionButtons( bool const enable = true );
-
-    static int const an_hour = 60 * 60; // 60 seconds x 60 minutes
 private:
     Ui::CentralWindow *ui;
     QMdiArea *workspace;

@@ -21,12 +21,15 @@
 #include "updateuserdialog.hpp"
 #include "popupnotifier.hpp"
 #include "makeorderdialog.hpp"
+#include "setupdialog.hpp"
 
 #include "ui_centralwindow.h"
 
+int CentralWindow::ping_notif_interval = 0;
+
 CentralWindow::CentralWindow( QWidget *parent ) :
     QMainWindow( parent ), ui( new Ui::CentralWindow ),
-    workspace{ new QMdiArea }, last_order_count{ 0 }
+    workspace{ new QMdiArea }, last_order_count{ 0 }, logged_in{ false }
 {
     ui->setupUi( this );
     ui->actionExit->setIcon( QIcon( ":/darkstyle/icon_close.png" ) );
@@ -55,6 +58,10 @@ CentralWindow::CentralWindow( QWidget *parent ) :
                       &CentralWindow::OnListUsersTriggered );
     QObject::connect( ui->actionMakeOrders, &QAction::triggered, this,
                       &CentralWindow::OnMakeOrderTriggered );
+    QObject::connect( ui->actionSettings, &QAction::triggered, this,
+                      &CentralWindow::OnSettingsTriggered );
+    QSettings& app_settings{ utilities::ApplicationSettings::GetAppSettings() };
+    ping_notif_interval = app_settings.value( "ping_interval", 60*60 ).toInt();
 }
 
 CentralWindow::~CentralWindow()
@@ -99,7 +106,6 @@ void CentralWindow::OnAddProductTriggered()
     product_dialog->show();
 }
 
-
 void CentralWindow::OnListUsersTriggered()
 {
     ui->actionUpdate_Change->setDisabled( true );
@@ -113,6 +119,22 @@ void CentralWindow::OnListUsersTriggered()
     });
     update_dialog->show();
     update_dialog->GetAllUsers();
+}
+
+void CentralWindow::OnSettingsTriggered()
+{
+    ui->actionSettings->setDisabled( true );
+    SetupDialog* setup_dialog{ new SetupDialog( this ) };
+    QMdiSubWindow* parent_window{ workspace->addSubWindow( setup_dialog ) };
+    parent_window->setAttribute( Qt::WA_DeleteOnClose );
+    QObject::connect( setup_dialog, &SetupDialog::finished, [=]{
+        if( logged_in ) ui->actionSettings->setEnabled( true );
+        parent_window->close();
+    });
+    QObject::connect( parent_window, &QMdiSubWindow::destroyed, [=]{
+        if( logged_in ) ui->actionSettings->setEnabled( true );
+    });
+    setup_dialog->show();
 }
 
 void CentralWindow::OnAddUserTriggered()
@@ -318,6 +340,8 @@ void CentralWindow::ActivatePingTimer()
 
 void CentralWindow::PingServerNetwork()
 {
+    using utilities::ApplicationSettings::PingNotificationInterval;
+
     QString const ping_url{ utilities::Endpoint::GetEndpoints().PingAddress() };
     if( ping_url.isEmpty() ){
         ui->statusBar->showMessage( "Unable to ping server" );
@@ -336,7 +360,8 @@ void CentralWindow::PingServerNetwork()
         QTime const current_time{ QTime::currentTime() };
         if( time_interval.isNull() || // is this the first time?
                 // has it been up to an hour since we were last warned?
-                time_interval.secsTo( current_time ) >= CentralWindow::an_hour )
+                time_interval.secsTo( current_time ) >=
+                PingNotificationInterval() )
         {
             time_interval = current_time;
             PopUpNotifier* notifier{ new PopUpNotifier( this ) };
@@ -508,7 +533,7 @@ void CentralWindow::StartOrderPolling()
                     utilities::GetJsonNetworkData( reply, false )
                 };
                 if( result.isEmpty() ) return;
-                else OnOrderPollResultObtained( result );
+                OnOrderPollResultObtained( result );
             });
         });
         server_order_poll_timer->start( 25 * 1000 ); // poll every 25seconnds

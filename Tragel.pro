@@ -52,7 +52,8 @@ SOURCES += \
     src/changepassworddialog.cpp \
     src/changeuserroledialog.cpp \
     src/makeorderdialog.cpp \
-    src/orderingitemmodel.cpp
+    src/orderingitemmodel.cpp \
+    src/setupdialog.cpp
 
 
 HEADERS += \
@@ -81,7 +82,8 @@ HEADERS += \
     include/changepassworddialog.hpp \
     include/changeuserroledialog.hpp \
     include/makeorderdialog.hpp \
-    include/orderingitemmodel.hpp
+    include/orderingitemmodel.hpp \
+    include/setupdialog.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
@@ -100,7 +102,8 @@ FORMS += \
     forms/removeuserconfirmationdialog.ui \
     forms/changepassworddialog.ui \
     forms/changeuserroledialog.ui \
-    forms/makeorderdialog.ui
+    forms/makeorderdialog.ui \
+    forms/setupdialog.ui
 
 RESOURCES += \
     darkstyle.qrc \

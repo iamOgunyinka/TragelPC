@@ -9,6 +9,9 @@
 
 namespace utilities {
 
+int ApplicationSettings::ping_notification_interval = 0; //an hour
+int ApplicationSettings::ordering_poll_interval = 0; // 25 seconds
+
 bool ParsePageUrls( QJsonObject const &result, PageQuery & page_query )
 {
     QJsonObject const page_info{ result.value( "pages" ).toObject() };

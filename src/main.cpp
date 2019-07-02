@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     frameless_window.setContent( w );
     frameless_window.setWindowTitle( "Tragel" );
     frameless_window.setWindowIcon(
-                a.style()->standardIcon( QStyle::SP_DesktopIcon ) );
+                QApplication::style()->standardIcon( QStyle::SP_DesktopIcon ) );
 
     SplashScreen splash_screen {a};
     QObject::connect( &splash_screen, &SplashScreen::done, [&]{

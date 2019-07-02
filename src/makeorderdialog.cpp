@@ -88,14 +88,15 @@ void MakeOrderDialog::OnMakeOrderButtonClicked()
         return;
     }
     QString ref_id{ ui->lineEdit->text().trimmed() };
-    if( ui->ebank_radio->isChecked() && ref_id.isEmpty() ){
+    if( ui->cash_radio->isChecked() ){
+        ref_id = "cash";
+    } else if( ui->ebank_radio->isChecked() && ref_id.isEmpty() ){
         QMessageBox::information( this, "Ordering",
                                   "Enter the reference ID" );
         ui->lineEdit->setFocus();
         return;
-    } else if( ui->cash_radio->isChecked() ){
-        ref_id = "cash";
     }
+
     auto const &cart{ model->Items() };
     QJsonArray items {};
     for( auto const & item: cart ){
