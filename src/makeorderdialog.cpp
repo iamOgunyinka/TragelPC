@@ -62,8 +62,18 @@ void MakeOrderDialog::OnRemoveItemActionClicked()
     QModelIndex const index{ ui->item_view->currentIndex() };
     if( !index.isValid() ) return;
 
-    if( QMessageBox::question( this, "Remove", "Are you sure?" )
-            == QMessageBox::No ) return;
+    auto const& app_settings = utilities::ApplicationSettings::GetAppSettings();
+    using utilities::SettingsValue;
+    bool const confirming_deletion {
+        app_settings.Value( SettingsValue::ConfirmDeletion, true ).toBool()
+    };
+
+    if( confirming_deletion && QMessageBox::question( this, "Remove",
+                                                      "Are you sure?" ) ==
+            QMessageBox::No )
+    {
+        return;
+    }
     OrderingItemModel* model{
         qobject_cast<OrderingItemModel*>( ui->item_view->model() )
     };

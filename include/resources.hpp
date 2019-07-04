@@ -54,61 +54,36 @@ namespace utilities {
         }
     };
 
+    enum class SettingsValue
+    {
+        OrderCount = 0,
+        UrlMap,
+        PingInterval,
+        OrderPollInterval,
+        PingNotifInterval,
+        AllowShortcut,
+        ConfirmDeletion,
+        ShowSplash
+    };
+
+    QString SettingsValueToString( SettingsValue const val );
     class ApplicationSettings
     {
-        ApplicationSettings() = default;
-        static int ping_notification_interval;
-        static int ordering_poll_interval;
+        QSettings& settings;
+    private:
+        ApplicationSettings();
+        static QSettings& GetSettings( QString const & organisation,
+                                       QString const & application );
     public:
         ApplicationSettings( ApplicationSettings const & ) = delete;
         ApplicationSettings( ApplicationSettings && ) = delete;
         ApplicationSettings& operator=( ApplicationSettings const & ) = delete;
         ApplicationSettings& operator=( ApplicationSettings && ) = delete;
 
-        static int PingNotificationInterval()
-        {
-            if( ping_notification_interval == 0 ){
-                QSettings& app_settings{ GetAppSettings() };
-                ping_notification_interval = app_settings.value(
-                            "ping_nt_intvl", 1000 * 60 * 60 ).toInt();
-            }
-            return ping_notification_interval;
-        }
-
-        static int OrderPollInterval()
-        {
-            if( ordering_poll_interval == 0 ){
-                QSettings& app_settings{ GetAppSettings() };
-                ordering_poll_interval = app_settings.value( "order_poll_intvl",
-                                                             1000 * 25 ).toInt();
-            }
-            return ordering_poll_interval;
-        }
-
-        static void SetOrderPollInterval( int const interval )
-        {
-            auto& app_settings{ GetAppSettings() };
-            app_settings.setValue( "order_poll_intvl", interval );
-            app_settings.sync();
-            ordering_poll_interval = interval;
-        }
-
-        static void SetPingNotificationInterval( int const interval )
-        {
-            auto& app_settings{ GetAppSettings() };
-            app_settings.setValue( "ping_nt_intvl", interval );
-            app_settings.sync();
-            ping_notification_interval = interval;
-        }
-
-
-        static QSettings& GetAppSettings()
-        {
-            static QSettings app_settings{
-                QSettings::UserScope, "Froist Inc.", "Tragel"
-            };
-            return app_settings;
-        }
+        void    SetValue( SettingsValue const data, QVariant const &value );
+        QVariant Value( SettingsValue const value,
+                        QVariant const & default_ = {} ) const;
+        static  ApplicationSettings& GetAppSettings();
     };
 
     class Endpoint

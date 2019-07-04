@@ -5,12 +5,12 @@
 namespace utilities {
 QJsonObject ItemData::ToJson() const
 {
-    return QJsonObject{ { "quantity", (int)quantity },
+    return QJsonObject{ { "quantity", static_cast<int>( quantity ) },
         { "product_id", product.product_id }};
 }
 }
 OrderingItemModel::OrderingItemModel( QObject *parent )
-    : QAbstractTableModel( parent ), items_{}
+    : QAbstractTableModel( parent )
 {
 }
 

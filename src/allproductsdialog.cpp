@@ -66,11 +66,18 @@ void AllProductsDialog::OnRemoveItemButtonClicked()
     QModelIndex const index{ ui->tableView->currentIndex() };
     if( !index.isValid() ) return;
 
-    int response = QMessageBox::question( this, "Remove item",
-                                          "Removing this item deletes it "
-                                          "completely, are you sure you want to "
-                                          "continue with the removal?" );
-    if( response == QMessageBox::No ) return;
+    auto const& app_settings = utilities::ApplicationSettings::GetAppSettings();
+    using utilities::SettingsValue;
+    bool const confirming_deletion {
+        app_settings.Value( SettingsValue::ConfirmDeletion, true ).toBool()
+    };
+    if( confirming_deletion &&
+            QMessageBox::question( this, "Remove item",
+                                   "Removing this item deletes it completely, "
+                                   "are you sure you want to continue with the "
+                                   "removal?" ) ){
+        return;
+    }
     QString const reason {
         QInputDialog::getText( this, "Reason",
                                "We would like to know the reason for deletion"

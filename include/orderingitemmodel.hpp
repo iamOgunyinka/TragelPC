@@ -12,7 +12,7 @@ namespace utilities {
 struct ItemData
 {
     utilities::ProductData product;
-    uint32_t quantity;
+    int quantity;
 
     QJsonObject ToJson() const;
 };
@@ -40,7 +40,7 @@ public:
     bool removeRows( int row, int count,
                      QModelIndex const &parent = QModelIndex() ) override;
 private:
-    QVector<utilities::ItemData> items_;
+    QVector<utilities::ItemData> items_{};
 };
 
 #endif // ORDERINGITEMMODEL_H

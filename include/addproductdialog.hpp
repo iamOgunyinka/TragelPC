@@ -26,7 +26,7 @@ private:
     void OnAddItemButtonClicked();
     void OnRemoveItemButtonClicked();
     void OnEditItemButtonClicked();
-    void UpdateModel( utilities::ProductData const &value, qint64 const size );
+    void UpdateModel( utilities::ProductData const &value, int const size );
 private:
     Ui::AddProductDialog *ui;
     QStandardItemModel *data_model;

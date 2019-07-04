@@ -14,6 +14,7 @@ class CentralWindow;
 
 namespace utilities {
 class Endpoint;
+class ApplicationSettings;
 }
 
 class CentralWindow : public QMainWindow
@@ -22,7 +23,7 @@ class CentralWindow : public QMainWindow
 signals:
     void closed();
 public:
-    explicit CentralWindow( QWidget *parent = 0 );
+    explicit CentralWindow( QWidget *parent = nullptr );
     void StartApplication();
     ~CentralWindow();
 protected:
@@ -32,6 +33,7 @@ private:
     void LogUserIn( QString const & username, QString const & password );
     void PingServerNetwork();
     void StartOrderPolling();
+    void EnableShortcuts();
     void OnOrderPollResultObtained( QJsonObject const &result );
     void ActivatePingTimer();
     void LoadSettingsFile();
@@ -55,6 +57,7 @@ private:
     QMdiArea *workspace;
     QTimer*   server_ping_timer{};
     QTimer*   server_order_poll_timer{};
+    utilities::ApplicationSettings& app_settings;
     QTime     time_interval{};
     qint64    last_order_count;
     bool      logged_in;

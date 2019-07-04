@@ -25,11 +25,11 @@
 
 #include "ui_centralwindow.h"
 
-int CentralWindow::ping_notif_interval = 0;
-
 CentralWindow::CentralWindow( QWidget *parent ) :
     QMainWindow( parent ), ui( new Ui::CentralWindow ),
-    workspace{ new QMdiArea }, last_order_count{ 0 }, logged_in{ false }
+    workspace{ new QMdiArea },
+    app_settings{ utilities::ApplicationSettings::GetAppSettings() },
+    last_order_count{ 0 }, logged_in{ false }
 {
     ui->setupUi( this );
     ui->actionExit->setIcon( QIcon( ":/darkstyle/icon_close.png" ) );
@@ -60,15 +60,16 @@ CentralWindow::CentralWindow( QWidget *parent ) :
                       &CentralWindow::OnMakeOrderTriggered );
     QObject::connect( ui->actionSettings, &QAction::triggered, this,
                       &CentralWindow::OnSettingsTriggered );
-    QSettings& app_settings{ utilities::ApplicationSettings::GetAppSettings() };
-    ping_notif_interval = app_settings.value( "ping_interval", 60*60 ).toInt();
+    if( app_settings.Value( utilities::SettingsValue::AllowShortcut, false )
+            .toBool() ){
+        EnableShortcuts();
+    }
 }
 
 CentralWindow::~CentralWindow()
 {
-    QSettings& settings{ utilities::ApplicationSettings::GetAppSettings() };
-    settings.setValue( "order_count", last_order_count );
-    settings.sync();
+    app_settings.SetValue( utilities::SettingsValue::OrderCount,
+                           last_order_count );
 
     delete server_ping_timer;
     delete server_order_poll_timer;
@@ -85,6 +86,32 @@ void CentralWindow::closeEvent( QCloseEvent* event )
     } else {
         event->ignore();
     }
+}
+
+void CentralWindow::EnableShortcuts()
+{
+    ui->actionExit->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_Q ) );
+    ui->actionAbout->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_A ) );
+    ui->actionLogin->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_L ) );
+    ui->actionLogout->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_G ) );
+    ui->actionHelp_me->setShortcut( QKeySequence( Qt::Key_F1 ) );
+    ui->actionAdd_user->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_U ) );
+    ui->actionSettings->setShortcut( QKeySequence( Qt::Key_F2 ) );
+    ui->actionSubscribe->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_B ) );
+    ui->actionMakeOrders->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_O ) );
+    ui->actionAdd_products->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_T ));
+    ui->actionUpdate_Change->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_C ) );
+    ui->actionShow_all_users->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_W ));
+    ui->actionShow_all_orders->setShortcut( QKeySequence( Qt::CTRL,
+                                                          Qt::Key_H ));
+    ui->actionShow_expiry_date->setShortcut( QKeySequence( Qt::CTRL,
+                                                           Qt::Key_X ));
+    ui->actionAdd_administrator->setShortcut( QKeySequence( Qt::CTRL,
+                                                            Qt::Key_M ));
+    ui->actionList_all_products->setShortcut( QKeySequence( Qt::CTRL,
+                                                            Qt::Key_I ));
+    ui->actionList_our_subscriptions->setShortcut( QKeySequence( Qt::CTRL,
+                                                                 Qt::Key_R ) );
 }
 
 void CentralWindow::OnAddProductTriggered()
@@ -127,6 +154,7 @@ void CentralWindow::OnSettingsTriggered()
     SetupDialog* setup_dialog{ new SetupDialog( this ) };
     QMdiSubWindow* parent_window{ workspace->addSubWindow( setup_dialog ) };
     parent_window->setAttribute( Qt::WA_DeleteOnClose );
+    parent_window->setWindowTitle( "Application settings" );
     QObject::connect( setup_dialog, &SetupDialog::finished, [=]{
         if( logged_in ) ui->actionSettings->setEnabled( true );
         parent_window->close();
@@ -135,6 +163,7 @@ void CentralWindow::OnSettingsTriggered()
         if( logged_in ) ui->actionSettings->setEnabled( true );
     });
     setup_dialog->show();
+    parent_window->adjustSize();
 }
 
 void CentralWindow::OnAddUserTriggered()
@@ -163,18 +192,16 @@ void CentralWindow::OnAddUserTriggered()
 
 void CentralWindow::OnOrderActionTriggered()
 {
-    auto *const object_sender = qobject_cast<QAction*>( sender() );
-    object_sender->setDisabled( true );
     ui->menuOrders->setEnabled( false );
     OrderWindow* order_window{ new OrderWindow };
     QMdiSubWindow *sub_window = workspace->addSubWindow( order_window );
     sub_window->setAttribute( Qt::WA_DeleteOnClose );
     sub_window->setWindowTitle( "Orders" );
-    order_window->showMaximized();
+    order_window->show();
     QObject::connect( order_window, &OrderWindow::destroyed, [=]{
-        if( ui->menuOrders ) ui->menuOrders->setEnabled( true );
-        if( logged_in ) object_sender->setEnabled( true );
+        if( logged_in ) ui->menuOrders->setEnabled( true );
     });
+    sub_window->adjustSize();
 }
 
 void CentralWindow::OnMakeOrderTriggered()
@@ -334,14 +361,20 @@ void CentralWindow::ActivatePingTimer()
     }
     QObject::connect( server_ping_timer, &QTimer::timeout, this,
                       &CentralWindow::PingServerNetwork );
-    server_ping_timer->setInterval( 1000 * 60 ); // every minute
+    int const ping_interval_in_minutes {
+        app_settings.Value( utilities::SettingsValue::PingInterval, 4 ).toInt()
+                * 1000 * 60
+    };
+    server_ping_timer->setInterval( ping_interval_in_minutes );
     server_ping_timer->start();
 }
 
 void CentralWindow::PingServerNetwork()
 {
-    using utilities::ApplicationSettings::PingNotificationInterval;
-
+    using utilities::SettingsValue;
+    int const notification_interval { // in minutes
+        app_settings.Value( SettingsValue::PingNotifInterval ).toInt() * 60
+    };
     QString const ping_url{ utilities::Endpoint::GetEndpoints().PingAddress() };
     if( ping_url.isEmpty() ){
         ui->statusBar->showMessage( "Unable to ping server" );
@@ -360,8 +393,7 @@ void CentralWindow::PingServerNetwork()
         QTime const current_time{ QTime::currentTime() };
         if( time_interval.isNull() || // is this the first time?
                 // has it been up to an hour since we were last warned?
-                time_interval.secsTo( current_time ) >=
-                PingNotificationInterval() )
+                time_interval.secsTo( current_time ) >= notification_interval )
         {
             time_interval = current_time;
             PopUpNotifier* notifier{ new PopUpNotifier( this ) };
@@ -374,8 +406,9 @@ void CentralWindow::PingServerNetwork()
 
 void CentralWindow::LoadSettingsFile()
 {
-    QSettings& app_settings = utilities::ApplicationSettings::GetAppSettings();
-    QVariant const url_map{ app_settings.value( "url_map" ) };
+    QVariant const url_map{
+        app_settings.Value( utilities::SettingsValue::UrlMap )
+    };
     QByteArray const endpoint_obj_settings{ url_map.toByteArray() };
     // is everything already set up?
     if( url_map.isValid() && !endpoint_obj_settings.isEmpty() ){
@@ -464,11 +497,9 @@ void CentralWindow::GetEndpointsFromServer( QString const &url,
 void CentralWindow::WriteEndpointsToPersistenceStorage(
         utilities::Endpoint const & endpoint )
 {
-    auto& app_settings = utilities::ApplicationSettings::GetAppSettings();
     QByteArray const url_map { QJsonDocument( endpoint.ToJson() ).toJson() };
-    app_settings.setValue( "url_map", url_map );
-    app_settings.setValue( "order_count", 0 );
-    app_settings.sync();
+    app_settings.SetValue( utilities::SettingsValue::UrlMap, url_map );
+    app_settings.SetValue( utilities::SettingsValue::OrderCount, 0 );
 }
 
 void CentralWindow::CentralizeDisplayWidget( QWidget * const widget,
@@ -504,38 +535,37 @@ void CentralWindow::OnOrderPollResultObtained( QJsonObject const & result )
 
 void CentralWindow::StartOrderPolling()
 {
-    if( !server_order_poll_timer ){
-        server_order_poll_timer = new QTimer( this );
-        auto& app_settings = utilities::ApplicationSettings::GetAppSettings();
-        QVariant const order_count{ app_settings.value( "order_count", 0 ) };
-        last_order_count = order_count.toInt();
+    using utilities::SettingsValue;
+    if( server_order_poll_timer ) return;
+    server_order_poll_timer = new QTimer( this );
+    last_order_count=app_settings.Value( SettingsValue::OrderCount, 0 ).toInt();
 
-        QUrl const address{
-            utilities::Endpoint::GetEndpoints().GetOrderCount()
+    QUrl const address{ utilities::Endpoint::GetEndpoints().GetOrderCount() };
+    QObject::connect( server_order_poll_timer, &QTimer::timeout, [=]
+    {
+        // we cannot use `utilities::SendNetworkRequest` here as it shows a
+        // progress dialog for all requests && we have to be in stealth mode
+        QNetworkRequest const request{
+            utilities::GetRequestInterface( address )
         };
-        QObject::connect( server_order_poll_timer, &QTimer::timeout, [=]
+        auto& network_manager{
+            utilities::NetworkManager::GetNetworkWithCookie()
+        };
+        QNetworkReply* reply{ network_manager.get( request ) };
+        QObject::connect( reply, &QNetworkReply::sslErrors, reply,
+                          QOverload<QList<QSslError> const &>::of(
+                              &QNetworkReply::ignoreSslErrors ) );
+        QObject::connect( reply, &QNetworkReply::finished, [=]
         {
-            // we cannot use `utilities::SendNetworkRequest` here as it shows a
-            // progress dialog for all requests && we have to be in stealth mode
-            QNetworkRequest const request{
-                utilities::GetRequestInterface( address )
+            QJsonObject const result {
+                utilities::GetJsonNetworkData( reply, false )
             };
-            auto& network_manager{
-                utilities::NetworkManager::GetNetworkWithCookie()
-            };
-            QNetworkReply* reply{ network_manager.get( request ) };
-            QObject::connect( reply, &QNetworkReply::sslErrors, reply,
-                              QOverload<QList<QSslError> const &>::of(
-                                  &QNetworkReply::ignoreSslErrors ) );
-            QObject::connect( reply, &QNetworkReply::finished, [=]
-            {
-                QJsonObject const result {
-                    utilities::GetJsonNetworkData( reply, false )
-                };
-                if( result.isEmpty() ) return;
-                OnOrderPollResultObtained( result );
-            });
+            if( result.isEmpty() ) return;
+            OnOrderPollResultObtained( result );
         });
-        server_order_poll_timer->start( 25 * 1000 ); // poll every 25seconnds
-    }
+    });
+    int const poll_interval_seconds {
+        app_settings.Value( SettingsValue::OrderPollInterval, 25 ).toInt()* 1000
+    };
+    server_order_poll_timer->start( poll_interval_seconds );
 }

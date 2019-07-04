@@ -35,7 +35,10 @@
          <item>
           <widget class="QLabel" name="ping_label">
            <property name="text">
-            <string>Notify me of failed server-pings after every</string>
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>
@@ -53,7 +56,10 @@
          <item>
           <widget class="QLabel" name="periodic_poll_label">
            <property name="text">
-            <string>Periodic order poll interval</string>
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
            </property>
           </widget>
          </item>

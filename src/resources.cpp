@@ -9,8 +9,60 @@
 
 namespace utilities {
 
-int ApplicationSettings::ping_notification_interval = 0; //an hour
-int ApplicationSettings::ordering_poll_interval = 0; // 25 seconds
+ApplicationSettings& ApplicationSettings::GetAppSettings()
+{
+    static ApplicationSettings app_settings{};
+    return app_settings;
+}
+
+QSettings& ApplicationSettings::GetSettings( QString const & organisation,
+                                             QString const & application )
+{
+    static QSettings settings{ organisation, application };
+    return settings;
+}
+
+ApplicationSettings::ApplicationSettings():
+    settings{ GetSettings( "Froist Inc.", "LineCounter" ) }
+{
+}
+
+QString SettingsValueToString( SettingsValue const val )
+{
+    switch( val ) {
+    case SettingsValue::OrderCount:
+        return "order_count";
+    case SettingsValue::UrlMap:
+        return "url_map";
+    case SettingsValue::PingInterval:
+        return "ping_interval";
+    case SettingsValue::OrderPollInterval:
+        return "order_poll_interval";
+    case SettingsValue::AllowShortcut:
+        return "allow_shortcut";
+    case SettingsValue::ConfirmDeletion:
+        return "confirm_deletion";
+    case SettingsValue::ShowSplash:
+        return "show_splash";
+    case SettingsValue::PingNotifInterval:
+        return "ping_ntf_interval";
+    }
+    abort();
+}
+
+void ApplicationSettings::SetValue( SettingsValue const data,
+                                    QVariant const & value )
+{
+    auto const key{ SettingsValueToString( data ) };
+    settings.setValue( key, value );
+}
+
+QVariant ApplicationSettings::Value( SettingsValue const value,
+                                     QVariant const& default_ ) const
+{
+    auto const key{ SettingsValueToString( value ) };
+    return settings.value( key, default_ );
+}
 
 bool ParsePageUrls( QJsonObject const &result, PageQuery & page_query )
 {

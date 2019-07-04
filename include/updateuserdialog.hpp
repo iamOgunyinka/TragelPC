@@ -14,7 +14,7 @@ namespace utilities
 struct UserData
 {
     qint64   user_id;
-    qint64   user_role;
+    int      user_role;
     QString  fullname;
     QString  username;
     QString  email;

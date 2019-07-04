@@ -137,7 +137,7 @@ void AddProductDialog::OnAddItemButtonClicked()
 }
 
 void AddProductDialog::UpdateModel( utilities::ProductData const & data_item,
-                                    qint64 const index )
+                                    int const index )
 {
     bool const editing_item = index < this->product_item_list.size();
 
@@ -165,12 +165,18 @@ void AddProductDialog::UpdateModel( utilities::ProductData const & data_item,
 void AddProductDialog::OnRemoveItemButtonClicked()
 {
     QModelIndex const index{ ui->product_view->currentIndex() };
+    auto const& app_settings = utilities::ApplicationSettings::GetAppSettings();
+    using utilities::SettingsValue;
+    bool const confirming_deletion {
+        app_settings.Value( SettingsValue::ConfirmDeletion, true ).toBool()
+    };
     if( !index.isValid() ) return;
     if( !index.parent().isValid() ){
-        int const response{
-            QMessageBox::question( this, "Delete item", "Are you sure?" )
-        };
-        if( response == QMessageBox::No ) return;
+        if( confirming_deletion &&
+                QMessageBox::question( this, "Delete", "Are you sure?" ) ==
+                QMessageBox::No ){
+            return;
+        }
         int const row = index.row();
         this->product_item_list.removeAt( row );
         this->data_model->removeRow( row );

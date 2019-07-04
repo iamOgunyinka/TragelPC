@@ -8,6 +8,10 @@ namespace Ui {
 class SetupDialog;
 }
 
+namespace utilities {
+class ApplicationSettings;
+}
+
 class SetupDialog : public QDialog
 {
     Q_OBJECT
@@ -20,7 +24,7 @@ private:
     void OnFactoryResetButtonClicked();
 private:
     Ui::SetupDialog *ui;
-    QSettings& app_settings;
+    utilities::ApplicationSettings& app_settings;
 };
 
 #endif // SETUPDIALOG_HPP
