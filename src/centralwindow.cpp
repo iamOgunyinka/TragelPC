@@ -491,6 +491,7 @@ void CentralWindow::GetEndpointsFromServer( QString const &url,
         WriteEndpointsToPersistenceStorage( endpoints );
         PingServerNetwork();
         QMessageBox::information( this, "Restart", "Please restart application");
+        qApp->quit();
     });
 }
 

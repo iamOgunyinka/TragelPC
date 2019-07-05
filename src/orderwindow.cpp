@@ -19,6 +19,7 @@ OrderWindow::OrderWindow( QWidget *parent ): QMainWindow( parent ),
     ui( new Ui::OrderWindow )
 {
     ui->setupUi( this );
+    ui->toolBar->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
     ui->search_limit_checkbox->setChecked( false );
     ui->search_date_from->setEnabled( false );
     ui->search_date_to->setEnabled( false );
@@ -432,7 +433,7 @@ void OrderWindow::ParseOrderResult( QJsonArray const & order_object_list,
         utilities::OrderData order {};
         QString const date_str{ object.value( "date" ).toString() };
 
-        for( auto const & item: object.value( "items" ).toArray() ){
+        for( auto const item: object.value( "items" ).toArray() ){
             QJsonObject const item_object{ item.toObject() };
             QString const product_name {
                 item_object.value( "product" ).toString()

@@ -63,7 +63,8 @@ namespace utilities {
         PingNotifInterval,
         AllowShortcut,
         ConfirmDeletion,
-        ShowSplash
+        ShowSplash,
+        ResultPerPage
     };
 
     QString SettingsValueToString( SettingsValue const val );
@@ -83,6 +84,7 @@ namespace utilities {
         void    SetValue( SettingsValue const data, QVariant const &value );
         QVariant Value( SettingsValue const value,
                         QVariant const & default_ = {} ) const;
+        void Remove( SettingsValue const value );
         static  ApplicationSettings& GetAppSettings();
     };
 

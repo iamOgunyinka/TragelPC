@@ -101,8 +101,8 @@ void ProductUploadDialog::UploadProductImagesByIndex( int const index )
     UploadWidget *upload_widget{ new UploadWidget };
     upload_widget->setMaximumHeight( 70 );
     upload_widget->SetMessage( "Uploading image now" );
-    ui->widget_layout->addWidget( upload_widget );
-    auto request_payload{
+    ui->gridLayout->addWidget( upload_widget );
+    auto const request_payload{
         utilities::PostImageRequestInterface( upload_address, metadata )
     };
     if( request_payload.second.isNull() ){

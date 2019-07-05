@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>400</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMenu">
@@ -63,8 +63,8 @@
       </property>
       <addaction name="actionAdd_user"/>
       <addaction name="actionAdd_administrator"/>
-      <addaction name="actionUpdate_Change"/>
       <addaction name="separator"/>
+      <addaction name="actionUpdate_Change"/>
      </widget>
      <addaction name="menuProducts"/>
      <addaction name="menuUsers"/>

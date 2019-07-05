@@ -17,10 +17,13 @@ class SetupDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SetupDialog( QWidget *parent = 0 );
+    explicit SetupDialog( QWidget *parent = nullptr );
     ~SetupDialog();
 
 private:
+    void SetupPingInterval();
+    void SetupOrderPoll();
+    void SetupPerPageResult();
     void OnFactoryResetButtonClicked();
 private:
     Ui::SetupDialog *ui;

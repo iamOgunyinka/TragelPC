@@ -1,6 +1,5 @@
 #include "allproductsdialog.hpp"
 #include "ui_allproductsdialog.h"
-#include "resources.hpp"
 #include "productmodel.hpp"
 #include "productuploaddialog.hpp"
 #include "productthumbnaildelegate.hpp"
@@ -19,7 +18,8 @@
 
 AllProductsDialog::AllProductsDialog( QWidget *parent ) :
     QDialog( parent ),
-    ui( new Ui::AllProductsDialog )
+    ui( new Ui::AllProductsDialog ),
+    app_settings{ utilities::ApplicationSettings::GetAppSettings() }
 {
     ui->setupUi( this );
     ui->update_button->setDisabled( true );
@@ -165,7 +165,9 @@ void AllProductsDialog::OnUpdateButtonClicked()
 
 void AllProductsDialog::OnFirstPageButtonClicked()
 {
-    QUrl const first_page_address{ product_query_data_.first_url };
+    QUrl const first_page_address{
+        GetUrlWithQuery( product_query_data_.first_url )
+    };
     DownloadProducts( first_page_address );
 }
 
@@ -177,13 +179,17 @@ void AllProductsDialog::OnLastPageButtonClicked()
 
 void AllProductsDialog::OnNextPageButtonClicked()
 {
-    QUrl const& next_page_address{ product_query_data_.other_url.next_url };
+    QUrl const next_page_address{
+        GetUrlWithQuery( product_query_data_.other_url.next_url )
+    };
     DownloadProducts( next_page_address );
 }
 
 void AllProductsDialog::OnPreviousPageButtonClicked()
 {
-    QUrl const& next_page_address{ product_query_data_.other_url.previous_url };
+    QUrl const next_page_address{
+        GetUrlWithQuery( product_query_data_.other_url.previous_url )
+    };
     DownloadProducts( next_page_address );
 }
 
@@ -207,6 +213,20 @@ void AllProductsDialog::OnCustomContextMenuRequested( QPoint const &point )
     custom_menu.exec( ui->tableView->mapToGlobal( point ) );
 }
 
+QUrl AllProductsDialog::GetUrlWithQuery( QString const & address )
+{
+    using utilities::SettingsValue;
+
+    int const per_page{
+        app_settings.Value( SettingsValue::ResultPerPage, 20 ).toInt()
+    };
+    QUrlQuery url_query{};
+    url_query.addQueryItem( "per_page", QString::number( per_page ) );
+    QUrl url{ address };
+    url.setQuery( url_query );
+    return url;
+}
+
 void AllProductsDialog::DownloadProducts( QUrl const & address )
 {
     ui->first_page_button->setDisabled( true );
@@ -222,7 +242,9 @@ void AllProductsDialog::DownloadProducts( QUrl const & address )
 
 void AllProductsDialog::DownloadProducts()
 {
-    QUrl const address{ utilities::Endpoint::GetEndpoints().GetProducts() };
+    QUrl const address{
+        GetUrlWithQuery( utilities::Endpoint::GetEndpoints().GetProducts() )
+    };
     DownloadProducts( address );
 }
 

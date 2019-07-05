@@ -46,6 +46,8 @@ QString SettingsValueToString( SettingsValue const val )
         return "show_splash";
     case SettingsValue::PingNotifInterval:
         return "ping_ntf_interval";
+    case SettingsValue::ResultPerPage:
+        return "result_per_page";
     }
     abort();
 }
@@ -55,6 +57,12 @@ void ApplicationSettings::SetValue( SettingsValue const data,
 {
     auto const key{ SettingsValueToString( data ) };
     settings.setValue( key, value );
+}
+
+void ApplicationSettings::Remove(const SettingsValue value)
+{
+    auto const key{ SettingsValueToString( value ) };
+    settings.remove( key );
 }
 
 QVariant ApplicationSettings::Value( SettingsValue const value,

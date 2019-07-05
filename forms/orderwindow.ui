@@ -146,7 +146,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -154,6 +154,9 @@
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -170,26 +173,44 @@
    <addaction name="action_this_month"/>
   </widget>
   <action name="action_today">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/all_images/images/Newsvine-icon.png</normaloff>:/all_images/images/Newsvine-icon.png</iconset>
+   </property>
    <property name="text">
     <string>Today</string>
    </property>
   </action>
   <action name="action_last_seven_days">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/all_images/images/desktop-icon.png</normaloff>:/all_images/images/desktop-icon.png</iconset>
+   </property>
    <property name="text">
     <string>Last seven days</string>
    </property>
   </action>
   <action name="action_this_month">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/all_images/images/order-icon.png</normaloff>:/all_images/images/order-icon.png</iconset>
+   </property>
    <property name="text">
     <string>This Month</string>
    </property>
   </action>
   <action name="action_all_orders">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/all_images/images/tixati-icon.png</normaloff>:/all_images/images/tixati-icon.png</iconset>
+   </property>
    <property name="text">
     <string>All orders</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../images.qrc"/>
+ </resources>
  <connections/>
 </ui>
