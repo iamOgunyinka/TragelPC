@@ -22,6 +22,8 @@
 #include "popupnotifier.hpp"
 #include "makeorderdialog.hpp"
 #include "setupdialog.hpp"
+#include "subscribedialog.hpp"
+#include "allsubscriptionsdialog.hpp"
 
 #include "ui_centralwindow.h"
 
@@ -60,6 +62,15 @@ CentralWindow::CentralWindow( QWidget *parent ) :
                       &CentralWindow::OnMakeOrderTriggered );
     QObject::connect( ui->actionSettings, &QAction::triggered, this,
                       &CentralWindow::OnSettingsTriggered );
+    QObject::connect( ui->actionSubscribe, &QAction::triggered, this,
+                      &CentralWindow::OnSubscribeTriggered );
+    QObject::connect( ui->actionList_our_subscriptions, &QAction::triggered,
+                      this, &CentralWindow::OnListSubscriptionsTriggered );
+    QObject::connect( ui->actionShow_expiry_date, &QAction::triggered,
+                      this, &CentralWindow::OnShowExpiryTriggered );
+    QObject::connect( ui->actionAbout, &QAction::triggered, qApp,
+                      &QApplication::aboutQt );
+
     if( app_settings.Value( utilities::SettingsValue::AllowShortcut, false )
             .toBool() ){
         EnableShortcuts();
@@ -90,28 +101,23 @@ void CentralWindow::closeEvent( QCloseEvent* event )
 
 void CentralWindow::EnableShortcuts()
 {
-    ui->actionExit->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_Q ) );
-    ui->actionAbout->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_A ) );
-    ui->actionLogin->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_L ) );
-    ui->actionLogout->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_G ) );
-    ui->actionHelp_me->setShortcut( QKeySequence( Qt::Key_F1 ) );
-    ui->actionAdd_user->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_U ) );
-    ui->actionSettings->setShortcut( QKeySequence( Qt::Key_F2 ) );
-    ui->actionSubscribe->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_B ) );
-    ui->actionMakeOrders->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_O ) );
-    ui->actionAdd_products->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_T ));
-    ui->actionUpdate_Change->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_C ) );
-    ui->actionShow_all_users->setShortcut( QKeySequence( Qt::CTRL, Qt::Key_W ));
-    ui->actionShow_all_orders->setShortcut( QKeySequence( Qt::CTRL,
-                                                          Qt::Key_H ));
-    ui->actionShow_expiry_date->setShortcut( QKeySequence( Qt::CTRL,
-                                                           Qt::Key_X ));
-    ui->actionAdd_administrator->setShortcut( QKeySequence( Qt::CTRL,
-                                                            Qt::Key_M ));
-    ui->actionList_all_products->setShortcut( QKeySequence( Qt::CTRL,
-                                                            Qt::Key_I ));
-    ui->actionList_our_subscriptions->setShortcut( QKeySequence( Qt::CTRL,
-                                                                 Qt::Key_R ) );
+    ui->actionExit->setShortcut( tr( "Ctrl+Q" ) );
+    ui->actionAbout->setShortcut( tr( "Ctrl+A" ) );
+    ui->actionLogin->setShortcut( tr( "Ctrl+L" ) );
+    ui->actionLogout->setShortcut( tr( "Ctrl+G" ) );
+    ui->actionHelp_me->setShortcut( tr( "F1" ) );
+    ui->actionAdd_user->setShortcut( tr( "Ctrl+U" ) );
+    ui->actionSettings->setShortcut( tr( "F2" ) );
+    ui->actionSubscribe->setShortcut( tr( "Ctrl+B" ) );
+    ui->actionMakeOrders->setShortcut( tr( "Ctrl+O" ) );
+    ui->actionAdd_products->setShortcut( tr( "Ctrl+T" ));
+    ui->actionUpdate_Change->setShortcut( tr( "Ctrl+C" ) );
+    ui->actionShow_all_users->setShortcut( tr( "Ctrl+W" ));
+    ui->actionShow_all_orders->setShortcut( tr( "Ctrl+H" ));
+    ui->actionShow_expiry_date->setShortcut( tr( "Ctrl+X" ));
+    ui->actionAdd_administrator->setShortcut( tr( "Ctrl+M" ));
+    ui->actionList_all_products->setShortcut( tr( "Ctrl+I" ));
+    ui->actionList_our_subscriptions->setShortcut( tr( "Ctrl+R" ) );
 }
 
 void CentralWindow::OnAddProductTriggered()
@@ -131,6 +137,38 @@ void CentralWindow::OnAddProductTriggered()
     });
     sub_window->setFixedHeight( workspace->height() );
     product_dialog->show();
+}
+
+void CentralWindow::OnShowExpiryTriggered()
+{
+    QUrl const address{ utilities::Endpoint::GetEndpoints().GetExpiryDate() };
+    auto on_success = [this]( QJsonObject const & result ){
+        QString const status = result.value( "status" ).toString();
+        QDate const date = QDate::fromString( status, Qt::ISODate );
+        QMessageBox::information( this, "Expiry date", date.toString() );
+    };
+    utilities::SendNetworkRequest( address, on_success, []{}, this );
+}
+
+void CentralWindow::OnListSubscriptionsTriggered()
+{
+    AllSubscriptionsDialog* subscription_dialog{
+        new AllSubscriptionsDialog( this )
+    };
+    auto sub_window = workspace->addSubWindow( subscription_dialog );
+    sub_window->setAttribute( Qt::WA_DeleteOnClose );
+    sub_window->setWindowTitle( "List of subscriptions" );
+    subscription_dialog->GetSubscriptions();
+    subscription_dialog->show();
+}
+
+void CentralWindow::OnSubscribeTriggered()
+{
+    SubscribeDialog* subscribe_dialog{ new SubscribeDialog( this ) };
+    auto sub_window = workspace->addSubWindow( subscribe_dialog );
+    sub_window->setAttribute( Qt::WA_DeleteOnClose );
+    sub_window->setWindowTitle( "Subscribe" );
+    subscribe_dialog->show();
 }
 
 void CentralWindow::OnListUsersTriggered()
@@ -343,7 +381,6 @@ void CentralWindow::SetEnableActionButtons( bool const enable )
     ui->actionShow_all_users->setEnabled( enable );
     ui->actionShow_all_orders->setEnabled( enable );
     ui->actionShow_expiry_date->setEnabled( enable );
-    ui->actionSubscribe->setEnabled( enable );
     ui->actionUpdate_Change->setEnabled( enable );
 }
 

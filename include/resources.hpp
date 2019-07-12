@@ -190,6 +190,10 @@ namespace utilities {
             return endpoint_object.value( "ping" ).toString();
         }
 
+        QString GetExpiryDate() const {
+            return endpoint_object.value( "get_expiry" ).toString();
+        }
+
         QString UploadPhoto() const {
             return endpoint_object.value( "upload_images" ).toString();
         }

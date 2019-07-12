@@ -53,7 +53,10 @@ SOURCES += \
     src/changeuserroledialog.cpp \
     src/makeorderdialog.cpp \
     src/orderingitemmodel.cpp \
-    src/setupdialog.cpp
+    src/setupdialog.cpp \
+    src/subscribedialog.cpp \
+    src/allsubscriptionsdialog.cpp \
+    src/allsubscriptionmodel.cpp
 
 
 HEADERS += \
@@ -83,7 +86,10 @@ HEADERS += \
     include/changeuserroledialog.hpp \
     include/makeorderdialog.hpp \
     include/orderingitemmodel.hpp \
-    include/setupdialog.hpp
+    include/setupdialog.hpp \
+    include/subscribedialog.hpp \
+    include/allsubscriptionsdialog.hpp \
+    include/allsubscriptionmodel.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
@@ -103,7 +109,9 @@ FORMS += \
     forms/changepassworddialog.ui \
     forms/changeuserroledialog.ui \
     forms/makeorderdialog.ui \
-    forms/setupdialog.ui
+    forms/setupdialog.ui \
+    forms/subscribedialog.ui \
+    forms/allsubscriptionsdialog.ui
 
 RESOURCES += \
     darkstyle.qrc \

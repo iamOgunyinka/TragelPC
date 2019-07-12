@@ -8,7 +8,7 @@ RemoveUserConfirmationDialog::RemoveUserConfirmationDialog( QWidget *parent ):
     ui( new Ui::RemoveUserConfirmationDialog )
 {
     ui->setupUi( this );
-    this->setWindowTitle( "Remove user" );
+    this->setWindowTitle( "Mark inactive" );
     QObject::connect( ui->delete_button, &QPushButton::clicked, this,
                       &RemoveUserConfirmationDialog::OnDeleteButtonClicked );
 }
@@ -27,8 +27,8 @@ void RemoveUserConfirmationDialog::OnDeleteButtonClicked()
     }
     if( ui->deletion_reason_line->text().trimmed().isEmpty() ){
         QMessageBox::critical( this, "Error",
-                               "State the reason for wanting to delete this "
-                               "user" );
+                               "State the reason for wanting to mark this "
+                               "user inactive" );
         ui->deletion_reason_line->setFocus();
         return;
     }

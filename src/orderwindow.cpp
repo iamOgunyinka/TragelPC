@@ -395,8 +395,11 @@ void OrderWindow::DisplayOrderData( QJsonObject const & data )
 {
     bool result_found{ utilities::ParsePageUrls( data, orders_page_query )};
     if( !result_found ){
-        QMessageBox::information( this, "Orders",
-                                  "No result matching that criteria" );
+        QString title = data.value( "error" ).toString();
+        QString message = data.value( "message" ).toString();
+        if( title.isEmpty() ) title = "Orders";
+        if( message.isEmpty() ) message = "No result matching that criteria";
+        QMessageBox::information( this, title, message );
         return;
     }
     QJsonArray order_list{ data.value( "orders" ).toArray() };

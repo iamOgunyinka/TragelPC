@@ -46,6 +46,9 @@ private:
     void OnListAllProductsTriggered();
     void OnListUsersTriggered();
     void OnMakeOrderTriggered();
+    void OnSubscribeTriggered();
+    void OnShowExpiryTriggered();
+    void OnListSubscriptionsTriggered();
     void GetEndpointsFromServer( QString const & url, QString const & username,
                                  QString const & password,
                                  QString const & company_id );

@@ -58,7 +58,7 @@ void UpdateUserDialog::OnCustomMenuRequested( QPoint const &point )
     if( !index.parent().isValid() ){
         QAction* action_change_role{ new QAction( "Change role" ) };
         QAction* action_change_password{ new QAction( "Change password" ) };
-        QAction* action_remove_user{ new QAction( "Remove user" ) };
+        QAction* action_remove_user{ new QAction( "Mark inactive" ) };
 
         QObject::connect( action_change_role, &QAction::triggered, this,
                           &UpdateUserDialog::OnChangeUserRoleTriggered );
@@ -103,7 +103,7 @@ void UpdateUserDialog::OnRemoveUserTriggered()
     auto on_success = [=]( QJsonObject const & result ){
         auto* model = qobject_cast<UserModel*>( ui->tableView->model() );
         model->removeRows( index.row(), 1, index );
-        QMessageBox::information( this, "Delete user",
+        QMessageBox::information( this, "Mark inactive",
                                   result.value( "status" ).toString() );
     };
     auto on_error = []{};
@@ -218,7 +218,11 @@ void UpdateUserDialog::OnGetUsersData( QJsonObject const &result )
 {
     bool const suceeds = utilities::ParsePageUrls( result, *page_query );
     if( !suceeds ){
-        QMessageBox::information( this, "Users", "No users found" );
+        QString title = result.value( "error" ).toString();
+        QString message = result.value( "message" ).toString();
+        if( title.isEmpty() ) title = "Users";
+        if( message.isEmpty() ) message = "No users found";
+        QMessageBox::information( this, title, message );
         this->accept();
         return;
     }
