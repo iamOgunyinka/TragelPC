@@ -11,14 +11,14 @@ namespace utilities {
 
 ApplicationSettings& ApplicationSettings::GetAppSettings()
 {
-    static ApplicationSettings app_settings{};
+    static ApplicationSettings app_settings;
     return app_settings;
 }
 
 QSettings& ApplicationSettings::GetSettings( QString const & organisation,
                                              QString const & application )
 {
-    static QSettings settings{ organisation, application };
+    static QSettings settings { organisation, application };
     return settings;
 }
 
@@ -55,20 +55,20 @@ QString SettingsValueToString( SettingsValue const val )
 void ApplicationSettings::SetValue( SettingsValue const data,
                                     QVariant const & value )
 {
-    auto const key{ SettingsValueToString( data ) };
+    auto const key = SettingsValueToString( data );
     settings.setValue( key, value );
 }
 
 void ApplicationSettings::Remove(const SettingsValue value)
 {
-    auto const key{ SettingsValueToString( value ) };
+    auto const key = SettingsValueToString( value );
     settings.remove( key );
 }
 
 QVariant ApplicationSettings::Value( SettingsValue const value,
                                      QVariant const& default_ ) const
 {
-    auto const key{ SettingsValueToString( value ) };
+    auto const key = SettingsValueToString( value );
     return settings.value( key, default_ );
 }
 
@@ -102,9 +102,9 @@ bool ParsePageUrls( QJsonObject const &result, PageQuery & page_query )
 
 QNetworkRequest GetRequestInterface( QUrl const &address )
 {
-    QNetworkRequest request { address };
+    QNetworkRequest request = QNetworkRequest( address );
     if( address.scheme() == "https" ){
-        auto ssl_config{ QSslConfiguration::defaultConfiguration() };
+        auto ssl_config = QSslConfiguration::defaultConfiguration();
         ssl_config.setProtocol( QSsl::TlsV1_0OrLater );
         request.setSslConfiguration( ssl_config );
     }
@@ -116,7 +116,7 @@ QNetworkRequest PostRequestInterface( QUrl const &address )
 {
     QNetworkRequest request{ address };
     if( address.scheme() == "https" ){
-        auto ssl_config{ QSslConfiguration::defaultConfiguration() };
+        auto ssl_config = QSslConfiguration::defaultConfiguration();
         ssl_config.setProtocol( QSsl::TlsV1_0OrLater );
         request.setSslConfiguration( ssl_config );
     }
@@ -129,13 +129,13 @@ QPair<QNetworkRequest, QByteArray> PostImageRequestInterface(
         QUrl const &address, QVector<QString> const & data )
 {
     if( data.size() < 2 ) return {};
-    QString const filename{ data[0] };
-    QString const file_format{ data[1] };
+    QString const filename = data[0];
+    QString const file_format = data[1];
 
-    QNetworkRequest request{ address };
+    QNetworkRequest request = QNetworkRequest( address );
     request.setHeader( QNetworkRequest::UserAgentHeader, USER_AGENT );
-    QString const boundary{ "--TragelBoundary7MA4YWxkTrZu7gW" }; // random string
-    QByteArray payload{ QString( "--" + boundary + "\r\n" ).toLocal8Bit() };
+    QString const boundary= "--TragelBoundary7MA4YWxkTrZu7gW"; // random string
+    QByteArray payload = QString( "--" + boundary + "\r\n" ).toLocal8Bit();
     payload.append( QString( "Content-Disposition: form-data; name=\"photo\"; "
                              "filename=\"" + filename + "\"\r\nContent-Type: "
                                                         "image/" + file_format
@@ -160,31 +160,28 @@ QJsonObject GetJsonNetworkData( QNetworkReply* network_reply,
     if( network_reply->error() != QNetworkReply::NoError ){
         if( show_error_message ){
             QByteArray const network_response = network_reply->readAll();
-            QJsonDocument const json_document{
-                QJsonDocument::fromJson( network_response )
-            };
+            QJsonDocument const json_document=
+                QJsonDocument::fromJson( network_response );
             if( json_document.isNull() ){
                 QMessageBox::critical( nullptr, "Server's response",
                                        network_reply->errorString() );
             } else {
-                QJsonObject const server_error{ json_document.object() };
-                QString error_message { server_error.contains( "status" ) ?
+                QJsonObject const server_error = json_document.object();
+                QString error_message = server_error.contains( "status" ) ?
                                 server_error.value( "status").toString():
-                                server_error.value( "message" ).toString()
-                                      };
+                                server_error.value( "message" ).toString();
                 if( error_message.isEmpty() ){
                     error_message = network_reply->errorString();
                 }
                 QMessageBox::critical( nullptr, "Server says", error_message );
             }
         }
-        return {};
+        return QJsonObject();
     }
     QByteArray const network_response = network_reply->readAll();
-    QJsonDocument const json_document{
-        QJsonDocument::fromJson( network_response )
-    };
-    if( json_document.isNull() ) return {};
+    QJsonDocument const json_document=
+        QJsonDocument::fromJson( network_response );
+    if( json_document.isNull() ) return QJsonObject();
     return json_document.object();
 }
 

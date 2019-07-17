@@ -156,9 +156,9 @@ void UpdateUserDialog::OnChangeUserPasswordTriggered()
     QModelIndex const index{ ui->tableView->currentIndex() };
     if( !index.isValid() ) return;
 
-    auto const &user_data{ users_[index.row()] };
+    auto const &user_data = users_[index.row()];
 
-    ChangePasswordDialog* password_dialog { new ChangePasswordDialog( this ) };
+    ChangePasswordDialog* password_dialog = new ChangePasswordDialog( this );
     password_dialog->SetEmail( user_data.email );
     QUrl const address{ utilities::Endpoint::GetEndpoints().ResetPassword() };
     auto on_sucess = [=]( QJsonObject const &, QNetworkReply* ){
@@ -183,10 +183,8 @@ void UpdateUserDialog::OnChangeUserPasswordTriggered()
 void UpdateUserDialog::FetchUserData( QUrl const &address )
 {
     auto on_error = []{};
-    auto on_success{
-        std::bind( &UpdateUserDialog::OnGetUsersData, this,
-                   std::placeholders::_1 )
-    };
+    auto on_success = std::bind( &UpdateUserDialog::OnGetUsersData, this,
+                                 std::placeholders::_1 );
     utilities::SendNetworkRequest( address, on_success, on_error, this );
 }
 

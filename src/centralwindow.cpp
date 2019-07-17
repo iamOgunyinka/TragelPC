@@ -338,10 +338,9 @@ void CentralWindow::OnLogoutButtonClicked()
     SetEnableActionButtons( false );
     ui->actionLogin->setEnabled( true );
     auto const & endpoints = utilities::Endpoint::GetEndpoints();
-    auto& network_manager{ utilities::NetworkManager::GetNetworkWithCookie() };
-    QNetworkRequest const request{
-        utilities::GetRequestInterface( endpoints.LogoutFrom() )
-    };
+    auto& network_manager= utilities::NetworkManager::GetNetworkWithCookie();
+    QNetworkRequest const request=
+        utilities::GetRequestInterface( endpoints.LogoutFrom() );
     network_manager.get( request );
     // let's clear the cookies
     utilities::NetworkManager::GetSessionCookie().setCookiesFromUrl(
@@ -586,9 +585,8 @@ void CentralWindow::StartOrderPolling()
         QNetworkRequest const request{
             utilities::GetRequestInterface( address )
         };
-        auto& network_manager{
-            utilities::NetworkManager::GetNetworkWithCookie()
-        };
+        auto& network_manager=
+            utilities::NetworkManager::GetNetworkWithCookie();
         QNetworkReply* reply{ network_manager.get( request ) };
         QObject::connect( reply, &QNetworkReply::sslErrors, reply,
                           QOverload<QList<QSslError> const &>::of(

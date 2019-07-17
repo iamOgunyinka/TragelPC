@@ -21,10 +21,10 @@ void ProductThumbnailDelegate::paint( QPainter *painter,
     if( option.state & QStyle::State_Selected ){
         painter->fillRect( option.rect, option.palette.highlight() );
     }
-    QPixmap picture_thumbnail{};
+    QPixmap picture_thumbnail;
     // have we cached this image recently? If yes, use it.
     if( QPixmapCache::find( thumbnail_url, picture_thumbnail ) ){
-        auto const scaled_image{ picture_thumbnail.scaled( QSize( 120, 120 ) ) };
+        auto const scaled_image = picture_thumbnail.scaled( QSize( 120, 120 ) );
         painter->drawPixmap( option.rect, scaled_image );
         return;
     }
@@ -77,13 +77,13 @@ void LocalProductUploadDelegate::paint( QPainter *painter,
         painter->fillRect( option.rect, option.palette.highlight() );
     }
     painter->save();
-    QPixmap picture_thumbnail{};
+    QPixmap picture_thumbnail;
     // have we cached this image recently? If yes, use it.
     if( !QPixmapCache::find( filename, picture_thumbnail ) ){
         picture_thumbnail = QPixmap( filename );
         QPixmapCache::insert( filename, picture_thumbnail );
     }
-    auto const scaled_image{ picture_thumbnail.scaled( QSize( 120, 120 ) ) };
+    auto const scaled_image = picture_thumbnail.scaled( QSize( 120, 120 ) );
     painter->drawPixmap( option.rect, scaled_image );
     painter->restore();
 }

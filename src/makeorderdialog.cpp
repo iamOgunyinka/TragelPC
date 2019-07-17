@@ -107,8 +107,8 @@ void MakeOrderDialog::OnMakeOrderButtonClicked()
         return;
     }
 
-    auto const &cart{ model->Items() };
-    QJsonArray items {};
+    auto const &cart = model->Items();
+    QJsonArray items;
     for( auto const & item: cart ){
         items.append( item.ToJson() );
     }

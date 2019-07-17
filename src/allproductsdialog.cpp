@@ -75,7 +75,7 @@ void AllProductsDialog::OnRemoveItemButtonClicked()
             QMessageBox::question( this, "Remove item",
                                    "Removing this item deletes it completely, "
                                    "are you sure you want to continue with the "
-                                   "removal?" ) ){
+                                   "removal?" ) == QMessageBox::No ){
         return;
     }
     QString const reason {
@@ -118,7 +118,7 @@ void AllProductsDialog::OnEditItemButtonClicked()
     edit_dialog->SetName( data.name );
     edit_dialog->SetPrice( data.price );
     if( edit_dialog->exec() == QDialog::Accepted ){
-        utilities::ProductData const new_data{ edit_dialog->GetValue() };
+        utilities::ProductData const new_data = edit_dialog->GetValue();
         if( data == new_data ) return; // no changes? OK!
         data.name = new_data.name;
         data.price = new_data.price;

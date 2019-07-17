@@ -187,15 +187,14 @@ void AddProductDialog::OnRemoveItemButtonClicked()
 
 void AddProductDialog::OnShowImageButtonClicked()
 {
-    auto const filename{
+    auto const filename =
         QFileDialog::getOpenFileName( this, "Choose custom preview file",
-                                      "", "PNG Files(*.png);;JPEG Files(*.jpg)")
-    };
+                                      "", "PNG Files(*.png);;JPEG Files(*.jpg)");
     if( filename.isEmpty() || filename.isNull() ){
         ui->upload_checkbox->setChecked( false );
         return;
     }
-    qint64 const file_size{ QFileInfo( filename ).size() };
+    qint64 const file_size = QFileInfo( filename ).size();
     // if file does not exist or it exceeds 150KB
     if( file_size == 0 || file_size > (150 * 1024) ){
         QMessageBox::warning( this, "Image upload",

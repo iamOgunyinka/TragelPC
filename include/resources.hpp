@@ -21,8 +21,8 @@ namespace utilities {
     public:
         static QNetworkAccessManager& GetNetworkWithCookie()
         {
-            auto& network_manager{ GetNetwork() };
-            auto& session_cookie{ GetSessionCookie() };
+            auto& network_manager = GetNetwork();
+            auto& session_cookie = GetSessionCookie();
             network_manager.setCookieJar( &session_cookie );
             // don't take ownership of the session cookie
             session_cookie.setParent( nullptr );
@@ -304,13 +304,12 @@ namespace utilities {
                              bool report_error = true,
                              SimpleRequestType type = SimpleRequestType::Get )
     {
-        QNetworkRequest const request{ GetRequestInterface( address ) };
-        auto& network_manager{ NetworkManager::GetNetworkWithCookie() };
-        QProgressDialog* progress_dialog {
-            new QProgressDialog( "Please wait", "Cancel", 1, 100, parent )
-        };
+        QNetworkRequest const request = GetRequestInterface( address );
+        auto& network_manager = NetworkManager::GetNetworkWithCookie();
+        QProgressDialog* progress_dialog =
+            new QProgressDialog( "Please wait", "Cancel", 1, 100, parent );
         progress_dialog->show();
-        QNetworkReply* reply{};
+        QNetworkReply* reply;
         if( type == SimpleRequestType::Get ){
             reply = network_manager.get( request );
         } else {
@@ -332,9 +331,8 @@ namespace utilities {
                           &QProgressDialog::close );
         QObject::connect( reply, &QNetworkReply::finished, [=]
         {
-            QJsonObject const result {
-                utilities::GetJsonNetworkData( reply, report_error )
-            };
+            QJsonObject const result =
+                utilities::GetJsonNetworkData( reply, report_error );
             if( result.isEmpty() ) on_error();
             else on_success( result );
         });
@@ -347,13 +345,12 @@ namespace utilities {
                                  QByteArray const &payload,
                                  bool report_error = true )
     {
-        QNetworkRequest const request{ PostRequestInterface( address ) };
-        auto& network_manager{ NetworkManager::GetNetworkWithCookie() };
-        QProgressDialog* progress_dialog {
-            new QProgressDialog( "Please wait", "Cancel", 1, 100, parent )
-        };
+        QNetworkRequest const request = PostRequestInterface( address );
+        auto& network_manager = NetworkManager::GetNetworkWithCookie();
+        QProgressDialog* progress_dialog =
+            new QProgressDialog( "Please wait", "Cancel", 1, 100, parent );
         progress_dialog->show();
-        QNetworkReply* reply{ network_manager.post( request, payload )};
+        QNetworkReply* reply = network_manager.post( request, payload );
         QObject::connect( reply, &QNetworkReply::downloadProgress,
                           [=]( qint64 const received, qint64 const total )
         {

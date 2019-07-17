@@ -81,11 +81,11 @@ QStringList OrderingProductModel::mimeTypes() const
 QMimeData* OrderingProductModel::mimeData( QModelIndexList const&indexes ) const
 {
     QMimeData* mime_data{ new QMimeData };
-    QByteArray encoded_data{};
+    QByteArray encoded_data;
     QDataStream stream{ &encoded_data, QIODevice::WriteOnly };
     for( QModelIndex const & index: indexes ){
         if( index.isValid() ){
-            utilities::ProductData const product{ products_[index.row() ] };
+            utilities::ProductData const product = products_[index.row() ];
             stream << product.name << product.product_id << product.price;
         }
     }

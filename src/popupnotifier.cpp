@@ -61,7 +61,7 @@ void PopUpNotifier::show()
     animation.setStartValue( 0.0 );
     animation.setEndValue( 1.0 );
 
-    auto const pc_geometry{ QApplication::desktop()->availableGeometry() };
+    auto const pc_geometry = QApplication::desktop()->availableGeometry();
     int const x { pc_geometry.width() - 36 - this->width() + pc_geometry.x() };
     int const y {pc_geometry.height() - 36 - this->height() + pc_geometry.y() };
 

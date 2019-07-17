@@ -90,9 +90,8 @@ void ProductUploadDialog::UploadProductImagesByIndex( int const index )
         return;
     }
 
-    QNetworkAccessManager& network_manager{
-        utilities::NetworkManager::GetNetworkWithCookie()
-    };
+    QNetworkAccessManager& network_manager =
+        utilities::NetworkManager::GetNetworkWithCookie();
     QString const file_type{ QFileInfo{ product.thumbnail_location }.suffix() };
     QVector<QString> const metadata{ product.thumbnail_location, file_type };
     utilities::Endpoint& endpoint{ utilities::Endpoint::GetEndpoints() };
@@ -102,9 +101,8 @@ void ProductUploadDialog::UploadProductImagesByIndex( int const index )
     upload_widget->setMaximumHeight( 70 );
     upload_widget->SetMessage( "Uploading image now" );
     ui->gridLayout->addWidget( upload_widget );
-    auto const request_payload{
-        utilities::PostImageRequestInterface( upload_address, metadata )
-    };
+    auto const request_payload =
+        utilities::PostImageRequestInterface( upload_address, metadata );
     if( request_payload.second.isNull() ){
         upload_widget->SetProgress( 100, 100 );
         upload_widget->SetMessage( "Unable to upload image" );

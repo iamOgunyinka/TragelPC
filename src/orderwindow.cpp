@@ -162,16 +162,16 @@ void OrderWindow::OnCustomContextMenuRequested( QPoint const & point )
 
 void OrderWindow::OnOrderDetailsRequested()
 {
-    QModelIndex const index{ ui->tableView->currentIndex() };
+    QModelIndex const index = ui->tableView->currentIndex();
     if( !index.isValid() ) return;
-    utilities::OrderData const &order{ orders_[index.row() ] };
-    auto order_detail_dialog{ new OrderItemDetailDialog( order.items, this ) };
+    utilities::OrderData const &order = orders_[index.row() ];
+    auto order_detail_dialog= new OrderItemDetailDialog( order.items, this );
     if( order.confirmation_data.confirmed ){
         order_detail_dialog->SetConfirmationStatus(
                     order.confirmation_data.confirmed_by,
                     order.confirmation_data.date_of_confirmation );
     }
-    auto window_title{ QString( "Order: %1" ).arg( order.reference_id ) };
+    auto window_title = QString( "Order: %1" ).arg( order.reference_id );
     order_detail_dialog->setWindowTitle( window_title );
     order_detail_dialog->setAttribute( Qt::WA_DeleteOnClose );
     order_detail_dialog->show();
@@ -226,9 +226,8 @@ QUrl OrderWindow::GetUrlNewMetaFromUrl( QString const & old_url )
 
 void OrderWindow::OnFirstPageButtonClicked()
 {
-    auto const first_page_address{
-        GetUrlNewMetaFromUrl( orders_page_query.first_url )
-    };
+    auto const first_page_address =
+        GetUrlNewMetaFromUrl( orders_page_query.first_url );
     SendNetworkRequest( first_page_address );
 }
 
@@ -334,8 +333,8 @@ void OrderWindow::OnFindButtonClicked()
         query.addQueryItem( "username", username );
     }
     if( ui->search_limit_checkbox->isChecked() ){
-        auto const date_from { ui->search_date_from->date() };
-        auto const date_to{ ui->search_date_to->date() };
+        auto const date_from = ui->search_date_from->date();
+        auto const date_to = ui->search_date_to->date();
         query.addQueryItem( "from", DateToString(  date_from ) );
         query.addQueryItem( "to", DateToString( date_to ) );
     }
@@ -445,9 +444,8 @@ void OrderWindow::ParseOrderResult( QJsonArray const & order_object_list,
             double const price{ item_object.value( "price" ).toDouble() };
             order.items.push_back( { product_name, quantity, price } );
         }
-        auto const order_date{
-            QDateTime::fromString( date_str, Qt::ISODateWithMs )
-        };
+        auto const order_date =
+            QDateTime::fromString( date_str, Qt::ISODateWithMs );
         order.order_date = order_date;
         qint64 const order_id{ object.value( "id" ).toInt() };
         order.order_id = order_id;
