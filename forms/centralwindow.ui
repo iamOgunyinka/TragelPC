@@ -66,6 +66,7 @@
       <addaction name="separator"/>
       <addaction name="actionUpdate_Change"/>
      </widget>
+     <addaction name="actionStock"/>
      <addaction name="menuProducts"/>
      <addaction name="menuUsers"/>
     </widget>
@@ -104,6 +105,8 @@
    </attribute>
    <addaction name="actionLogin"/>
    <addaction name="actionLogout"/>
+   <addaction name="separator"/>
+   <addaction name="actionStock"/>
    <addaction name="separator"/>
    <addaction name="actionAdd_products"/>
    <addaction name="actionList_all_products"/>
@@ -255,6 +258,18 @@
    </property>
    <property name="text">
     <string>Show all orders</string>
+   </property>
+  </action>
+  <action name="actionStock">
+   <property name="icon">
+    <iconset resource="../images.qrc">
+     <normaloff>:/all_images/images/stock.png</normaloff>:/all_images/images/stock.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stock</string>
+   </property>
+   <property name="toolTip">
+    <string>Show our stock</string>
    </property>
   </action>
  </widget>

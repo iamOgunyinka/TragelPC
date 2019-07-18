@@ -1,8 +1,9 @@
 #include <QApplication>
-#include "centralwindow.hpp"
-#include "DarkStyle.h"
+
+#include "widgets/centralwindow.hpp"
+#include "utils/DarkStyle.h"
+#include "utils/splashscreen.hpp"
 #include "framelesswindow.h"
-#include "splashscreen.hpp"
 
 int main(int argc, char *argv[])
 {

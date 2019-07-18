@@ -31,67 +31,71 @@ SOURCES += \
         src/main.cpp \
     framelesswindow/framelesswindow.cpp \
     framelesswindow/windowdragger.cpp \
-    src/DarkStyle.cpp \
-    src/splashscreen.cpp \
-    src/resources.cpp \
-    src/adminsetupdialog.cpp \
-    src/createstaffdialog.cpp \
-    src/centralwindow.cpp \
-    src/userlogindialog.cpp \
-    src/orderwindow.cpp \
-    src/addproductdialog.cpp \
-    src/editproductdialog.cpp \
-    src/allproductsdialog.cpp \
-    src/productmodel.cpp \
-    src/productthumbnaildelegate.cpp \
-    src/productuploaddialog.cpp \
-    src/uploadwidget.cpp \
-    src/ordermodel.cpp \
-    src/orderitemdetaildialog.cpp \
-    src/updateuserdialog.cpp \
-    src/removeuserconfirmationdialog.cpp \
-    src/popupnotifier.cpp \
-    src/changepassworddialog.cpp \
-    src/changeuserroledialog.cpp \
-    src/makeorderdialog.cpp \
-    src/orderingitemmodel.cpp \
-    src/setupdialog.cpp \
-    src/subscribedialog.cpp \
-    src/allsubscriptionsdialog.cpp \
-    src/allsubscriptionmodel.cpp
+    src/utils/DarkStyle.cpp \
+    src/utils/splashscreen.cpp \
+    src/utils/resources.cpp \
+    src/widgets/adminsetupdialog.cpp \
+    src/widgets/createstaffdialog.cpp \
+    src/widgets/centralwindow.cpp \
+    src/widgets/userlogindialog.cpp \
+    src/widgets/orderwindow.cpp \
+    src/widgets/addproductdialog.cpp \
+    src/widgets/editproductdialog.cpp \
+    src/widgets/allproductsdialog.cpp \
+    src/models/productmodel.cpp \
+    src/models/productthumbnaildelegate.cpp \
+    src/widgets/productuploaddialog.cpp \
+    src/widgets/uploadwidget.cpp \
+    src/models/ordermodel.cpp \
+    src/widgets/orderitemdetaildialog.cpp \
+    src/widgets/updateuserdialog.cpp \
+    src/widgets/removeuserconfirmationdialog.cpp \
+    src/utils/popupnotifier.cpp \
+    src/widgets/changepassworddialog.cpp \
+    src/widgets/changeuserroledialog.cpp \
+    src/widgets/makeorderdialog.cpp \
+    src/models/orderingitemmodel.cpp \
+    src/widgets/setupdialog.cpp \
+    src/widgets/subscribedialog.cpp \
+    src/widgets/allsubscriptionsdialog.cpp \
+    src/models/allsubscriptionmodel.cpp \
+    src/models/usermodel.cpp \
+    src/widgets/stockdialog.cpp
 
 
 HEADERS += \
-    include/DarkStyle.h \
+    include/utils/DarkStyle.h \
     framelesswindow/framelesswindow.h \
     framelesswindow/windowdragger.h \
-    include/splashscreen.hpp \
-    include/resources.hpp \
-    include/adminsetupdialog.hpp \
-    include/createstaffdialog.hpp \
-    include/centralwindow.hpp \
-    include/userlogindialog.hpp \
-    include/orderwindow.hpp \
-    include/addproductdialog.hpp \
-    include/editproductdialog.hpp \
-    include/allproductsdialog.hpp \
-    include/productmodel.hpp \
-    include/productthumbnaildelegate.hpp \
-    include/productuploaddialog.hpp \
-    include/uploadwidget.hpp \
-    include/ordermodel.hpp \
-    include/orderitemdetaildialog.hpp \
-    include/updateuserdialog.hpp \
-    include/removeuserconfirmationdialog.hpp \
-    include/popupnotifier.hpp \
-    include/changepassworddialog.hpp \
-    include/changeuserroledialog.hpp \
-    include/makeorderdialog.hpp \
-    include/orderingitemmodel.hpp \
-    include/setupdialog.hpp \
-    include/subscribedialog.hpp \
-    include/allsubscriptionsdialog.hpp \
-    include/allsubscriptionmodel.hpp
+    include/utils/splashscreen.hpp \
+    include/utils/resources.hpp \
+    include/widgets/adminsetupdialog.hpp \
+    include/widgets/createstaffdialog.hpp \
+    include/widgets/centralwindow.hpp \
+    include/widgets/userlogindialog.hpp \
+    include/widgets/orderwindow.hpp \
+    include/widgets/addproductdialog.hpp \
+    include/widgets/editproductdialog.hpp \
+    include/widgets/allproductsdialog.hpp \
+    include/models/productmodel.hpp \
+    include/models/productthumbnaildelegate.hpp \
+    include/widgets/productuploaddialog.hpp \
+    include/widgets/uploadwidget.hpp \
+    include/models/ordermodel.hpp \
+    include/widgets/orderitemdetaildialog.hpp \
+    include/widgets/updateuserdialog.hpp \
+    include/widgets/removeuserconfirmationdialog.hpp \
+    include/utils/popupnotifier.hpp \
+    include/widgets/changepassworddialog.hpp \
+    include/widgets/changeuserroledialog.hpp \
+    include/widgets/makeorderdialog.hpp \
+    include/models/orderingitemmodel.hpp \
+    include/widgets/setupdialog.hpp \
+    include/widgets/subscribedialog.hpp \
+    include/widgets/allsubscriptionsdialog.hpp \
+    include/models/allsubscriptionmodel.hpp \
+    include/models/usermodel.hpp \
+    include/widgets/stockdialog.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
@@ -113,7 +117,8 @@ FORMS += \
     forms/makeorderdialog.ui \
     forms/setupdialog.ui \
     forms/subscribedialog.ui \
-    forms/allsubscriptionsdialog.ui
+    forms/allsubscriptionsdialog.ui \
+    forms/stockdialog.ui
 
 RESOURCES += \
     darkstyle.qrc \
