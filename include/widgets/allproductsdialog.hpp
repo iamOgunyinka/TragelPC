@@ -30,7 +30,6 @@ private:
     void DownloadProducts( QUrl const & address );
     void OnCustomContextMenuRequested( QPoint const & point );
     void OnDownloadResultObtained( QJsonObject const & result );
-    void OnEditItemButtonClicked();
     void OnRemoveItemButtonClicked();
     void OnUpdateButtonClicked();
     void UpdatePageData();

@@ -24,13 +24,21 @@ QVariant ProductModel::data( QModelIndex const &index, int role ) const
         case 1:
             return row_data.price;
         case 2:
+            return row_data.categories;
+        case 3:
+            if ( row_data.description.length() > 10 )
+                return row_data.description.left( 10 );
+            return row_data.description;
+        case 4:
             return row_data.thumbnail_location;
         default:
             return QVariant{};
         }
     } else if( role == Qt::ToolTipRole ){
-        if( index.column() == 2 ){
+        if( index.column() == 4 ){
             return QString( "Click to show full thumbnail(if available)" );
+        } else if( index.column() == 3 ){
+            return row_data.description;
         }
     }
     return QVariant{};
@@ -41,9 +49,13 @@ QVariant ProductModel::headerData( int section, Qt::Orientation orientation,
 {
     if( role != Qt::DisplayRole ) return QVariant{};
     if( orientation == Qt::Horizontal ){
-        if( section == 0 ) return QString( "Product name" );
-        if( section == 1) return QString( "Product price" );
-        return QString( "Thumbnail" );
+        switch( section ) {
+        case 0: return QString( "Name" );
+        case 1: return QString( "Price" );
+        case 2: return QString( "Category" );
+        case 3: return QString( "Description" );
+        case 4: return QString( "Thumbnail" );
+        }
     }
     return section + 1;
 }
@@ -55,7 +67,7 @@ int ProductModel::rowCount( QModelIndex const & ) const
 
 int ProductModel::columnCount( QModelIndex const & ) const
 {
-    return 3;
+    return 5;
 }
 
 bool ProductModel::removeRows( int row, int count, QModelIndex const & parent )

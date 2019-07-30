@@ -54,7 +54,6 @@ private:
                                  QString const & password,
                                  QString const & company_id );
     void WriteEndpointsToPersistenceStorage( utilities::Endpoint const & );
-    void SetEnableCentralWindowBars( bool const enabled );
     void SetEnableActionButtons( bool const enable = true );
 private:
     Ui::CentralWindow *ui;

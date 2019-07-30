@@ -32,7 +32,7 @@ namespace utilities {
         static QNetworkAccessManager& GetNetwork()
         {
             static QNetworkAccessManager network_manager {};
-            network_manager.setStrictTransportSecurityEnabled( true );
+            //network_manager.setStrictTransportSecurityEnabled( true );
             return network_manager;
         }
 
@@ -243,9 +243,15 @@ namespace utilities {
     {
         QString name;
         QString thumbnail_location;
-        QString constant_url;
-        double  price;
-        qint64  product_id;
+        QString categories;
+        QString description;
+        double  price{0.0};
+        qint64  product_id{0};
+
+        Product() = default;
+        Product( QString name, double p, qint64 prod_id,
+                 QString thumbnail = QString(), QString cat = QString(),
+                 QString desc = QString() );
 
         QJsonObject ToJson() const;
     };

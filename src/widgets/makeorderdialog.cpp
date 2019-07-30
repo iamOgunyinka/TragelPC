@@ -148,7 +148,7 @@ void MakeOrderDialog::OnDownloadResultObtained( QJsonObject const & result )
                 QJsonObject const object = value.toObject();
                 utilities::Product product {
                     object.value( "name" ).toString(),
-                    "", "", object.value( "price" ).toDouble(),
+                    object.value( "price" ).toDouble(),
                     object.value( "id" ).toInt(),
                 };
                 products_.push_back( std::move( product ) );

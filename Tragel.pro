@@ -40,7 +40,6 @@ SOURCES += \
     src/widgets/userlogindialog.cpp \
     src/widgets/orderwindow.cpp \
     src/widgets/addproductdialog.cpp \
-    src/widgets/editproductdialog.cpp \
     src/widgets/allproductsdialog.cpp \
     src/models/productmodel.cpp \
     src/models/productthumbnaildelegate.cpp \
@@ -60,7 +59,9 @@ SOURCES += \
     src/widgets/allsubscriptionsdialog.cpp \
     src/models/allsubscriptionmodel.cpp \
     src/models/usermodel.cpp \
-    src/widgets/stockdialog.cpp
+    src/widgets/stockdialog.cpp \
+    src/widgets/newproductitemdialog.cpp \
+    src/models/newproductmodel.cpp
 
 
 HEADERS += \
@@ -75,7 +76,6 @@ HEADERS += \
     include/widgets/userlogindialog.hpp \
     include/widgets/orderwindow.hpp \
     include/widgets/addproductdialog.hpp \
-    include/widgets/editproductdialog.hpp \
     include/widgets/allproductsdialog.hpp \
     include/models/productmodel.hpp \
     include/models/productthumbnaildelegate.hpp \
@@ -95,7 +95,9 @@ HEADERS += \
     include/widgets/allsubscriptionsdialog.hpp \
     include/models/allsubscriptionmodel.hpp \
     include/models/usermodel.hpp \
-    include/widgets/stockdialog.hpp
+    include/widgets/stockdialog.hpp \
+    include/widgets/newproductitemdialog.hpp \
+    include/models/newproductmodel.hpp
 
 FORMS += \
     framelesswindow/framelesswindow.ui \
@@ -105,7 +107,6 @@ FORMS += \
     forms/userlogindialog.ui \
     forms/orderwindow.ui \
     forms/addproductdialog.ui \
-    forms/editproductdialog.ui \
     forms/allproductsdialog.ui \
     forms/productuploaddialog.ui \
     forms/uploadwidget.ui \
@@ -118,7 +119,8 @@ FORMS += \
     forms/setupdialog.ui \
     forms/subscribedialog.ui \
     forms/allsubscriptionsdialog.ui \
-    forms/stockdialog.ui
+    forms/stockdialog.ui \
+    forms/newproductitemdialog.ui
 
 RESOURCES += \
     darkstyle.qrc \

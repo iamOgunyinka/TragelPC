@@ -36,5 +36,6 @@
         <file>images/order-icon.png</file>
         <file>images/tixati-icon.png</file>
         <file>images/stock.png</file>
+        <file>images/no_preview.jpg</file>
     </qresource>
 </RCC>

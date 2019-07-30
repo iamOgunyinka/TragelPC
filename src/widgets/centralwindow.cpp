@@ -37,6 +37,7 @@ CentralWindow::CentralWindow( QWidget *parent ) :
     ui->setupUi( this );
     ui->actionExit->setIcon( QIcon( ":/darkstyle/icon_close.png" ) );
     setCentralWidget( workspace );
+
     ui->mainToolBar->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
 
     QObject::connect( ui->actionExit, &QAction::triggered, this,
@@ -380,12 +381,6 @@ void CentralWindow::OnLogoutButtonClicked()
                               "You've been logged out successfully" );
 }
 
-void CentralWindow::SetEnableCentralWindowBars( bool const enabled )
-{
-    ui->mainToolBar->setEnabled( enabled );
-    ui->menuBar->setEnabled( enabled );
-}
-
 void CentralWindow::SetEnableActionButtons( bool const enable )
 {
     ui->actionAdd_administrator->setEnabled( enable );
@@ -401,12 +396,12 @@ void CentralWindow::SetEnableActionButtons( bool const enable )
     ui->actionShow_all_orders->setEnabled( enable );
     ui->actionShow_expiry_date->setEnabled( enable );
     ui->actionUpdate_Change->setEnabled( enable );
-    //ui->actionStock->setEnabled( enable );
+    ui->actionStock->setEnabled( enable );
 }
 
 void CentralWindow::StartApplication()
 {
-    SetEnableCentralWindowBars( false );
+    SetEnableActionButtons( false );
     LoadSettingsFile();
     ActivatePingTimer();
 }
@@ -474,7 +469,6 @@ void CentralWindow::LoadSettingsFile()
             QJsonDocument::fromJson( endpoint_obj_settings ).object()
         };
         utilities::Endpoint::ParseEndpointsFromJson( endpoints, settings );
-        SetEnableCentralWindowBars( true );
         SetEnableActionButtons( false );
         PingServerNetwork();
         ui->actionLogin->setEnabled( true );

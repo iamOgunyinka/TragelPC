@@ -62,8 +62,8 @@ void ProductUploadDialog::UploadProducts( QJsonArray const & product_list )
         new QProgressDialog( "Uploading", "Cancel", 1, 100, this )
     };
     progress_dialog->setAttribute( Qt::WA_DeleteOnClose );
-    ProductUploadDialog::connect( progress_dialog, &QProgressDialog::canceled, reply,
-                   &QNetworkReply::abort );
+    ProductUploadDialog::connect( progress_dialog, &QProgressDialog::canceled,
+                                  reply, &QNetworkReply::abort );
     ProductUploadDialog::connect( reply, &QNetworkReply::uploadProgress,
                    [=]( qint64 received, qint64 total ){
         progress_dialog->setMaximum( static_cast<int>( total + ( total * 0.25 )) );
@@ -72,8 +72,8 @@ void ProductUploadDialog::UploadProducts( QJsonArray const & product_list )
     ProductUploadDialog::connect( reply, &QNetworkReply::sslErrors, reply,
                    QOverload<QList<QSslError> const &>::of(
                        &QNetworkReply::ignoreSslErrors ) );
-    ProductUploadDialog::connect( reply, &QNetworkReply::finished, progress_dialog,
-                   &QProgressDialog::close );
+    ProductUploadDialog::connect( reply, &QNetworkReply::finished,
+                                  progress_dialog, &QProgressDialog::close );
     ProductUploadDialog::connect( reply, &QNetworkReply::finished, [=]{
         QJsonObject const response{
             utilities::GetJsonNetworkData( reply, true )

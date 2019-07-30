@@ -14,14 +14,4 @@ public:
     QSize sizeHint( QStyleOptionViewItem const &option, QModelIndex const &index ) const;
 };
 
-class LocalProductUploadDelegate: public QAbstractItemDelegate
-{
-    Q_OBJECT
-
-public:
-    LocalProductUploadDelegate( QObject *parent = nullptr );
-    void paint( QPainter *painter, QStyleOptionViewItem const &option,
-               QModelIndex const &index) const;
-    QSize sizeHint( QStyleOptionViewItem const &option, QModelIndex const &index ) const;
-};
 #endif // PRODUCTTHUMBNAILDELEGATE_HPP

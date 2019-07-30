@@ -11,7 +11,6 @@
 
 #include "widgets/allproductsdialog.hpp"
 #include "widgets/productuploaddialog.hpp"
-#include "widgets/editproductdialog.hpp"
 #include "models/productmodel.hpp"
 #include "models/productthumbnaildelegate.hpp"
 
@@ -28,8 +27,11 @@ AllProductsDialog::AllProductsDialog( QWidget *parent ) :
     ui->update_button->setDisabled( true );
     ui->next_button->setDisabled( true );
     ui->prev_button->setDisabled( true );
+
+    auto delegate = new ProductThumbnailDelegate( this );
+    ui->tableView->setItemDelegateForColumn( 4, delegate );
     ui->tableView->setContextMenuPolicy( Qt::CustomContextMenu );
-    ui->tableView->setItemDelegateForColumn( 2, new ProductThumbnailDelegate );
+
     QObject::connect( ui->tableView, &QTableView::customContextMenuRequested,
                       this, &AllProductsDialog::OnCustomContextMenuRequested );
     QObject::connect( ui->next_button, &QToolButton::clicked, this,
@@ -111,33 +113,6 @@ void AllProductsDialog::OnRemoveItemButtonClicked()
                                    []{}, this, true, SimpleRequestType::Delete);
 }
 
-void AllProductsDialog::OnEditItemButtonClicked()
-{
-    QModelIndex const index{ ui->tableView->currentIndex() };
-    if( !index.isValid() ) return;
-
-    utilities::Product& data{ products_[ index.row() ] };
-    EditProductDialog* edit_dialog{ new EditProductDialog( this ) };
-    edit_dialog->SetName( data.name );
-    edit_dialog->SetPrice( data.price );
-    if( edit_dialog->exec() == QDialog::Accepted ){
-        utilities::Product const new_data = edit_dialog->GetValue();
-        if( data == new_data ) return; // no changes? OK!
-        data.name = new_data.name;
-        data.price = new_data.price;
-        data.constant_url = "1"; // temporarily used to mark dirty cache
-        setWindowModified( true );
-        if( !new_data.thumbnail_location.isEmpty() ){
-            data.thumbnail_location = new_data.thumbnail_location;
-        }
-        if( !ui->update_button->isEnabled() ){
-            ui->update_button->setDisabled( false );
-        }
-    }
-    edit_dialog->setAttribute( Qt::WA_DeleteOnClose );
-}
-
-
 void AllProductsDialog::OnUpdateButtonClicked()
 {
     ProductUploadDialog *upload_dialog{
@@ -204,13 +179,9 @@ void AllProductsDialog::OnCustomContextMenuRequested( QPoint const &point )
     QMenu custom_menu( this );
     custom_menu.setWindowTitle( "Menu" );
     if( !index.parent().isValid() ){
-        QAction* action_edit{ new QAction( "Edit" ) };
         QAction* action_remove{ new QAction( "Remove" ) };
-        QObject::connect( action_edit, &QAction::triggered, this,
-                          &AllProductsDialog::OnEditItemButtonClicked );
         QObject::connect( action_remove, &QAction::triggered, this,
                           &AllProductsDialog::OnRemoveItemButtonClicked );
-        custom_menu.addAction( action_edit );
         custom_menu.addAction( action_remove );
     }
     custom_menu.exec( ui->tableView->mapToGlobal( point ) );
@@ -278,7 +249,7 @@ void AllProductsDialog::UpdatePageData()
 
 void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
 {
-    bool const suceeds = utilities::ParsePageUrls( result, *product_query_data_ );
+    bool const suceeds = utilities::ParsePageUrls(result, *product_query_data_);
     if( !suceeds ){
         QMessageBox::information( this, "Products", "No products found" );
         return;
@@ -293,15 +264,15 @@ void AllProductsDialog::OnDownloadResultObtained( QJsonObject const & result )
             for( auto const value: product_array ){
                 QJsonObject const object = value.toObject();
                 QString const name{ object.value( "name" ).toString() };
+                QString const category{ object.value( "cat" ).toString() };
+                QString const description{ object.value( "desc" ).toString() };
                 QString const thumbnail_url{
                     object.value( "thumbnail" ).toString()
                 };
                 qint64 const product_id{ object.value( "id" ).toInt() };
                 double const price{ object.value( "price" ).toDouble() };
-                utilities::Product product {
-                    name, thumbnail_url, "", price, product_id,
-                };
-                products_.push_back( std::move( product ) );
+                products_.push_back( { name, price, product_id, thumbnail_url,
+                                       category, description } );
             }
             break;
         }

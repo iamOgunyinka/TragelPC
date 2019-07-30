@@ -174,8 +174,9 @@ QJsonObject GetJsonNetworkData( QNetworkReply* network_reply,
             } else {
                 QJsonObject const server_error = json_document.object();
                 QString error_message = server_error.contains( "status" ) ?
-                                server_error.value( "status").toString():
-                                server_error.value( "message" ).toString();
+                                server_error.value( "status" ).toString():
+                                QString::number( server_error.value( "message" )
+                                                 .toInt() );
                 if( error_message.isEmpty() ){
                     error_message = network_reply->errorString();
                 }
@@ -191,18 +192,27 @@ QJsonObject GetJsonNetworkData( QNetworkReply* network_reply,
     return json_document.object();
 }
 
+Product::Product( QString name, double p, qint64 prod_id , QString thumbnail,
+                  QString cat, QString desc ):
+    name{ name }, thumbnail_location{ thumbnail }, categories{ cat },
+    description{ desc }, price{ p }, product_id{ prod_id }
+{
+}
+
+
 QJsonObject Product::ToJson() const
 {
     QJsonObject object{ { "price", price }, {"name", name },
                         { "thumbnail", thumbnail_location },
-                        { "url", constant_url } };
+                        { "desc", description },
+                        { "cat", categories }};
     if( product_id != 0 ) object.insert( "id", product_id );
     return object;
 }
 
 bool operator==( Product const & a, Product const & b )
 {
-    return a.name == b.name && a.thumbnail_location == b.thumbnail_location
-            && a.constant_url == b.constant_url && a.price == b.price;
+    return a.name == b.name && a.thumbnail_location == b.thumbnail_location &&
+            a.price == b.price;
 }
 }
