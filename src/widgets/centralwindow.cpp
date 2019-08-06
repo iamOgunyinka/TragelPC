@@ -301,21 +301,27 @@ void CentralWindow::OnListAllProductsTriggered()
     dialog->DownloadProducts();
 }
 
+void CentralWindow::OnLoginSuccessful()
+{
+    SetEnableActionButtons( true );
+    ui->actionLogin->setEnabled( false );
+    ui->actionLogout->setEnabled( true );
+    PopUpNotifier* notifier{ new PopUpNotifier( this ) };
+    notifier->setAttribute( Qt::WA_DeleteOnClose );
+    notifier->SetPopUpText( "You're logged in" );
+    notifier->show();
+    StartOrderPolling();
+    logged_in = true;
+}
+
 void CentralWindow::LogUserIn( QString const & username,
                                QString const & password )
 {
-    auto on_success = [=]( QJsonObject const &, QNetworkReply* reply ){
-        SetEnableActionButtons( true );
-        ui->actionLogin->setEnabled( false );
-        ui->actionLogout->setEnabled( true );
-        PopUpNotifier* notifier{ new PopUpNotifier( this ) };
-        notifier->setAttribute( Qt::WA_DeleteOnClose );
-        notifier->SetPopUpText( "You're logged in" );
-        notifier->show();
+    auto on_success = [=]( QJsonObject const &, QNetworkReply* reply )
+    {
+        OnLoginSuccessful();
         auto& session_cookie = utilities::NetworkManager::GetSessionCookie();
         utilities::NetworkManager::SetNetworkCookie( session_cookie, reply );
-        StartOrderPolling();
-        logged_in = true;
     };
     auto on_error = [=]{
         ui->actionLogin->setEnabled( true );
@@ -360,10 +366,11 @@ void CentralWindow::OnLogoutButtonClicked()
     ui->actionLogin->setEnabled( true );
     auto const & endpoints = utilities::Endpoint::GetEndpoints();
     auto& network_manager= utilities::NetworkManager::GetNetworkWithCookie();
-    QNetworkRequest const request=
+    QNetworkRequest const request =
         utilities::GetRequestInterface( endpoints.LogoutFrom() );
     network_manager.get( request );
     // let's clear the cookies
+    app_settings.SetValue( utilities::SettingsValue::KeepMeLoggedIn, false );
     utilities::NetworkManager::GetSessionCookie().setCookiesFromUrl(
                 QList<QNetworkCookie>{}, endpoints.LoginTo() );
     logged_in = false;
@@ -401,9 +408,24 @@ void CentralWindow::SetEnableActionButtons( bool const enable )
 
 void CentralWindow::StartApplication()
 {
-    SetEnableActionButtons( false );
     LoadSettingsFile();
     ActivatePingTimer();
+
+    auto not_logged_in = [=]{
+        SetEnableActionButtons( false );
+        ui->actionLogin->setEnabled( true );
+    };
+    using utilities::SettingsValue;
+
+    bool keep_logged_in = app_settings.Value( SettingsValue::KeepMeLoggedIn,
+                                              false ).toBool();
+    if( !keep_logged_in ){
+        not_logged_in();
+    } else {
+        QVariant cookie = app_settings.Value( utilities::SettingsValue::Cookies);
+        if( !cookie.isValid() || cookie.isNull() ) not_logged_in();
+        else OnLoginSuccessful();
+    }
 }
 
 void CentralWindow::ActivatePingTimer()

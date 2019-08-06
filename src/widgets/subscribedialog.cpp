@@ -31,6 +31,7 @@ void SubscribeDialog::OnSubscribeButtonClicked()
         ui->code_edit->clear();
         QMessageBox::information( this, "Subscription", "Your subscription code"
                                   " was accepted! Congratulations" );
+        ui->code_edit->setFocus();
     };
     utilities::SendPostNetworkRequest( url, on_success, []{}, this, payload );
 }

@@ -6,8 +6,210 @@
 #include <QByteArray>
 #include <QSsl>
 #include <QSslCertificate>
+#include <QMutexLocker>
 
 namespace utilities {
+
+QNetworkAccessManager& NetworkManager::GetNetworkWithCookie()
+{
+    auto& network_manager = GetNetwork();
+    auto& session_cookie = GetSessionCookie();
+    network_manager.setCookieJar( &session_cookie );
+    // don't take ownership of the session cookie
+    session_cookie.setParent( nullptr );
+    return network_manager;
+}
+
+QNetworkAccessManager& NetworkManager::GetNetwork()
+{
+    static QNetworkAccessManager network_manager {};
+    network_manager.setStrictTransportSecurityEnabled( true );
+    return network_manager;
+}
+
+QNetworkCookieJar& NetworkManager::GetSessionCookie()
+{
+    static PersistentCookieJar network_cookie{};
+    return network_cookie;
+}
+
+bool NetworkManager::SetNetworkCookie( QNetworkCookieJar& jar,
+                                       QNetworkReply* network_reply )
+{
+    using CookieList = QList<QNetworkCookie>;
+    auto const cookie_variant = network_reply->header(
+                QNetworkRequest::SetCookieHeader );
+    CookieList const cookies = qvariant_cast<CookieList>(
+                cookie_variant );
+    return jar.setCookiesFromUrl( cookies,
+                                  network_reply->request().url() );
+}
+
+PersistentCookieJar::PersistentCookieJar(QObject* parent):
+    QNetworkCookieJar( parent )
+{
+    load();
+}
+
+PersistentCookieJar::~PersistentCookieJar()
+{
+    save();
+}
+
+QList<QNetworkCookie> PersistentCookieJar::cookiesForUrl( QUrl const &url )const
+{
+    QMutexLocker lock(&mutex);
+    return QNetworkCookieJar::cookiesForUrl( url );
+}
+
+bool PersistentCookieJar::setCookiesFromUrl( QList<QNetworkCookie> const
+                                             &cookieList, QUrl const &url )
+{
+    QMutexLocker lock(&mutex);
+    return QNetworkCookieJar::setCookiesFromUrl( cookieList, url );
+}
+
+void PersistentCookieJar::save()
+{
+    QMutexLocker lock(&mutex);
+    QList<QNetworkCookie> list = allCookies();
+    QByteArray data;
+    for( auto const & cookie: list ){
+        data.append( cookie.toRawForm() );
+        data.append( "\n" );
+    }
+    auto& app_settings = ApplicationSettings::GetAppSettings();
+    app_settings.SetValue( SettingsValue::Cookies, data );
+}
+
+void PersistentCookieJar::load()
+{
+    QMutexLocker lock( &mutex );
+    auto& app_settings = ApplicationSettings::GetAppSettings();
+    QByteArray data = app_settings.Value( SettingsValue::Cookies ).toByteArray();
+    setAllCookies( QNetworkCookie::parseCookies( data ) );
+}
+
+QString Endpoint::CompanyToken() const
+{
+    return endpoint_object.value( "company_token" ).toString();
+}
+
+QString Endpoint::CompanyID() const
+{
+    return QString::number( endpoint_object.value( "company_id" )
+                            .toInt() );
+}
+
+QString Endpoint::LoginTo() const
+{
+    return endpoint_object.value( "login" ).toString();
+}
+
+QString Endpoint::LogoutFrom() const
+{
+    return endpoint_object.value( "logout" ).toString();
+}
+
+QString Endpoint::CreateUser() const {
+    return endpoint_object.value( "create_user").toString();
+}
+
+QString Endpoint::DeleteUser() const {
+    return endpoint_object.value( "delete_user" ).toString();
+}
+
+QString Endpoint::ResetPassword() const {
+    return endpoint_object.value( "reset_password" ).toString();
+}
+
+QString Endpoint::ChangeRole() const {
+    return endpoint_object.value( "change_role" ).toString();
+}
+
+QString Endpoint::ConfirmPayment() const {
+    return endpoint_object.value( "confirm_order" ).toString();
+}
+
+QString Endpoint::GetSubscriptions() const {
+    return endpoint_object.value( "get_subscriptions" ).toString();
+}
+
+QString Endpoint::AddSubscription() const {
+    return endpoint_object.value( "add_subscription" ).toString();
+}
+
+QString Endpoint::GetProducts() const {
+    return endpoint_object.value( "get_products" ).toString();
+}
+
+QString Endpoint::GetProductByID () const {
+    return endpoint_object.value( "get_product" ).toString();
+}
+
+QString Endpoint::RemoveProduct() const {
+    return endpoint_object.value( "remove_product" ).toString();
+}
+
+QString Endpoint::ListStaffs() const {
+    return endpoint_object.value( "list_users" ).toString();
+}
+
+QString Endpoint::UpdateProducts() const {
+    return endpoint_object.value( "update_product" ).toString();
+}
+
+QString Endpoint::AddProduct() const {
+    return endpoint_object.value( "add_product" ).toString();
+}
+
+QString Endpoint::GetOrders() const {
+    return endpoint_object.value( "get_orders" ).toString();
+}
+
+QString Endpoint::GetOrderByID() const {
+    return endpoint_object.value( "get_customer_order" ).toString();
+}
+
+QString Endpoint::GetOrderCount() const {
+    return endpoint_object.value( "count_orders" ).toString();
+}
+
+QString Endpoint::AddOrder() const {
+    return endpoint_object.value( "add_order" ).toString();
+}
+
+QString Endpoint::RemoveOrder() const {
+    return endpoint_object.value( "remove_order" ).toString();
+}
+
+QString Endpoint::PingAddress() const {
+    return endpoint_object.value( "ping" ).toString();
+}
+
+QString Endpoint::GetExpiryDate() const {
+    return endpoint_object.value( "get_expiry" ).toString();
+}
+
+QString Endpoint::UploadPhoto() const {
+    return endpoint_object.value( "upload_images" ).toString();
+}
+
+QJsonObject Endpoint::ToJson() const {
+    return endpoint_object;
+}
+
+void Endpoint::ParseEndpointsFromJson( Endpoint& endpoint,
+                                       QJsonObject const & json_object )
+{
+    endpoint.endpoint_object = json_object;
+}
+
+Endpoint& Endpoint::GetEndpoints()
+{
+    static Endpoint endpoints {};
+    return endpoints;
+}
 
 ApplicationSettings& ApplicationSettings::GetAppSettings()
 {
@@ -48,6 +250,10 @@ QString SettingsValueToString( SettingsValue const val )
         return "ping_ntf_interval";
     case SettingsValue::ResultPerPage:
         return "result_per_page";
+    case SettingsValue::Cookies:
+        return "session_cookies";
+    case SettingsValue::KeepMeLoggedIn:
+        return "keep_logged_in";
     }
     abort();
 }
@@ -167,16 +373,16 @@ QJsonObject GetJsonNetworkData( QNetworkReply* network_reply,
         if( show_error_message ){
             QByteArray const network_response = network_reply->readAll();
             QJsonDocument const json_document=
-                QJsonDocument::fromJson( network_response );
+                    QJsonDocument::fromJson( network_response );
             if( json_document.isNull() ){
                 QMessageBox::critical( nullptr, "Server's response",
                                        network_reply->errorString() );
             } else {
                 QJsonObject const server_error = json_document.object();
                 QString error_message = server_error.contains( "status" ) ?
-                                server_error.value( "status" ).toString():
-                                QString::number( server_error.value( "message" )
-                                                 .toInt() );
+                            server_error.value( "status" ).toString():
+                            QString::number( server_error.value( "message" )
+                                             .toInt() );
                 if( error_message.isEmpty() ){
                     error_message = network_reply->errorString();
                 }
@@ -187,7 +393,7 @@ QJsonObject GetJsonNetworkData( QNetworkReply* network_reply,
     }
     QByteArray const network_response = network_reply->readAll();
     QJsonDocument const json_document=
-        QJsonDocument::fromJson( network_response );
+            QJsonDocument::fromJson( network_response );
     if( json_document.isNull() ) return QJsonObject();
     return json_document.object();
 }

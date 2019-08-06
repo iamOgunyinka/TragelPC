@@ -1,5 +1,6 @@
 #include "widgets/userlogindialog.hpp"
 #include "ui_userlogindialog.h"
+#include "utils/resources.hpp"
 
 UserLoginDialog::UserLoginDialog( QWidget *parent ) :
     QDialog( parent ),
@@ -8,6 +9,11 @@ UserLoginDialog::UserLoginDialog( QWidget *parent ) :
     ui->setupUi(this);
     ui->company_line->setEnabled( false );
     ui->username_line->setFocus();
+    QObject::connect( ui->logged_in_check, &QCheckBox::toggled, [=]( bool val )
+    {
+        auto& app_settings = utilities::ApplicationSettings::GetAppSettings();
+        app_settings.SetValue( utilities::SettingsValue::KeepMeLoggedIn, val );
+    });
 }
 
 void UserLoginDialog::SetCompanyID( QString const &company_id )

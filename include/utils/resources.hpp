@@ -11,48 +11,36 @@
 #include <QList>
 #include <QVector>
 #include <QProgressDialog>
+#include <QMutex>
 
 namespace utilities {
     static QString const USER_AGENT{ "Mozilla/5.0 (X11; Linux i586; rv:31.0) "
                                      "Gecko/20100101 Firefox/31.0" };
+
+    class PersistentCookieJar : public QNetworkCookieJar {
+    public:
+        PersistentCookieJar( QObject *parent = nullptr );
+        ~PersistentCookieJar() override;
+
+        QList<QNetworkCookie> cookiesForUrl( QUrl const &url ) const override;
+        virtual bool setCookiesFromUrl( QList<QNetworkCookie> const &cookieList,
+                                        QUrl const &url ) override;
+    private:
+        void save();
+        void load();
+    private:
+        mutable QMutex mutex;
+    };
+
     class NetworkManager
     {
         NetworkManager() = default;
     public:
-        static QNetworkAccessManager& GetNetworkWithCookie()
-        {
-            auto& network_manager = GetNetwork();
-            auto& session_cookie = GetSessionCookie();
-            network_manager.setCookieJar( &session_cookie );
-            // don't take ownership of the session cookie
-            session_cookie.setParent( nullptr );
-            return network_manager;
-        }
-
-        static QNetworkAccessManager& GetNetwork()
-        {
-            static QNetworkAccessManager network_manager {};
-            //network_manager.setStrictTransportSecurityEnabled( true );
-            return network_manager;
-        }
-
-        static QNetworkCookieJar& GetSessionCookie()
-        {
-            static QNetworkCookieJar network_cookie {};
-            return network_cookie;
-        }
-
+        static QNetworkAccessManager& GetNetworkWithCookie();
+        static QNetworkAccessManager& GetNetwork();
+        static QNetworkCookieJar& GetSessionCookie();
         static bool SetNetworkCookie( QNetworkCookieJar& jar,
-                                      QNetworkReply* network_reply )
-        {
-            using CookieList = QList<QNetworkCookie>;
-            auto const cookie_variant = network_reply->header(
-                        QNetworkRequest::SetCookieHeader );
-            CookieList const cookies = qvariant_cast<CookieList>(
-                        cookie_variant );
-            return jar.setCookiesFromUrl( cookies,
-                                          network_reply->request().url() );
-        }
+                                      QNetworkReply* network_reply );
     };
 
     enum class SettingsValue
@@ -65,7 +53,9 @@ namespace utilities {
         AllowShortcut,
         ConfirmDeletion,
         ShowSplash,
-        ResultPerPage
+        ResultPerPage,
+        Cookies,
+        KeepMeLoggedIn
     };
 
     QString SettingsValueToString( SettingsValue const val );
@@ -82,10 +72,10 @@ namespace utilities {
         ApplicationSettings& operator=( ApplicationSettings const & ) = delete;
         ApplicationSettings& operator=( ApplicationSettings && ) = delete;
 
-        void    SetValue( SettingsValue const data, QVariant const &value );
+        void     SetValue( SettingsValue const data, QVariant const &value );
         QVariant Value( SettingsValue const value,
                         QVariant const & default_ = {} ) const;
-        void Remove( SettingsValue const value );
+        void     Remove( SettingsValue const value );
         static  ApplicationSettings& GetAppSettings();
     };
 
@@ -94,132 +84,41 @@ namespace utilities {
         QJsonObject endpoint_object;
         Endpoint() = default;
     public:
-        QString CompanyToken() const
-        {
-            return endpoint_object.value( "company_token" ).toString();
-        }
-
-        QString CompanyID() const
-        {
-            return QString::number( endpoint_object.value( "company_id" )
-                                    .toInt() );
-        }
-
-        QString LoginTo() const
-        {
-            return endpoint_object.value( "login" ).toString();
-        }
-
-        QString LogoutFrom() const
-        {
-            return endpoint_object.value( "logout" ).toString();
-        }
-
-        QString CreateUser() const {
-            return endpoint_object.value( "create_user").toString();
-        }
-
-        QString DeleteUser() const {
-            return endpoint_object.value( "delete_user" ).toString();
-        }
-
-        QString ResetPassword() const {
-            return endpoint_object.value( "reset_password" ).toString();
-        }
-
-        QString ChangeRole() const {
-            return endpoint_object.value( "change_role" ).toString();
-        }
-
-        QString ConfirmPayment() const {
-            return endpoint_object.value( "confirm_order" ).toString();
-        }
-
-        QString GetSubscriptions() const {
-            return endpoint_object.value( "get_subscriptions" ).toString();
-        }
-
-        QString AddSubscription() const {
-            return endpoint_object.value( "add_subscription" ).toString();
-        }
-
-        QString GetProducts() const {
-            return endpoint_object.value( "get_products" ).toString();
-        }
-
-        QString GetProductByID () const {
-            return endpoint_object.value( "get_product" ).toString();
-        }
-
-        QString RemoveProduct() const {
-            return endpoint_object.value( "remove_product" ).toString();
-        }
-
-        QString ListStaffs() const {
-            return endpoint_object.value( "list_users" ).toString();
-        }
-
-        QString UpdateProducts() const {
-            return endpoint_object.value( "update_product" ).toString();
-        }
-
-        QString AddProduct() const {
-            return endpoint_object.value( "add_product" ).toString();
-        }
-
-        QString GetOrders() const {
-            return endpoint_object.value( "get_orders" ).toString();
-        }
-
-        QString GetOrderByID() const {
-            return endpoint_object.value( "get_customer_order" ).toString();
-        }
-
-        QString GetOrderCount() const {
-            return endpoint_object.value( "count_orders" ).toString();
-        }
-
-        QString AddOrder() const {
-            return endpoint_object.value( "add_order" ).toString();
-        }
-
-        QString RemoveOrder() const {
-            return endpoint_object.value( "remove_order" ).toString();
-        }
-
-        QString PingAddress() const {
-            return endpoint_object.value( "ping" ).toString();
-        }
-
-        QString GetExpiryDate() const {
-            return endpoint_object.value( "get_expiry" ).toString();
-        }
-
-        QString UploadPhoto() const {
-            return endpoint_object.value( "upload_images" ).toString();
-        }
-
+        QString CompanyToken() const;
+        QString CompanyID() const;
+        QString LoginTo() const;
+        QString LogoutFrom() const;
+        QString CreateUser() const;
+        QString DeleteUser() const;
+        QString ResetPassword() const;
+        QString ChangeRole() const;
+        QString ConfirmPayment() const;
+        QString GetSubscriptions() const;
+        QString AddSubscription() const;
+        QString GetProducts() const;
+        QString GetProductByID () const;
+        QString RemoveProduct() const;
+        QString ListStaffs() const;
+        QString UpdateProducts() const;
+        QString AddProduct() const;
+        QString GetOrders() const;
+        QString GetOrderByID() const;
+        QString GetOrderCount() const;
+        QString AddOrder() const;
+        QString RemoveOrder() const;
+        QString PingAddress() const;
+        QString GetExpiryDate() const;
+        QString UploadPhoto() const;
     public:
         Endpoint( Endpoint && ) = delete;
         Endpoint( Endpoint const & ) = delete;
         Endpoint& operator=( Endpoint const &)= delete;
         Endpoint& operator=( Endpoint && ) = delete;
+        QJsonObject ToJson() const;
 
-        QJsonObject ToJson() const {
-            return endpoint_object;
-        }
-
+        static Endpoint& GetEndpoints();
         static void ParseEndpointsFromJson( Endpoint& endpoint,
-                                            QJsonObject const & json_object )
-        {
-            endpoint.endpoint_object = json_object;
-        }
-
-        static Endpoint& GetEndpoints()
-        {
-            static Endpoint endpoints {};
-            return endpoints;
-        }
+                                            QJsonObject const & json_object );
     };
 
     struct UrlData
@@ -305,14 +204,12 @@ namespace utilities {
 
     bool ParsePageUrls( QJsonObject const & page_url,
                         PageResultQuery& page_information );
-
+    QPair<QNetworkRequest, QByteArray> PostImageRequestInterface(
+            QUrl const &address, QVector<QString> const &data );
     QNetworkRequest GetRequestInterface( QUrl const &address );
     QNetworkRequest PostRequestInterface( QUrl const &address );
     QJsonObject     GetJsonNetworkData( QNetworkReply *data,
                                         bool show_error_message = false );
-
-    QPair<QNetworkRequest, QByteArray> PostImageRequestInterface(
-            QUrl const &address, QVector<QString> const &data );
 
     template<typename FuncOnSuccess, typename FuncOnError>
     void SendNetworkRequest( QUrl const & address, FuncOnSuccess && on_success,

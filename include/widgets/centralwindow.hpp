@@ -25,13 +25,14 @@ signals:
 public:
     explicit CentralWindow( QWidget *parent = nullptr );
     void StartApplication();
-    ~CentralWindow();
+    ~CentralWindow() override;
 protected:
     void closeEvent( QCloseEvent *event ) override;
 private:
     void CentralizeDisplayWidget( QWidget * const widget, QSize const & size);
     void LogUserIn( QString const & username, QString const & password );
     void PingServerNetwork();
+    void OnLoginSuccessful();
     void StartOrderPolling();
     void EnableShortcuts();
     void OnOrderPollResultObtained( QJsonObject const &result );

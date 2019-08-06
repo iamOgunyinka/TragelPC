@@ -44,6 +44,9 @@ AllProductsDialog::AllProductsDialog( QWidget *parent ) :
                       &AllProductsDialog::OnFirstPageButtonClicked );
     QObject::connect( ui->update_button, &QPushButton::clicked, this,
                       &AllProductsDialog::OnUpdateButtonClicked );
+    QObject::connect( ui->refresh_button, &QPushButton::clicked,[this]{
+        DownloadProducts();
+    });
 }
 
 AllProductsDialog::~AllProductsDialog()
