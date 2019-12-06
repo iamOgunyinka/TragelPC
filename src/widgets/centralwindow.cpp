@@ -8,6 +8,7 @@
 #include <QProgressDialog>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QStyle>
 
 #include "widgets/addproductdialog.hpp"
 #include "widgets/adminsetupdialog.hpp"
@@ -415,8 +416,8 @@ void CentralWindow::StartApplication()
         SetEnableActionButtons( false );
         ui->actionLogin->setEnabled( true );
     };
-    using utilities::SettingsValue;
 
+    using utilities::SettingsValue;
     bool keep_logged_in = app_settings.Value( SettingsValue::KeepMeLoggedIn,
                                               false ).toBool();
     if( !keep_logged_in ){

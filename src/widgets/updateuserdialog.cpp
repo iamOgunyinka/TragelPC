@@ -104,7 +104,7 @@ void UpdateUserDialog::OnRemoveUserTriggered()
 
     auto on_success = [=]( QJsonObject const & result ){
         auto* model = qobject_cast<UserModel*>( ui->tableView->model() );
-        model->removeRows( index.row(), 1, index );
+        model->removeRows( index.row(), 1 );
         QMessageBox::information( this, "Mark inactive",
                                   result.value( "status" ).toString() );
     };

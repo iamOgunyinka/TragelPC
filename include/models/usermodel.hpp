@@ -32,7 +32,9 @@ public:
     QVariant headerData( int section, Qt::Orientation orientation, int role )
         const override;
     Qt::ItemFlags flags( QModelIndex const &index ) const override;
-    bool removeRows( int row, int count, QModelIndex const & ) override;
+    bool removeRows( int row, int count,
+                     QModelIndex const & parent = QModelIndex{} ) override;
+
     bool setData( QModelIndex const &index, QVariant const &value,
                  int role = Qt::EditRole ) override;
 private:
